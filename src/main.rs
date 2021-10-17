@@ -1,8 +1,6 @@
 mod fps_counter;
 mod game_loop;
 
-use rand::Rng;
-use rand::prelude::ThreadRng;
 use std::time::Duration;
 
 use sdl2::pixels::Color;
@@ -17,19 +15,25 @@ use sdl2::video::Window;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
 
+
+const COLUMNS: u32 = 32;
+const ROWS: u32 = 18;
+const TILE_WIDTH: u32 = 12;
+const TILE_HEIGHT: u32 = 12;
+
 struct TileSplatter<'a> {
     tile: Texture<'a>,
+    ball: Texture<'a>,
     numbers: Vec<Texture<'a>>,
-    width: u32,
-    height: u32,
+    x_offset: i32,
+    y_offset: i32,
+    scale: f64,
     tiles: Vec<(f64, f64)>,
-    fps_counter: FpsCounter,
-    rng: ThreadRng
+    fps_counter: FpsCounter
 }
 
 impl Game for TileSplatter<'_> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
-        self.tiles.push((self.rng.gen_range(0.0..self.width as f64), self.rng.gen_range(0.0..self.height as f64)));
         Ok(())
     }
 
@@ -39,10 +43,10 @@ impl Game for TileSplatter<'_> {
         canvas.set_draw_color(Color::BLACK);
         canvas.clear();
         for &(x, y) in &self.tiles {
-            render_tile(x, y, canvas, &self.tile)?;
+            render_image(x, y, self.scale, self.x_offset, self.y_offset, canvas, &self.tile)?;
         }
         render_number(40, 6, self.fps_counter.fps(), canvas, &self.numbers)?;
-        render_number(720, 32, self.tiles.len(), canvas, &self.numbers)?;
+        render_image((TILE_WIDTH * COLUMNS / 2) as f64, (TILE_HEIGHT * ROWS / 2) as f64, self.scale, self.x_offset, self.y_offset, canvas, &self.ball)?;
 
         canvas.present();
         Ok(())
@@ -72,6 +76,15 @@ fn main() -> Result<(), String> {
 
     let (width, height) = window.size();
 
+    let x_scale = width as f64 / (COLUMNS * TILE_WIDTH) as f64;
+    let y_scale = height as f64 / (ROWS * TILE_HEIGHT) as f64;
+    let scale = f64::min(x_scale, y_scale);
+
+    let x_offset = (width as i32 - ((COLUMNS * TILE_WIDTH) as f64 * scale) as i32) / 2;
+    let y_offset = (height as i32 - ((ROWS * TILE_HEIGHT) as f64 * scale) as i32) / 2;
+    
+    print!("Screen resolution: {}x{}", width, height);
+
     let mut canvas : Canvas<Window> = window
         .into_canvas()
         .present_vsync()
@@ -81,23 +94,34 @@ fn main() -> Result<(), String> {
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
 
     let texture_creator = canvas.texture_creator();
-    let tile : Texture = texture_creator.load_texture("assets/12x12tile.png")?;
 
     let numbers : Result<Vec<Texture>, String> = (0..10).map(|n| { 
         let number = assets.join(n.to_string() + ".png");
-        let number = number.to_str().ok_or(format!("Could not load {}.png", n))?;
         texture_creator.load_texture(number)
     }).collect();
     let numbers = numbers?;
 
+    let mut tiles = Vec::new();
+    for x in 0..COLUMNS
+    {
+        tiles.push((((x * TILE_WIDTH) as f64), 0.0));
+        tiles.push((((x * TILE_WIDTH) as f64), ((ROWS - 1) * TILE_HEIGHT) as f64));
+    }
+    for y in 1..(ROWS - 1)
+    {
+        tiles.push((0.0, ((y * TILE_HEIGHT) as f64)));
+        tiles.push((((COLUMNS - 1) * TILE_WIDTH) as f64, (y * TILE_HEIGHT) as f64));
+    }
+
     let mut splatto: TileSplatter = TileSplatter {
-        tile,
+        tile: texture_creator.load_texture(assets.join("12x12tile.png"))?,
+        ball: texture_creator.load_texture(assets.join("ball.png"))?,
         numbers,
-        width,
-        height,
-        tiles: Vec::new(),
-        fps_counter: FpsCounter::new(),
-        rng: rand::thread_rng()
+        x_offset,
+        y_offset,
+        scale,
+        tiles,
+        fps_counter: FpsCounter::new()
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
@@ -123,7 +147,7 @@ fn render_number(x: i32, y: i32, num: usize, canvas: &mut Canvas<Window>, number
     Ok(())
 }
 
-fn render_tile(x: f64, y: f64, canvas: &mut Canvas<Window>, tile: &Texture) -> Result<(), String> {
-    canvas.copy(tile, None, Rect::new(x as i32, y as i32, 24, 24))?;
+fn render_image(x: f64, y: f64, scale: f64, x_offset: i32, y_offset: i32, canvas: &mut Canvas<Window>, tile: &Texture) -> Result<(), String> {
+    canvas.copy(tile, None, Rect::new((x * scale) as i32 + x_offset, (y * scale) as i32 + y_offset, (TILE_WIDTH as f64 * scale) as u32, (TILE_HEIGHT as f64 * scale) as u32))?;
     Ok(())
 }
