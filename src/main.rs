@@ -27,6 +27,8 @@ struct TileSplatter<'a> {
     numbers: Vec<Texture<'a>>,
     x_offset: i32,
     y_offset: i32,
+    ball_x: f64,
+    ball_y: f64,
     scale: f64,
     tiles: Vec<(f64, f64)>,
     fps_counter: FpsCounter
@@ -46,7 +48,7 @@ impl Game for TileSplatter<'_> {
             render_image(x, y, self.scale, self.x_offset, self.y_offset, canvas, &self.tile)?;
         }
         render_number(40, 6, self.fps_counter.fps(), canvas, &self.numbers)?;
-        render_image((TILE_WIDTH * COLUMNS / 2) as f64, (TILE_HEIGHT * ROWS / 2) as f64, self.scale, self.x_offset, self.y_offset, canvas, &self.ball)?;
+        render_image(self.ball_x, self.ball_y, self.scale, self.x_offset, self.y_offset, canvas, &self.ball)?;
 
         canvas.present();
         Ok(())
@@ -54,9 +56,16 @@ impl Game for TileSplatter<'_> {
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
         match event {
-            Event::Quit {..} |
-            Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                return Err("Escape pressed: ending game".into());
+            Event::Quit {..} => return Err("Escape pressed: ending game".into()),
+            Event::KeyDown { keycode: Some(key_pressed), .. } => {
+                match key_pressed {
+                    Keycode::Escape => return Err("Escape pressed: ending game".into()),
+                    Keycode::Z => self.ball_x = self.ball_x - 10.0,
+                    Keycode::X => self.ball_x = self.ball_x + 10.0,
+                    Keycode::P => self.ball_y = self.ball_y - 10.0,
+                    Keycode::L => self.ball_y = self.ball_y + 10.0,
+                    _ => {}
+                }
             },
             _ => {}
         }
@@ -119,6 +128,8 @@ fn main() -> Result<(), String> {
         numbers,
         x_offset,
         y_offset,
+        ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
+        ball_y: (TILE_HEIGHT * ROWS / 2) as f64,
         scale,
         tiles,
         fps_counter: FpsCounter::new()
