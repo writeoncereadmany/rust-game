@@ -15,7 +15,10 @@ impl FpsCounter {
 
     pub fn on_frame(&mut self) {
         let now = Instant::now();
-        self.timestamp_queue.retain(|&then| now.duration_since(then).as_millis() < 1_000);
+        while self.timestamp_queue.front().map(|&then| now.duration_since(then).as_millis() >= 1000).unwrap_or(false)
+        {
+            self.timestamp_queue.pop_front();
+        }
         self.timestamp_queue.push_back(now);
     }
 

@@ -72,7 +72,10 @@ fn main() -> Result<(), String> {
 
     let (width, height) = window.size();
 
-    let mut canvas : Canvas<Window> = window.into_canvas().build()
+    let mut canvas : Canvas<Window> = window
+        .into_canvas()
+        .present_vsync()
+        .build()
         .expect("could not make a canvas");
 
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
