@@ -22,15 +22,14 @@ const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
 
 struct TileSplatter<'a> {
-    tile: Texture<'a>,
     ball: Texture<'a>,
+    tilebuffer: Texture<'a>,
     numbers: Vec<Texture<'a>>,
     x_offset: i32,
     y_offset: i32,
     ball_x: f64,
     ball_y: f64,
     scale: f64,
-    tiles: Vec<(f64, f64)>,
     fps_counter: FpsCounter
 }
 
@@ -44,9 +43,8 @@ impl Game for TileSplatter<'_> {
 
         canvas.set_draw_color(Color::BLACK);
         canvas.clear();
-        for &(x, y) in &self.tiles {
-            render_image(x, y, self.scale, self.x_offset, self.y_offset, canvas, &self.tile)?;
-        }
+
+        canvas.copy(&self.tilebuffer, None, None)?;
         render_number(40, 6, self.fps_counter.fps(), canvas, &self.numbers)?;
         render_image(self.ball_x, self.ball_y, self.scale, self.x_offset, self.y_offset, canvas, &self.ball)?;
 
@@ -80,6 +78,7 @@ fn main() -> Result<(), String> {
 
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
         .fullscreen_desktop()
+        .allow_highdpi()
         .build()
         .expect("could not initialize video subsystem");
 
@@ -100,9 +99,28 @@ fn main() -> Result<(), String> {
         .build()
         .expect("could not make a canvas");
 
-    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
 
     let texture_creator = canvas.texture_creator();
+
+    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
+    let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
+
+    let mut tilebuffer = texture_creator.create_texture_target(None, COLUMNS * TILE_WIDTH, ROWS * TILE_HEIGHT).unwrap();
+
+    canvas.with_texture_canvas(&mut tilebuffer, |c| {
+        c.set_draw_color(Color::BLACK);
+        c.clear();
+
+        for x in 0..COLUMNS {
+            c.copy(&tile, None, Rect::new((x * TILE_WIDTH) as i32, 0, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+            c.copy(&tile, None, Rect::new((x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+        }
+        for y in 0..ROWS {
+            c.copy(&tile, None, Rect::new(0, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+            c.copy(&tile, None, Rect::new(((COLUMNS - 1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+        }
+
+    }).unwrap();
 
     let numbers : Result<Vec<Texture>, String> = (0..10).map(|n| { 
         let number = assets.join(n.to_string() + ".png");
@@ -110,28 +128,15 @@ fn main() -> Result<(), String> {
     }).collect();
     let numbers = numbers?;
 
-    let mut tiles = Vec::new();
-    for x in 0..COLUMNS
-    {
-        tiles.push((((x * TILE_WIDTH) as f64), 0.0));
-        tiles.push((((x * TILE_WIDTH) as f64), ((ROWS - 1) * TILE_HEIGHT) as f64));
-    }
-    for y in 1..(ROWS - 1)
-    {
-        tiles.push((0.0, ((y * TILE_HEIGHT) as f64)));
-        tiles.push((((COLUMNS - 1) * TILE_WIDTH) as f64, (y * TILE_HEIGHT) as f64));
-    }
-
     let mut splatto: TileSplatter = TileSplatter {
-        tile: texture_creator.load_texture(assets.join("12x12tile.png"))?,
         ball: texture_creator.load_texture(assets.join("ball.png"))?,
+        tilebuffer,
         numbers,
         x_offset,
         y_offset,
         ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
         ball_y: (TILE_HEIGHT * ROWS / 2) as f64,
         scale,
-        tiles,
         fps_counter: FpsCounter::new()
     };
 
