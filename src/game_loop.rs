@@ -2,8 +2,8 @@ use std::time::{Instant, Duration};
 
 use sdl2::EventPump;
 use sdl2::event::Event;
-use sdl2::render::Canvas;
-use sdl2::video::Window;
+
+use crate::lo_res_renderer::LoResRenderer;
 
 pub trait Game {
 
@@ -11,7 +11,7 @@ pub trait Game {
         Ok(())
     }
 
-    fn render(&mut self, _canvas: &mut Canvas<Window>) -> Result<(), String> {
+    fn render(&mut self, _renderer: &mut LoResRenderer) -> Result<(), String> {
         Ok(())
     }
  
@@ -20,7 +20,7 @@ pub trait Game {
     }
 }
 
-pub fn run_game_loop<G: Game>(game: &mut G, canvas: &mut Canvas<Window>, events: &mut EventPump) -> Result<(), String> {
+pub fn run_game_loop<G: Game>(game: &mut G, renderer: &mut LoResRenderer, events: &mut EventPump) -> Result<(), String> {
     let mut last_frame = Instant::now();
     loop {
         let this_frame = Instant::now();
@@ -30,7 +30,7 @@ pub fn run_game_loop<G: Game>(game: &mut G, canvas: &mut Canvas<Window>, events:
 
         game.update(this_frame.duration_since(last_frame))?;
 
-        game.render(canvas)?;
+        game.render(renderer)?;
 
         last_frame = this_frame;
     }

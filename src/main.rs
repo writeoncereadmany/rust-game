@@ -1,5 +1,6 @@
 mod fps_counter;
 mod game_loop;
+mod lo_res_renderer;
 
 use std::time::Duration;
 
@@ -14,6 +15,7 @@ use sdl2::video::Window;
 
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
+use lo_res_renderer::LoResRenderer;
 
 
 const COLUMNS: u32 = 32;
@@ -23,13 +25,9 @@ const TILE_HEIGHT: u32 = 12;
 
 struct TileSplatter<'a> {
     ball: Texture<'a>,
-    tilebuffer: Texture<'a>,
     numbers: Vec<Texture<'a>>,
-    x_offset: i32,
-    y_offset: i32,
     ball_x: f64,
     ball_y: f64,
-    scale: f64,
     fps_counter: FpsCounter
 }
 
@@ -38,17 +36,16 @@ impl Game for TileSplatter<'_> {
         Ok(())
     }
 
-    fn render(&mut self, canvas: &mut Canvas<Window>) -> Result<(), String> {
+    fn render(&mut self, renderer: &mut LoResRenderer) -> Result<(), String> {
         self.fps_counter.on_frame();
 
-        canvas.set_draw_color(Color::BLACK);
-        canvas.clear();
+        renderer.draw(|c| {
+            render_number(18, 2, self.fps_counter.fps(), c, &self.numbers).unwrap();
+            c.copy(&self.ball, None, Rect::new(self.ball_x as i32, self.ball_y as i32, 12, 12)).unwrap();
+        }).unwrap();
 
-        canvas.copy(&self.tilebuffer, None, None)?;
-        render_number(40, 6, self.fps_counter.fps(), canvas, &self.numbers)?;
-        render_image(self.ball_x, self.ball_y, self.scale, self.x_offset, self.y_offset, canvas, &self.ball)?;
+        renderer.present()?;
 
-        canvas.present();
         Ok(())
     }
 
@@ -78,22 +75,14 @@ fn main() -> Result<(), String> {
 
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
         .fullscreen_desktop()
-        .allow_highdpi()
         .build()
         .expect("could not initialize video subsystem");
 
     let (width, height) = window.size();
-
-    let x_scale = width as f64 / (COLUMNS * TILE_WIDTH) as f64;
-    let y_scale = height as f64 / (ROWS * TILE_HEIGHT) as f64;
-    let scale = f64::min(x_scale, y_scale);
-
-    let x_offset = (width as i32 - ((COLUMNS * TILE_WIDTH) as f64 * scale) as i32) / 2;
-    let y_offset = (height as i32 - ((ROWS * TILE_HEIGHT) as f64 * scale) as i32) / 2;
     
     print!("Screen resolution: {}x{}", width, height);
 
-    let mut canvas : Canvas<Window> = window
+    let canvas : Canvas<Window> = window
         .into_canvas()
         .present_vsync()
         .build()
@@ -105,9 +94,9 @@ fn main() -> Result<(), String> {
     let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
 
-    let mut tilebuffer = texture_creator.create_texture_target(None, COLUMNS * TILE_WIDTH, ROWS * TILE_HEIGHT).unwrap();
+    let mut renderer = LoResRenderer::new(canvas, &texture_creator, TILE_WIDTH * COLUMNS, TILE_HEIGHT * ROWS).unwrap();
 
-    canvas.with_texture_canvas(&mut tilebuffer, |c| {
+    renderer.draw_to_background(|c| {
         c.set_draw_color(Color::BLACK);
         c.clear();
 
@@ -130,19 +119,15 @@ fn main() -> Result<(), String> {
 
     let mut splatto: TileSplatter = TileSplatter {
         ball: texture_creator.load_texture(assets.join("ball.png"))?,
-        tilebuffer,
         numbers,
-        x_offset,
-        y_offset,
         ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
         ball_y: (TILE_HEIGHT * ROWS / 2) as f64,
-        scale,
         fps_counter: FpsCounter::new()
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
 
-    run_game_loop(&mut splatto, &mut canvas, &mut event_pump)?;
+    run_game_loop(&mut splatto, &mut renderer, &mut event_pump)?;
 
     Ok(())
 }
@@ -154,16 +139,11 @@ fn render_number(x: i32, y: i32, num: usize, canvas: &mut Canvas<Window>, number
 
     while digit > 0 || remainder > 0
     {
-        canvas.copy(&numbers.get(digit).unwrap(), None, Rect::new(x - offset, y, 16, 16))?;
+        canvas.copy(&numbers.get(digit).unwrap(), None, Rect::new(x - offset, y, 8, 8))?;
         
-        offset += 16;
+        offset += 8;
         digit = remainder % 10;
         remainder = remainder / 10;
     }
-    Ok(())
-}
-
-fn render_image(x: f64, y: f64, scale: f64, x_offset: i32, y_offset: i32, canvas: &mut Canvas<Window>, tile: &Texture) -> Result<(), String> {
-    canvas.copy(tile, None, Rect::new((x * scale) as i32 + x_offset, (y * scale) as i32 + y_offset, (TILE_WIDTH as f64 * scale) as u32, (TILE_HEIGHT as f64 * scale) as u32))?;
     Ok(())
 }
