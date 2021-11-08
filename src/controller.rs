@@ -1,18 +1,6 @@
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 
-pub enum Horizontal {
-    LEFT,
-    NEUTRAL,
-    RIGHT
-}
-
-pub enum Vertical {
-    UP, 
-    NEUTRAL,
-    DOWN
-}
-
 pub struct Button {
     key: Keycode,
     pressed: bool
