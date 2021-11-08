@@ -40,23 +40,21 @@ enum Layer {
     FOREGROUND
 }
 
-impl Game<Layer> for TileSplatter<'_> {
+impl <'a> Game<'a, Layer> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
         Ok(())
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer<Layer>) -> Result<(), String> {
+    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         self.fps_counter.on_frame();
 
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
-        renderer.draw_to(&Layer::FOREGROUND, |c| {
-            render_number(18, 2, self.fps_counter.fps(), c, &self.numbers).unwrap();
-            self.ball_sprite.draw_to(c, self.ball_x as i32, self.ball_y as i32).unwrap();
-        }).unwrap();
-
+        renderer.draw(&Layer::FOREGROUND, &self.ball_sprite, self.ball_x as i32, self.ball_y as i32);
+        render_number(18, 2, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
+        
         renderer.present()?;
 
         Ok(())
@@ -108,17 +106,14 @@ fn main() -> Result<(), String> {
 
     renderer.clear(&Layer::BACKGROUND).unwrap();
 
-    renderer.draw_to(&Layer::BACKGROUND, |c| {
-
-        for x in 0..COLUMNS {
-            tile.draw_to(c, (x * TILE_WIDTH) as i32, 0).unwrap();
-            tile.draw_to(c, (x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32).unwrap();
-        }
-        for y in 0..ROWS {
-            tile.draw_to(c, 0, (y * TILE_HEIGHT) as i32).unwrap();
-            tile.draw_to(c, ((COLUMNS-1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32).unwrap();
-        }
-    }).unwrap();
+    for x in 0..COLUMNS {
+        renderer.draw(&Layer::BACKGROUND, &tile, (x * TILE_WIDTH) as i32, 0);
+        renderer.draw(&Layer::BACKGROUND, &tile, (x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32);
+    }
+    for y in 0..ROWS {
+        renderer.draw(&Layer::BACKGROUND, &tile, 0, (y * TILE_HEIGHT) as i32);
+        renderer.draw(&Layer::BACKGROUND, &tile, ((COLUMNS-1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32);
+    }
 
     let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
     let numbers: Vec<Sprite<'_>> = (0..10).map(|n| {
@@ -144,14 +139,16 @@ fn main() -> Result<(), String> {
     Ok(())
 }
 
-fn render_number(x: i32, y: i32, num: usize, canvas: &mut Canvas<Window>, numbers : &Vec<Sprite>) -> Result<(), String> {
+fn render_number<'a>(x: i32, y: i32, num: usize, renderer: &mut LoResRenderer<'a, Layer>, numbers : &Vec<Sprite<'a>>) 
+-> Result<(), String> {
     let mut digit = num % 10;
     let mut remainder = num / 10;
     let mut offset = 0;
 
     while digit > 0 || remainder > 0
     {
-        numbers.get(digit).unwrap().draw_to(canvas, x - offset, y)?;
+        let num_sprite = numbers.get(digit).unwrap();
+        renderer.draw(&Layer::FOREGROUND, num_sprite, x - offset, y);
         
         offset += 8;
         digit = remainder % 10;

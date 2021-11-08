@@ -1,3 +1,5 @@
+use crate::sprite::Sprite;
+
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
@@ -35,11 +37,17 @@ where T: Ord + Debug
         })
     }
 
-    pub fn draw_to<F>(&mut self, layer: &T, f: F) -> Result<(), TargetRenderError>
+    fn draw_to<F>(&mut self, layer: &T, f: F) -> Result<(), TargetRenderError>
     where F: FnOnce(&mut Canvas<Window>) 
     {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         self.canvas.with_texture_canvas(texture, f)
+    }
+
+    pub fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
+        self.draw_to(layer, |c| { 
+            sprite.draw_to(c, x, y).unwrap();
+        }).unwrap();
     }
 
     pub fn clear(&mut self, layer: &T) -> Result<(), TargetRenderError> {

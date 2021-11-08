@@ -6,7 +6,7 @@ use sdl2::event::Event;
 
 use crate::lo_res_renderer::{LoResRenderer};
 
-pub trait Game<T> 
+pub trait Game<'a, T> 
 where T: Ord + Debug
 {
 
@@ -14,7 +14,7 @@ where T: Ord + Debug
         Ok(())
     }
 
-    fn render(&mut self, _renderer: &mut LoResRenderer<T>) -> Result<(), String> {
+    fn render(&mut self, _renderer: &mut LoResRenderer<'a, T>) -> Result<(), String> {
         Ok(())
     }
  
@@ -23,8 +23,8 @@ where T: Ord + Debug
     }
 }
 
-pub fn run_game_loop<T, G>(game: &mut G, renderer: &mut LoResRenderer<T>, events: &mut EventPump) -> Result<(), String> 
-where T: Ord + Debug, G: Game<T>
+pub fn run_game_loop<'a, T, G>(game: &mut G, renderer: &mut LoResRenderer<'a, T>, events: &mut EventPump) -> Result<(), String> 
+where T: Ord + Debug, G: Game<'a, T>
 {
     let mut last_frame = Instant::now();
     loop {
