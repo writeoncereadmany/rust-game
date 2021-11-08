@@ -1,50 +1,54 @@
+use std::collections::BTreeMap;
+use std::fmt::Debug;
+
 use sdl2::pixels::{Color};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Canvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
 use sdl2::video::{Window, WindowContext};
 
-pub struct LoResRenderer<'a> {
+pub struct LoResRenderer<'a, T> 
+where T: Ord + Debug
+{
     canvas: Canvas<Window>,
+    layers: BTreeMap<T, Texture<'a>>,
     target_rect: Rect,
-    background: Texture<'a>,
-    sprite_buffer: Texture<'a>
 }
 
-impl <'a> LoResRenderer<'a> {
-
+impl <'a, T> LoResRenderer<'a, T>
+where T: Ord + Debug
+{
     // Creates a new LoResRenderer with the given width and height, for the given canvas.
-    pub fn new(canvas: Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, width: u32, height: u32) 
+    pub fn new(canvas: Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, width: u32, height: u32, layers: Vec<T>) 
     -> Result<Self, TextureValueError>
     {
         let target_rect = calculate_target_rect(&canvas, width, height);
-        let background = texture_creator.create_texture_target(None, width, height)?;
-        let mut sprite_buffer = texture_creator.create_texture_target(None, width, height)?;
-        sprite_buffer.set_blend_mode(BlendMode::Blend);
+        let mut layer_map = BTreeMap::new();
+        for layer in layers {
+            let mut texture: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
+            texture.set_blend_mode(BlendMode::Blend);
+            layer_map.insert(layer, texture);
+        }
         Ok(LoResRenderer {
             canvas,
             target_rect,
-            background,
-            sprite_buffer
+            layers: layer_map,
         })
     }
 
-    pub fn draw_to_background<F>(&mut self, f: F) -> Result<(), TargetRenderError>
-    where 
-    F: FnOnce(&mut Canvas<Window>) 
+    pub fn draw_to<F>(&mut self, layer: &T, f: F) -> Result<(), TargetRenderError>
+    where F: FnOnce(&mut Canvas<Window>) 
     {
-        self.canvas.with_texture_canvas(&mut self.background, f)
+        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+        self.canvas.with_texture_canvas(texture, f)
     }
 
-    pub fn draw<F>(&mut self, f: F) -> Result<(), TargetRenderError>
-    where
-    F: FnOnce(&mut Canvas<Window>)
-    {
-        self.canvas.with_texture_canvas(&mut self.sprite_buffer, |c| {
+    pub fn clear(&mut self, layer: &T) -> Result<(), TargetRenderError> {
+        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+        self.canvas.with_texture_canvas(texture, |c| {
             c.set_draw_color(Color::from((0, 0, 0, 0)));
             c.clear();
             ()
-        })?;
-        self.canvas.with_texture_canvas(&mut self.sprite_buffer, f)
+        })
     }
 
     pub fn present(&mut self) -> Result<(), String>
@@ -52,8 +56,9 @@ impl <'a> LoResRenderer<'a> {
     {
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
-        self.canvas.copy(&mut self.background, None, self.target_rect)?;
-        self.canvas.copy(&mut self.sprite_buffer, None, self.target_rect)?;
+        for (_, texture) in self.layers.iter_mut() {
+            self.canvas.copy(&texture, None, self.target_rect)?;
+        }
         self.canvas.present();
         Ok(())
     }

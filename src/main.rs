@@ -6,7 +6,6 @@ mod sprite;
 
 use std::time::Duration;
 
-use sdl2::pixels::Color;
 use sdl2::EventPump;
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
@@ -35,17 +34,25 @@ struct TileSplatter<'a> {
     fps_counter: FpsCounter
 }
 
-impl Game for TileSplatter<'_> {
+#[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
+enum Layer {
+    BACKGROUND,
+    FOREGROUND
+}
+
+impl Game<Layer> for TileSplatter<'_> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
         Ok(())
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer) -> Result<(), String> {
+    fn render(&mut self, renderer: &mut LoResRenderer<Layer>) -> Result<(), String> {
         self.fps_counter.on_frame();
 
-        renderer.draw(|c| {
+        renderer.clear(&Layer::FOREGROUND).unwrap();
+
+        renderer.draw_to(&Layer::FOREGROUND, |c| {
             render_number(18, 2, self.fps_counter.fps(), c, &self.numbers).unwrap();
             self.ball_sprite.draw_to(c, self.ball_x as i32, self.ball_y as i32).unwrap();
         }).unwrap();
@@ -89,13 +96,19 @@ fn main() -> Result<(), String> {
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
     let tile = Sprite::new(&tile, Rect::new(0, 0, 12, 12));
 
-    let mut renderer = LoResRenderer::new(canvas, &texture_creator, TILE_WIDTH * COLUMNS, TILE_HEIGHT * ROWS).unwrap();
+    let mut renderer = LoResRenderer::new(
+        canvas, 
+        &texture_creator, 
+        TILE_WIDTH * COLUMNS, 
+        TILE_HEIGHT * ROWS, 
+        vec!(Layer::BACKGROUND, Layer::FOREGROUND)
+    ).unwrap();
 
     let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period);
 
-    renderer.draw_to_background(|c| {
-        c.set_draw_color(Color::BLACK);
-        c.clear();
+    renderer.clear(&Layer::BACKGROUND).unwrap();
+
+    renderer.draw_to(&Layer::BACKGROUND, |c| {
 
         for x in 0..COLUMNS {
             tile.draw_to(c, (x * TILE_WIDTH) as i32, 0).unwrap();
