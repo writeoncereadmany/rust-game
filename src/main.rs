@@ -11,7 +11,7 @@ use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
 use sdl2::image::{self, LoadTexture, InitFlag};
-use sdl2::render::{Canvas, Texture};
+use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
 use fps_counter::FpsCounter;
@@ -26,7 +26,7 @@ const TILE_HEIGHT: u32 = 12;
 
 struct TileSplatter<'a> {
     ball_sprite: Sprite<'a>,
-    numbers: Vec<Texture<'a>>,
+    numbers: Vec<Sprite<'a>>,
     ball_x: f64,
     ball_y: f64,
     fps_counter: FpsCounter
@@ -112,11 +112,10 @@ fn main() -> Result<(), String> {
 
     }).unwrap();
 
-    let numbers : Result<Vec<Texture>, String> = (0..10).map(|n| { 
-        let number = assets.join(n.to_string() + ".png");
-        texture_creator.load_texture(number)
+    let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
+    let numbers: Vec<Sprite<'_>> = (0..10).map(|n| {
+        Sprite::new(&numbers_spritesheet, Rect::new(n*8, 0, 8, 8))
     }).collect();
-    let numbers = numbers?;
 
     let ball_tex = texture_creator.load_texture(assets.join("ball.png"))?;
     let ball_sprite = Sprite::new(&ball_tex, Rect::new(0, 0, 12, 12));
@@ -136,14 +135,14 @@ fn main() -> Result<(), String> {
     Ok(())
 }
 
-fn render_number(x: i32, y: i32, num: usize, canvas: &mut Canvas<Window>, numbers : &Vec<Texture>) -> Result<(), String> {
+fn render_number(x: i32, y: i32, num: usize, canvas: &mut Canvas<Window>, numbers : &Vec<Sprite>) -> Result<(), String> {
     let mut digit = num % 10;
     let mut remainder = num / 10;
     let mut offset = 0;
 
     while digit > 0 || remainder > 0
     {
-        canvas.copy(&numbers.get(digit).unwrap(), None, Rect::new(x - offset, y, 8, 8))?;
+        numbers.get(digit).unwrap().draw_to(canvas, x - offset, y)?;
         
         offset += 8;
         digit = remainder % 10;
