@@ -1,6 +1,7 @@
 mod fps_counter;
 mod game_loop;
 mod lo_res_renderer;
+mod sprite;
 
 use std::time::Duration;
 
@@ -16,7 +17,7 @@ use sdl2::video::Window;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
 use lo_res_renderer::LoResRenderer;
-
+use sprite::Sprite;
 
 const COLUMNS: u32 = 32;
 const ROWS: u32 = 18;
@@ -24,7 +25,7 @@ const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
 
 struct TileSplatter<'a> {
-    ball: Texture<'a>,
+    ball_sprite: Sprite<'a>,
     numbers: Vec<Texture<'a>>,
     ball_x: f64,
     ball_y: f64,
@@ -41,7 +42,7 @@ impl Game for TileSplatter<'_> {
 
         renderer.draw(|c| {
             render_number(18, 2, self.fps_counter.fps(), c, &self.numbers).unwrap();
-            c.copy(&self.ball, None, Rect::new(self.ball_x as i32, self.ball_y as i32, 12, 12)).unwrap();
+            self.ball_sprite.draw_to(c, self.ball_x as i32, self.ball_y as i32).unwrap();
         }).unwrap();
 
         renderer.present()?;
@@ -117,8 +118,11 @@ fn main() -> Result<(), String> {
     }).collect();
     let numbers = numbers?;
 
+    let ball_tex = texture_creator.load_texture(assets.join("ball.png"))?;
+    let ball_sprite = Sprite::new(&ball_tex, Rect::new(0, 0, 12, 12));
+
     let mut splatto: TileSplatter = TileSplatter {
-        ball: texture_creator.load_texture(assets.join("ball.png"))?,
+        ball_sprite,
         numbers,
         ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
         ball_y: (TILE_HEIGHT * ROWS / 2) as f64,

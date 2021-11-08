@@ -1,4 +1,4 @@
-use sdl2::pixels::{Color, PixelFormatEnum};
+use sdl2::pixels::{Color};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Canvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
 use sdl2::video::{Window, WindowContext};
