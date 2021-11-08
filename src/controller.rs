@@ -58,8 +58,8 @@ impl Controller {
 
     pub fn y(&self) -> i32 {
         match (self.up.pressed, self.down.pressed) {
-            (true, false) => -1,
-            (false, true) => 1,
+            (true, false) => 1,
+            (false, true) => -1,
             _ => 0
         }   
     }

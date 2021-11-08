@@ -2,7 +2,6 @@ mod controller;
 mod fps_counter;
 mod game_loop;
 mod lo_res_renderer;
-mod sprite;
 
 use std::time::Duration;
 
@@ -17,8 +16,8 @@ use sdl2::video::Window;
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
-use lo_res_renderer::LoResRenderer;
-use sprite::Sprite;
+use lo_res_renderer::{LoResRenderer, Sprite};
+
 
 const COLUMNS: u32 = 32;
 const ROWS: u32 = 18;
@@ -53,7 +52,7 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         renderer.draw(&Layer::FOREGROUND, &self.ball_sprite, self.ball_x as i32, self.ball_y as i32);
-        render_number(18, 2, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
+        render_number(10, ((TILE_HEIGHT * ROWS) - 10) as i32, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
         
         renderer.present()?;
 

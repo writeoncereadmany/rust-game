@@ -1,18 +1,31 @@
-use crate::sprite::Sprite;
-
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use sdl2::pixels::{Color};
 use sdl2::rect::Rect;
-use sdl2::render::{BlendMode, Canvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
-use sdl2::video::{Window, WindowContext};
+use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
+use sdl2::video::{WindowContext};
+
+pub struct Sprite<'a> {
+    spritesheet: &'a Texture<'a>,
+    source_rect: Rect
+}
+
+impl <'a> Sprite<'a> {
+    pub fn new(spritesheet: &'a Texture<'a>, source_rect: Rect) -> Self {
+        Sprite{
+            spritesheet,
+            source_rect
+        }
+    }
+}
 
 pub struct LoResRenderer<'a, T> 
 where T: Ord + Debug
 {
-    canvas: Canvas<Window>,
+    canvas: WindowCanvas,
     layers: BTreeMap<T, Texture<'a>>,
+    source_rect: Rect,
     target_rect: Rect,
 }
 
@@ -20,9 +33,10 @@ impl <'a, T> LoResRenderer<'a, T>
 where T: Ord + Debug
 {
     // Creates a new LoResRenderer with the given width and height, for the given canvas.
-    pub fn new(canvas: Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, width: u32, height: u32, layers: Vec<T>) 
+    pub fn new(canvas: WindowCanvas, texture_creator: &'a TextureCreator<WindowContext>, width: u32, height: u32, layers: Vec<T>) 
     -> Result<Self, TextureValueError>
     {
+        let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut layer_map = BTreeMap::new();
         for layer in layers {
@@ -32,21 +46,17 @@ where T: Ord + Debug
         }
         Ok(LoResRenderer {
             canvas,
-            target_rect,
             layers: layer_map,
+            source_rect,
+            target_rect,
         })
     }
 
-    fn draw_to<F>(&mut self, layer: &T, f: F) -> Result<(), TargetRenderError>
-    where F: FnOnce(&mut Canvas<Window>) 
-    {
-        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
-        self.canvas.with_texture_canvas(texture, f)
-    }
-
     pub fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
-        self.draw_to(layer, |c| { 
-            sprite.draw_to(c, x, y).unwrap();
+        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+        let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
+        self.canvas.with_texture_canvas(texture, |c| { 
+            c.copy(sprite.spritesheet, sprite.source_rect, Rect::new(x, corrected_y, sprite.source_rect.width(), sprite.source_rect.height())).unwrap();
         }).unwrap();
     }
 
@@ -72,7 +82,7 @@ where T: Ord + Debug
     }
 }
 
-fn calculate_target_rect(canvas: &Canvas<Window>, width: u32, height: u32) -> Rect {
+fn calculate_target_rect(canvas: &WindowCanvas, width: u32, height: u32) -> Rect {
     let (window_width, window_height) = canvas.window().size();
     let x_scale = window_width as f64 / width as f64;
     let y_scale = window_height as f64 / height as f64;
