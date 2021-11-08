@@ -87,6 +87,7 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
 
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
+    let tile = Sprite::new(&tile, Rect::new(0, 0, 12, 12));
 
     let mut renderer = LoResRenderer::new(canvas, &texture_creator, TILE_WIDTH * COLUMNS, TILE_HEIGHT * ROWS).unwrap();
 
@@ -97,12 +98,12 @@ fn main() -> Result<(), String> {
         c.clear();
 
         for x in 0..COLUMNS {
-            c.copy(&tile, None, Rect::new((x * TILE_WIDTH) as i32, 0, TILE_WIDTH, TILE_HEIGHT)).unwrap();
-            c.copy(&tile, None, Rect::new((x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+            tile.draw_to(c, (x * TILE_WIDTH) as i32, 0).unwrap();
+            tile.draw_to(c, (x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32).unwrap();
         }
         for y in 0..ROWS {
-            c.copy(&tile, None, Rect::new(0, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
-            c.copy(&tile, None, Rect::new(((COLUMNS - 1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
+            tile.draw_to(c, 0, (y * TILE_HEIGHT) as i32).unwrap();
+            tile.draw_to(c, ((COLUMNS-1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32).unwrap();
         }
     }).unwrap();
 
