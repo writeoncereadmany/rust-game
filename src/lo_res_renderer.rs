@@ -70,11 +70,5 @@ fn calculate_target_rect(canvas: &Canvas<Window>, width: u32, height: u32) -> Re
     let scaled_height = (height as f64 * scale) as u32;
     let y_offset = (window_height - scaled_height) / 2;
 
-    println!("Scaling {}x{} to {}x{}, by: {} horizontally, {} vertically", width, height, window_width, window_height, x_scale, y_scale);
-    println!("Overall scale is {}, leading to {}x{} in window terms, offset by {}x{}", scale, scaled_width, scaled_height, x_offset, y_offset);
-
-    let rect = Rect::new(x_offset as i32, y_offset as i32, scaled_width, scaled_height);
-
-    println!("Target rect: {:?}", rect);
-    rect
+    Rect::new(x_offset as i32, y_offset as i32, scaled_width, scaled_height)    
 }

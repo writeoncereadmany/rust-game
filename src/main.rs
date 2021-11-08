@@ -1,3 +1,4 @@
+mod controller;
 mod fps_counter;
 mod game_loop;
 mod lo_res_renderer;
@@ -14,6 +15,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
 use lo_res_renderer::LoResRenderer;
@@ -27,6 +29,7 @@ const TILE_HEIGHT: u32 = 12;
 struct TileSplatter<'a> {
     ball_sprite: Sprite<'a>,
     numbers: Vec<Sprite<'a>>,
+    controller: Controller,
     ball_x: f64,
     ball_y: f64,
     fps_counter: FpsCounter
@@ -34,6 +37,8 @@ struct TileSplatter<'a> {
 
 impl Game for TileSplatter<'_> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
+        self.ball_x += self.controller.x() as f64;
+        self.ball_y += self.controller.y() as f64;
         Ok(())
     }
 
@@ -51,18 +56,10 @@ impl Game for TileSplatter<'_> {
     }
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
+        self.controller.on_event(event);
         match event {
             Event::Quit {..} => return Err("Escape pressed: ending game".into()),
-            Event::KeyDown { keycode: Some(key_pressed), .. } => {
-                match key_pressed {
-                    Keycode::Escape => return Err("Escape pressed: ending game".into()),
-                    Keycode::Z => self.ball_x = self.ball_x - 10.0,
-                    Keycode::X => self.ball_x = self.ball_x + 10.0,
-                    Keycode::P => self.ball_y = self.ball_y - 10.0,
-                    Keycode::L => self.ball_y = self.ball_y + 10.0,
-                    _ => {}
-                }
-            },
+            Event::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
             _ => {}
         }
         Ok(())
@@ -74,14 +71,12 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video()?;
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
+    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
+
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
         .fullscreen_desktop()
         .build()
         .expect("could not initialize video subsystem");
-
-    let (width, height) = window.size();
-    
-    print!("Screen resolution: {}x{}", width, height);
 
     let canvas : Canvas<Window> = window
         .into_canvas()
@@ -89,13 +84,13 @@ fn main() -> Result<(), String> {
         .build()
         .expect("could not make a canvas");
 
-
     let texture_creator = canvas.texture_creator();
 
-    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
 
     let mut renderer = LoResRenderer::new(canvas, &texture_creator, TILE_WIDTH * COLUMNS, TILE_HEIGHT * ROWS).unwrap();
+
+    let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period);
 
     renderer.draw_to_background(|c| {
         c.set_draw_color(Color::BLACK);
@@ -109,7 +104,6 @@ fn main() -> Result<(), String> {
             c.copy(&tile, None, Rect::new(0, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
             c.copy(&tile, None, Rect::new(((COLUMNS - 1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32, TILE_WIDTH, TILE_HEIGHT)).unwrap();
         }
-
     }).unwrap();
 
     let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
@@ -123,6 +117,7 @@ fn main() -> Result<(), String> {
     let mut splatto: TileSplatter = TileSplatter {
         ball_sprite,
         numbers,
+        controller,
         ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
         ball_y: (TILE_HEIGHT * ROWS / 2) as f64,
         fps_counter: FpsCounter::new()
