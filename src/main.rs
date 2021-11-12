@@ -2,6 +2,7 @@ mod controller;
 mod fps_counter;
 mod game_loop;
 mod lo_res_renderer;
+mod map;
 
 use std::time::Duration;
 
@@ -17,10 +18,11 @@ use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
 use lo_res_renderer::{LoResRenderer, Sprite};
+use map::Map;
 
 
-const COLUMNS: u32 = 32;
-const ROWS: u32 = 18;
+const COLUMNS: usize = 32;
+const ROWS: usize = 18;
 const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
 
@@ -39,6 +41,11 @@ enum Layer {
     FOREGROUND
 }
 
+#[derive(Clone)]
+enum Tile {
+    STONE
+}
+
 impl <'a> Game<'a, Layer> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
@@ -52,7 +59,7 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         renderer.draw(&Layer::FOREGROUND, &self.ball_sprite, self.ball_x as i32, self.ball_y as i32);
-        render_number(10, ((TILE_HEIGHT * ROWS) - 10) as i32, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
+        render_number(10, ((TILE_HEIGHT * ROWS as u32) - 10) as i32, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
         
         renderer.present()?;
 
@@ -96,8 +103,8 @@ fn main() -> Result<(), String> {
     let mut renderer = LoResRenderer::new(
         canvas, 
         &texture_creator, 
-        TILE_WIDTH * COLUMNS, 
-        TILE_HEIGHT * ROWS, 
+        TILE_WIDTH * COLUMNS as u32, 
+        TILE_HEIGHT * ROWS as u32, 
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap();
 
@@ -105,13 +112,28 @@ fn main() -> Result<(), String> {
 
     renderer.clear(&Layer::BACKGROUND).unwrap();
 
-    for x in 0..COLUMNS {
-        renderer.draw(&Layer::BACKGROUND, &tile, (x * TILE_WIDTH) as i32, 0);
-        renderer.draw(&Layer::BACKGROUND, &tile, (x * TILE_WIDTH) as i32, ((ROWS - 1) * TILE_HEIGHT) as i32);
-    }
-    for y in 0..ROWS {
-        renderer.draw(&Layer::BACKGROUND, &tile, 0, (y * TILE_HEIGHT) as i32);
-        renderer.draw(&Layer::BACKGROUND, &tile, ((COLUMNS-1) * TILE_WIDTH) as i32, (y * TILE_HEIGHT) as i32);
+    let mut map : Map<Tile> = Map::new(COLUMNS, ROWS);
+
+    map.row(0, 0, COLUMNS, Tile::STONE)
+       .row(0, ROWS - 1, COLUMNS, Tile::STONE)
+       .column(0, 0, ROWS, Tile::STONE)
+       .column(COLUMNS - 1, 0, ROWS, Tile::STONE);
+    
+    map.row(4, 4, 4, Tile::STONE)
+       .row(24, 4, 4, Tile::STONE)
+       .row(1, 8, 5, Tile::STONE)
+       .row(10, 6, 12, Tile::STONE)
+       .row(4, 12, 6, Tile::STONE)
+       .row(26, 8, 5, Tile::STONE)
+       .row(22, 12, 6, Tile::STONE)
+       .column(10, 6, 7, Tile::STONE)
+       .column(21, 6, 7, Tile::STONE)
+       .column(15, 10, 8, Tile::STONE)
+       .column(16, 10, 8, Tile::STONE)
+       ;
+
+    for (x, y, _t) in &map {
+        renderer.draw(&Layer::BACKGROUND, &tile, (x as u32 * TILE_WIDTH) as i32, (y as u32 * TILE_HEIGHT) as i32)
     }
 
     let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
@@ -126,8 +148,8 @@ fn main() -> Result<(), String> {
         ball_sprite,
         numbers,
         controller,
-        ball_x: (TILE_WIDTH * COLUMNS / 2) as f64,
-        ball_y: (TILE_HEIGHT * ROWS / 2) as f64,
+        ball_x: (TILE_WIDTH * COLUMNS as u32 / 2) as f64,
+        ball_y: (TILE_HEIGHT * ROWS as u32 / 2) as f64,
         fps_counter: FpsCounter::new()
     };
 
