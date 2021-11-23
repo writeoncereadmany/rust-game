@@ -1,6 +1,6 @@
 use std::cmp::{PartialOrd, Ordering};
 
-struct Rect {
+pub struct Rectangle {
     left: f64,
     right: f64,
     top: f64,
@@ -10,7 +10,7 @@ struct Rect {
 
 // returns the shortest vector that other needs to be moved by to no longer
 // be overlapping self, or Option.None if they are already not overlapping
-trait Push<A> {
+pub trait Push<A> {
     fn push(&self, other: &A) -> Option<(f64, f64)>;
 }
 
@@ -41,15 +41,26 @@ trait Push<A> {
 // 
 // here, a::right < b::left, so there's already a separation - regardless of any comparisons on other vectors
 // so we return Option::None
-impl Push<Rect> for Rect {
-    fn push(&self, other: &Rect) -> Option<(f64, f64)> {
+impl Push<Rectangle> for Rectangle {
+    fn push(&self, other: &Rectangle) -> Option<(f64, f64)> {
         let pushes = vec!(
+            axis_push(self.top, other.bottom, (0.0, 1.0)),
+            axis_push(other.top, self.bottom, (0.0, -1.0)), // push self applies to other = -push other applies to self
             axis_push(self.right, other.left, (1.0, 0.0)),
             axis_push(other.right, self.left, (-1.0, 0.0)), // push self applies to other = -push other applies to self
-            axis_push(self.top, other.bottom, (0.0, 1.0)),
-            axis_push(other.top, self.bottom, (0.0, -1.0)) // push self applies to other = -push other applies to self
         );
         pushes.iter().min_by(|a, b| shorter(a, b)).unwrap_or(&None).clone()
+    }
+}
+
+impl Rectangle {
+    pub fn new(left: f64, bottom: f64, width: f64, height: f64) -> Self {
+        Rectangle {
+            left,
+            right: left + width,
+            bottom,
+            top: bottom + height
+        }
     }
 }
 

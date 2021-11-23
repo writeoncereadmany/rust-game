@@ -15,6 +15,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use collisions::{Rectangle, Push};
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
@@ -31,6 +32,7 @@ struct TileSplatter<'a> {
     ball_sprite: Sprite<'a>,
     numbers: Vec<Sprite<'a>>,
     controller: Controller,
+    map: Map<Tile>,
     ball_x: f64,
     ball_y: f64,
     fps_counter: FpsCounter
@@ -51,6 +53,18 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
+        for (x, y, _t) in &self.map {
+            let tile_rect = Rectangle::new(x as f64 * TILE_WIDTH as f64, y as f64 * TILE_HEIGHT as f64, TILE_WIDTH as f64, TILE_HEIGHT as f64);
+            let ball_rect = Rectangle::new(self.ball_x, self.ball_y, 12.0, 12.0);
+            match tile_rect.push(&ball_rect) {
+                None => {},
+                Some((x, y)) => {
+                    self.ball_x += x;
+                    self.ball_y += y;
+                }
+            }
+        }
+        
         Ok(())
     }
 
@@ -152,6 +166,7 @@ fn main() -> Result<(), String> {
         ball_sprite,
         numbers,
         controller,
+        map,
         ball_x: (TILE_WIDTH * COLUMNS as u32 / 2) as f64,
         ball_y: (TILE_HEIGHT * ROWS as u32 / 2) as f64,
         fps_counter: FpsCounter::new()
