@@ -1,3 +1,4 @@
+mod collisions;
 mod controller;
 mod fps_counter;
 mod game_loop;
@@ -99,6 +100,9 @@ fn main() -> Result<(), String> {
 
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
     let tile = Sprite::new(&tile, Rect::new(0, 0, 12, 12));
+
+    let rect = Rect::new(3, 5, 7, 11);
+    println!("Left: {}, Right: {}, Top: {}, Bottom: {}", rect.left(), rect.right(), rect.top(), rect.bottom());
 
     let mut renderer = LoResRenderer::new(
         canvas, 
