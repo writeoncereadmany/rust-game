@@ -15,7 +15,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use collisions::{Rectangle, Push};
+use collisions::{ConvexMesh, Push};
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
@@ -54,13 +54,16 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
         for (x, y, _t) in &self.map {
-            let tile_rect = Rectangle::new(x as f64 * TILE_WIDTH as f64, y as f64 * TILE_HEIGHT as f64, TILE_WIDTH as f64, TILE_HEIGHT as f64);
-            let ball_rect = Rectangle::new(self.ball_x, self.ball_y, 12.0, 12.0);
-            match tile_rect.push(&ball_rect) {
-                None => {},
-                Some((x, y)) => {
-                    self.ball_x += x;
-                    self.ball_y += y;
+            let tile_rect = ConvexMesh::rect(x as f64 * TILE_WIDTH as f64, y as f64 * TILE_HEIGHT as f64, TILE_WIDTH as f64, TILE_HEIGHT as f64);
+            let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
+            if tile_rect.aabbs_overlap(&ball_rect)
+            {
+                match tile_rect.push(&ball_rect) {
+                    None => {},
+                    Some((x, y)) => {
+                        self.ball_x += x;
+                        self.ball_y += y;
+                    }
                 }
             }
         }
