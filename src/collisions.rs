@@ -7,6 +7,49 @@ pub struct Rectangle {
     bottom: f64
 }
 
+pub struct ConvexMesh {
+    points: Vec<(f64, f64)>,
+    normals: Vec<(f64, f64)>
+}
+
+impl ConvexMesh {
+    fn new(points: Vec<(f64, f64)>) -> Self {
+        let normals : Vec<(f64, f64)> = points.iter().map(|&v| v).collect();
+        
+        ConvexMesh {
+            points,
+            normals
+        }
+    }
+
+    fn rect(left: f64, bottom: f64, width: f64, height: f64) -> Self {
+        let right = left + width;
+        let top = bottom + height;
+
+        ConvexMesh::new(vec![(left, bottom), (left, top), (right, top), (right, bottom)])
+    }
+}
+
+pub trait VecMath<A> {
+    fn dot(self, other: A) -> f64;
+
+    fn normalize(self) -> A;
+}
+
+impl VecMath<(f64, f64)> for (f64, f64) {
+
+    fn dot(self, other: (f64, f64)) -> f64 {
+        let (ax, ay) = self;
+        let (bx, by) = other;
+        (ax * bx) + (ay * by)
+    }
+
+    fn normalize(self) -> (f64, f64) {
+        let (x, y) = self;
+        let length = (x*x + y*y).sqrt();
+        (x / length, y / length)
+    }
+}
 
 // returns the shortest vector that other needs to be moved by to no longer
 // be overlapping self, or Option.None if they are already not overlapping
@@ -90,5 +133,55 @@ fn shorter(a: &Option<(f64, f64)>, b: &Option<(f64, f64)>) -> Ordering {
                 Some(ord) => ord
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn horizontally_disjoint_rectangles_do_not_collide() {
+        let left = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let right = Rectangle::new(300.0, 100.0, 100.0, 100.0);
+        assert_eq!(left.push(&right), None);
+    }
+
+    #[test]
+    fn vertically_disjoint_rectangles_do_not_collide() {
+        let lower = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let higher = Rectangle::new(100.0, 300.0, 100.0, 100.0);
+        assert_eq!(lower.push(&higher), None);
+    }
+
+
+    #[test]
+    fn pushes_right_with_slight_overlap() {
+        let left = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let right = Rectangle::new(180.0, 100.0, 100.0, 100.0);
+        assert_eq!(left.push(&right), Some((20.0, 0.0)));
+    }
+
+    #[test]
+    fn pushes_left_with_slight_overlap() {
+        let left = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let right = Rectangle::new(180.0, 100.0, 100.0, 100.0);
+        assert_eq!(right.push(&left), Some((-20.0, 0.0)));
+    }
+
+    #[test]
+    fn pushes_up_with_slight_overlap() {
+        let lower = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let higher = Rectangle::new(100.0, 180.0, 100.0, 100.0);
+        assert_eq!(lower.push(&higher), Some((0.0, 20.0)));
+    }
+
+
+    #[test]
+    fn pushes_down_with_slight_overlap() {
+        let lower = Rectangle::new(100.0, 100.0, 100.0, 100.0);
+        let higher = Rectangle::new(100.0, 180.0, 100.0, 100.0);
+        assert_eq!(higher.push(&lower), Some((0.0, -20.0)));
     }
 }
