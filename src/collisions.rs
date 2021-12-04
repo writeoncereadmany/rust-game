@@ -1,5 +1,6 @@
 use std::cmp::{PartialOrd, Ordering};
 
+#[derive(Clone)]
 pub struct ConvexMesh {
     aabb_left: f64,
     aabb_right: f64,

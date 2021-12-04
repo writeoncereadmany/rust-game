@@ -32,7 +32,7 @@ struct TileSplatter<'a> {
     ball_sprite: Sprite<'a>,
     numbers: Vec<Sprite<'a>>,
     controller: Controller,
-    map: Map<Tile>,
+    map: Map<ColTile>,
     ball_x: f64,
     ball_y: f64,
     fps_counter: FpsCounter
@@ -49,16 +49,21 @@ enum Tile {
     STONE
 }
 
+#[derive(Clone)]
+struct ColTile {
+    tile: Tile,
+    mesh: ConvexMesh
+}
+
 impl <'a> Game<'a, Layer> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
-        for (x, y, _t) in &self.map {
-            let tile_rect = ConvexMesh::rect(x as f64 * TILE_WIDTH as f64, y as f64 * TILE_HEIGHT as f64, TILE_WIDTH as f64, TILE_HEIGHT as f64);
+        for (_x, _y, t) in &self.map {
             let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
-            if tile_rect.aabbs_overlap(&ball_rect)
+            if t.mesh.aabbs_overlap(&ball_rect)
             {
-                match tile_rect.push(&ball_rect) {
+                match t.mesh.push(&ball_rect) {
                     None => {},
                     Some((x, y)) => {
                         self.ball_x += x;
@@ -118,9 +123,6 @@ fn main() -> Result<(), String> {
     let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
     let tile = Sprite::new(&tile, Rect::new(0, 0, 12, 12));
 
-    let rect = Rect::new(3, 5, 7, 11);
-    println!("Left: {}, Right: {}, Top: {}, Bottom: {}", rect.left(), rect.right(), rect.top(), rect.bottom());
-
     let mut renderer = LoResRenderer::new(
         canvas, 
         &texture_creator, 
@@ -133,14 +135,14 @@ fn main() -> Result<(), String> {
 
     renderer.clear(&Layer::BACKGROUND).unwrap();
 
-    let mut map : Map<Tile> = Map::new(COLUMNS, ROWS);
+    let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS);
 
-    map.row(0, 0, COLUMNS, Tile::STONE)
+    map_builder.row(0, 0, COLUMNS, Tile::STONE)
        .row(0, ROWS - 1, COLUMNS, Tile::STONE)
        .column(0, 0, ROWS, Tile::STONE)
        .column(COLUMNS - 1, 0, ROWS, Tile::STONE);
     
-    map.row(4, 4, 4, Tile::STONE)
+    map_builder.row(4, 4, 4, Tile::STONE)
        .row(24, 4, 4, Tile::STONE)
        .row(1, 8, 5, Tile::STONE)
        .row(10, 6, 12, Tile::STONE)
@@ -152,6 +154,27 @@ fn main() -> Result<(), String> {
        .column(15, 10, 8, Tile::STONE)
        .column(16, 10, 8, Tile::STONE)
        ;
+
+    let mut map : Map<ColTile> = Map::new(COLUMNS, ROWS);
+
+    map_builder.into_iter().for_each(|(x, y, tile)| {
+        let left = (TILE_WIDTH * (x as u32)) as f64;
+        let right = (TILE_WIDTH * ((x + 1) as u32)) as f64;
+        let top = (TILE_HEIGHT * ((y + 1) as u32)) as f64;
+        let bottom = (TILE_HEIGHT * (y as u32)) as f64;
+
+        let points = vec![(left, bottom), (left, top), (right, top), (right, bottom)];
+
+        let mut normals : Vec<(f64, f64)> = Vec::new();
+
+        if map_builder.get(x-1, y).is_none() { normals.push((-1.0, 0.0)); }
+        if map_builder.get(x + 1, y).is_none() { normals.push((1.0, 0.0)); }
+        if map_builder.get(x, y - 1).is_none() { normals.push((0.0, -1.0)); }
+        if map_builder.get(x, y + 1).is_none() { normals.push((0.0, 1.0)); }
+
+        let mesh = ConvexMesh::new(points, normals);
+        map.put(x, y, ColTile { tile, mesh });
+    });
 
     for (x, y, _t) in &map {
         renderer.draw(&Layer::BACKGROUND, &tile, (x as u32 * TILE_WIDTH) as i32, (y as u32 * TILE_HEIGHT) as i32)
