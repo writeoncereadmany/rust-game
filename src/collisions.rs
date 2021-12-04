@@ -1,4 +1,5 @@
 use std::cmp::{PartialOrd, Ordering};
+use std::ops;
 
 pub struct Rectangle {
     left: f64,
@@ -26,7 +27,10 @@ impl ConvexMesh {
         let right = left + width;
         let top = bottom + height;
 
-        ConvexMesh::new(vec![(left, bottom), (left, top), (right, top), (right, bottom)])
+        ConvexMesh{ 
+            points: vec![(left, bottom), (left, top), (right, top), (right, bottom)],
+            normals: vec![(-1.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.0, -1.0)]
+        }
     }
 }
 
@@ -34,6 +38,8 @@ pub trait VecMath<A> {
     fn dot(self, other: A) -> f64;
 
     fn normalize(self) -> A;
+
+    fn scale(self, other: f64) -> A;
 }
 
 impl VecMath<(f64, f64)> for (f64, f64) {
@@ -49,12 +55,34 @@ impl VecMath<(f64, f64)> for (f64, f64) {
         let length = (x*x + y*y).sqrt();
         (x / length, y / length)
     }
+
+    fn scale(self, scale: f64) -> (f64, f64) {
+        let (x, y) = self;
+        (x * scale, y * scale)
+    }
 }
 
 // returns the shortest vector that other needs to be moved by to no longer
 // be overlapping self, or Option.None if they are already not overlapping
 pub trait Push<A> {
     fn push(&self, other: &A) -> Option<(f64, f64)>;
+}
+
+impl Push<ConvexMesh> for ConvexMesh {
+    fn push(&self, other: &ConvexMesh) -> Option<(f64, f64)> {
+        self.normals.iter()
+        .map(|normal| {
+            let my_max : f64 = self.points.iter().map(|&point| normal.dot(point)).reduce(f64::max)?;
+            let their_min : f64 = other.points.iter().map(|&point| normal.dot(point)).reduce(f64::min)?;
+            if my_max < their_min {
+                None
+            } else {
+                Some(normal.scale(my_max - their_min))
+            }
+        })
+        .min_by(shorter)
+        .unwrap_or(None)
+    }
 }
 
 // Given two rectangles: 
@@ -183,5 +211,22 @@ mod tests {
         let lower = Rectangle::new(100.0, 100.0, 100.0, 100.0);
         let higher = Rectangle::new(100.0, 180.0, 100.0, 100.0);
         assert_eq!(higher.push(&lower), Some((0.0, -20.0)));
+    }
+
+
+
+    #[test]
+    fn horizontally_disjoint_convex_mesh_rectangles_do_not_collide() {
+        let left = ConvexMesh::rect(100.0, 100.0, 100.0, 100.0);
+        let right = ConvexMesh::rect(300.0, 100.0, 100.0, 100.0);
+        assert_eq!(left.push(&right), None);
+    }
+
+
+    #[test]
+    fn pushes_convex_mesh_rect_right_with_slight_overlap() {
+        let left = ConvexMesh::rect(100.0, 100.0, 100.0, 100.0);
+        let right = ConvexMesh::rect(180.0, 100.0, 100.0, 100.0);
+        assert_eq!(left.push(&right), Some((20.0, 0.0)));
     }
 }
