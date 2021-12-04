@@ -47,6 +47,8 @@ pub trait VecMath<A> {
     fn normalize(self) -> A;
 
     fn scale(self, other: f64) -> A;
+
+    fn sq_len(self) -> f64;
 }
 
 impl VecMath<(f64, f64)> for (f64, f64) {
@@ -66,6 +68,11 @@ impl VecMath<(f64, f64)> for (f64, f64) {
     fn scale(self, scale: f64) -> (f64, f64) {
         let (x, y) = self;
         (x * scale, y * scale)
+    }
+
+    fn sq_len(self) -> f64 {
+        let (x, y) = self;
+        x*x + y*y
     }
 }
 

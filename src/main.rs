@@ -15,7 +15,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use collisions::{ConvexMesh, Push};
+use collisions::{ConvexMesh, Push, VecMath};
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
@@ -66,8 +66,10 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
                 match t.mesh.push(&ball_rect) {
                     None => {},
                     Some((x, y)) => {
-                        self.ball_x += x;
-                        self.ball_y += y;
+                        if (x, y).sq_len() < 100.0 {
+                            self.ball_x += x;
+                            self.ball_y += y;
+                        }
                     }
                 }
             }
