@@ -57,7 +57,34 @@ where Tile: Clone {
         }
         self
     }
+
+    pub fn overlapping(&self, min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> MapIter<Tile> {
+        let grid_min_x = constrain(f64::floor(min_x / self.tile_width as f64), 0, self.columns - 1);
+        let grid_max_x = constrain(f64::floor(max_x / self.tile_width as f64), 0, self.columns - 1);
+        let grid_min_y = constrain(f64::floor(min_y / self.tile_width as f64), 0, self.rows - 1);
+        let grid_max_y = constrain(f64::floor(max_y / self.tile_width as f64), 0, self.rows - 1);
+
+        MapIter {
+            map: self,
+            x: grid_min_x,
+            y: grid_min_y,
+            min_x: grid_min_x,
+            max_x: grid_max_x,
+            max_y: grid_max_y
+        }
+    }
 }
+
+fn constrain(value: f64, min: usize, max: usize) -> usize {
+    if value < min as f64 {
+        min 
+    } else if value > max as f64 {
+        max
+    } else {
+        value as usize
+    }
+}
+
 
 impl <'a, Tile> IntoIterator for &'a Map<Tile> 
 where Tile: Clone {
@@ -129,5 +156,32 @@ where Tile: Clone {
 
     fn index(&self, idx: usize) -> &Self::Output {
         &self.grid[idx]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn should_iterate_only_over_subset(){
+        let mut map : Map<u32> = Map::new(10, 10, 100, 100);
+        // fill entire map with tiles
+        for i in 0..10 {
+            map.row(0, i, 10, 3);
+        }
+
+        let mut iterated : Vec<(i32, i32)> = Vec::new();
+
+        for (pos, _tile) in map.overlapping(250.0, 450.0, 350.0, 650.0) {
+            iterated.push((pos.grid_x, pos.grid_y));
+        }
+
+        assert_eq!(iterated, vec![
+            (2, 3), (3, 3), (4, 3), 
+            (2, 4), (3, 4), (4, 4), 
+            (2, 5), (3, 5), (4, 5), 
+            (2, 6), (3, 6), (4, 6)])
     }
 }
