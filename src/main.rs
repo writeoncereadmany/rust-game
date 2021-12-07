@@ -1,8 +1,8 @@
-mod collisions;
+mod shapes;
 mod controller;
 mod fps_counter;
 mod game_loop;
-mod lo_res_renderer;
+mod graphics;
 mod map;
 
 use std::time::Duration;
@@ -15,11 +15,14 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use collisions::{ConvexMesh, Push, VecMath};
+use shapes::convex_mesh::ConvexMesh;
+use shapes::vec2d::Vec2d;
+use shapes::push::Push;
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
-use lo_res_renderer::{LoResRenderer, Sprite};
+use graphics::lo_res_renderer::LoResRenderer;
+use graphics::sprite::Sprite;
 use map::Map;
 
 
@@ -55,7 +58,7 @@ struct ColTile {
     mesh: ConvexMesh
 }
 
-impl <'a> Game<'a, Layer> for TileSplatter<'a> {
+impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
