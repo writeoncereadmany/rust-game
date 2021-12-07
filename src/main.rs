@@ -59,7 +59,7 @@ impl <'a> Game<'a, Layer> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
-        for (_x, _y, t) in &self.map {
+        for (_pos, t) in &self.map {
             let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
             if t.mesh.aabbs_overlap(&ball_rect)
             {
@@ -159,12 +159,9 @@ fn main() -> Result<(), String> {
 
     let mut map : Map<ColTile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
 
-    map_builder.into_iter().for_each(|(x, y, tile)| {
-        let left = (TILE_WIDTH * (x as u32)) as f64;
-        let right = (TILE_WIDTH * ((x + 1) as u32)) as f64;
-        let top = (TILE_HEIGHT * ((y + 1) as u32)) as f64;
-        let bottom = (TILE_HEIGHT * (y as u32)) as f64;
-
+    map_builder.into_iter().for_each(|(pos, tile)| {
+        let (x, y) = (pos.grid_x, pos.grid_y);
+        let (left, right, top, bottom) = (pos.min_x as f64, pos.max_x as f64, pos.max_y as f64, pos.min_y as f64);
         let points = vec![(left, bottom), (left, top), (right, top), (right, bottom)];
 
         let mut normals : Vec<(f64, f64)> = Vec::new();
@@ -178,8 +175,8 @@ fn main() -> Result<(), String> {
         map.put(x, y, ColTile { tile, mesh });
     });
 
-    for (x, y, _t) in &map {
-        renderer.draw(&Layer::BACKGROUND, &tile, (x as u32 * TILE_WIDTH) as i32, (y as u32 * TILE_HEIGHT) as i32)
+    for (pos, _t) in &map {
+        renderer.draw(&Layer::BACKGROUND, &tile, pos.min_x, pos.min_y)
     }
 
     let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;

@@ -10,6 +10,15 @@ where Tile: Clone
     rows: usize,
 }
 
+pub struct Position {
+    pub grid_x: i32,
+    pub grid_y: i32,
+    pub min_x: i32,
+    pub max_x: i32,
+    pub min_y: i32,
+    pub max_y: i32
+}
+
 impl <Tile> Map<Tile> 
 where Tile: Clone {
     pub fn new(columns: usize, rows: usize, tile_width: u32, tile_height: u32) -> Self {
@@ -52,7 +61,7 @@ where Tile: Clone {
 
 impl <'a, Tile> IntoIterator for &'a Map<Tile> 
 where Tile: Clone {
-    type Item = (i32, i32, Tile);
+    type Item = (Position, Tile);
     type IntoIter = MapIter<'a, Tile>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -73,7 +82,7 @@ where Tile: Clone {
 
 impl <'a, Tile> Iterator for MapIter<'a, Tile>
 where Tile: Clone {
-    type Item = (i32, i32, Tile);
+    type Item = (Position, Tile);
 
     fn next(&mut self) -> Option<Self::Item> {
         loop
@@ -91,7 +100,17 @@ where Tile: Clone {
                 self.y += 1;
             } 
             match tile {
-                Some(present) => return Some((x as i32, y as i32, present.clone())),
+                Some(present) => {
+                    let position = Position {
+                        grid_x: x as i32,
+                        grid_y: y as i32,
+                        min_x: x as i32 * self.map.tile_width as i32,
+                        max_x: (x + 1) as i32 * self.map.tile_width as i32,
+                        min_y: y as i32 * self.map.tile_height as i32,
+                        max_y: (y + 1) as i32 * self.map.tile_height as i32
+                    };
+                    return Some((position, present.clone()))
+                },
                 None => {}
             }
         }
