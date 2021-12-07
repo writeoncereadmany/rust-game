@@ -137,7 +137,7 @@ fn main() -> Result<(), String> {
 
     renderer.clear(&Layer::BACKGROUND).unwrap();
 
-    let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS);
+    let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
 
     map_builder.row(0, 0, COLUMNS, Tile::STONE)
        .row(0, ROWS - 1, COLUMNS, Tile::STONE)
@@ -157,7 +157,7 @@ fn main() -> Result<(), String> {
        .column(16, 10, 8, Tile::STONE)
        ;
 
-    let mut map : Map<ColTile> = Map::new(COLUMNS, ROWS);
+    let mut map : Map<ColTile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
 
     map_builder.into_iter().for_each(|(x, y, tile)| {
         let left = (TILE_WIDTH * (x as u32)) as f64;

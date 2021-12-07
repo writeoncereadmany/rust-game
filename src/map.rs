@@ -4,15 +4,19 @@ pub struct Map<Tile>
 where Tile: Clone 
 {
     grid: Vec<Vec<Option<Tile>>>,
+    tile_height: u32,
+    tile_width: u32,
     columns: usize,
     rows: usize,
 }
 
 impl <Tile> Map<Tile> 
 where Tile: Clone {
-    pub fn new(columns: usize, rows: usize) -> Self {
+    pub fn new(columns: usize, rows: usize, tile_width: u32, tile_height: u32) -> Self {
         Map {
             grid: vec![vec![Option::None; rows]; columns],
+            tile_height,
+            tile_width,
             columns,
             rows
         }
