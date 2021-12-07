@@ -68,7 +68,10 @@ where Tile: Clone {
         MapIter {
             map: self,
             x: 0,
-            y: 0
+            y: 0,
+            min_x: 0,
+            max_x: self.columns - 1,
+            max_y: self.rows - 1
         }
     }
 }
@@ -78,6 +81,9 @@ where Tile: Clone {
     map : &'a Map<Tile>,
     x: usize,
     y: usize,
+    min_x: usize,
+    max_x: usize,
+    max_y: usize
 }
 
 impl <'a, Tile> Iterator for MapIter<'a, Tile>
@@ -87,16 +93,16 @@ where Tile: Clone {
     fn next(&mut self) -> Option<Self::Item> {
         loop
         {
-            if self.y >= self.map.rows {
+            if self.y > self.max_y {
                 return None;
             }
             let x = self.x;
             let y = self.y;
             let tile = self.map.grid[x][y].as_ref();
-            if self.x < self.map.columns - 1 {
+            if self.x < self.max_x {
                 self.x += 1;
             } else {
-                self.x = 0;
+                self.x = self.min_x;
                 self.y += 1;
             } 
             match tile {

@@ -20,7 +20,6 @@ impl ConvexMesh {
             points,
             normals
         }
-
     }
 
     pub fn rect(left: f64, bottom: f64, width: f64, height: f64) -> Self {
