@@ -16,6 +16,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use entities::ball::Ball;
 use shapes::bbox::BBox;
 use shapes::convex_mesh::ConvexMesh;
 use shapes::vec2d::Vec2d;
@@ -34,12 +35,10 @@ const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
 
 struct TileSplatter<'a> {
-    ball_sprite: Sprite<'a>,
+    ball: Ball<'a>,
     numbers: Vec<Sprite<'a>>,
     controller: Controller,
     map: Map<ColTile>,
-    ball_x: f64,
-    ball_y: f64,
     fps_counter: FpsCounter
 }
 
@@ -62,16 +61,16 @@ struct ColTile {
 
 impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
-        self.ball_x += self.controller.x() as f64;
-        self.ball_y += self.controller.y() as f64;
-        for (_pos, t) in self.map.overlapping(&BBox::from(self.ball_x, self.ball_y).size(12.0, 12.0)) {
-            let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
+        self.ball.x += self.controller.x() as f64;
+        self.ball.y += self.controller.y() as f64;
+        for (_pos, t) in self.map.overlapping(&BBox::from(self.ball.x, self.ball.y).size(12.0, 12.0)) {
+            let ball_rect = ConvexMesh::rect(self.ball.x, self.ball.y, 12.0, 12.0);
             match t.mesh.push(&ball_rect) {
                 None => {},
                 Some((x, y)) => {
                     if (x, y).sq_len() < 100.0 {
-                        self.ball_x += x;
-                        self.ball_y += y;
+                        self.ball.x += x;
+                        self.ball.y += y;
                     }
                 }
             }
@@ -85,7 +84,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
 
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
-        renderer.draw(&Layer::FOREGROUND, &self.ball_sprite, self.ball_x as i32, self.ball_y as i32);
+        renderer.draw(&Layer::FOREGROUND, &self.ball.sprite, self.ball.x as i32, self.ball.y as i32);
         render_number(10, ((TILE_HEIGHT * ROWS as u32) - 10) as i32, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
         
         renderer.present()?;
@@ -189,13 +188,20 @@ fn main() -> Result<(), String> {
     let ball_tex = texture_creator.load_texture(assets.join("ball.png"))?;
     let ball_sprite = Sprite::new(&ball_tex, Rect::new(0, 0, 12, 12));
 
+    let ball = Ball {
+        x: (TILE_WIDTH * COLUMNS as u32 / 2) as f64,
+        y: (TILE_HEIGHT * ROWS as u32 / 2) as f64,
+        dx: 0.0,
+        dy: 0.0,
+        mesh: ConvexMesh::new(vec![(0.0, 0.0), (0.0, 12.0), (12.0, 12.0), (12.0, 0.0)], vec![]),
+        sprite: ball_sprite
+    };
+
     let mut splatto: TileSplatter = TileSplatter {
-        ball_sprite,
+        ball,
         numbers,
         controller,
         map,
-        ball_x: (TILE_WIDTH * COLUMNS as u32 / 2) as f64,
-        ball_y: (TILE_HEIGHT * ROWS as u32 / 2) as f64,
         fps_counter: FpsCounter::new()
     };
 
