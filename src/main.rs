@@ -63,8 +63,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
         self.ball.x += self.controller.x() as f64;
         self.ball.y += self.controller.y() as f64;
         for (_pos, t) in self.map.overlapping(&self.ball.mesh().bbox()) {
-            let ball_rect = ConvexMesh::rect(self.ball.x, self.ball.y, 12.0, 12.0);
-            match t.mesh.push(&ball_rect) {
+            match t.mesh.push(&self.ball.mesh()) {
                 None => {},
                 Some((x, y)) => {
                     if (x, y).sq_len() < 100.0 {
