@@ -1,5 +1,7 @@
 use std::ops::Index;
 
+use crate::shapes::bbox::BBox;
+
 pub struct Map<Tile>
 where Tile: Clone 
 {
@@ -58,11 +60,11 @@ where Tile: Clone {
         self
     }
 
-    pub fn overlapping(&self, min_x: f64, max_x: f64, min_y: f64, max_y: f64) -> MapIter<Tile> {
-        let grid_min_x = constrain(f64::floor(min_x / self.tile_width as f64), 0, self.columns - 1);
-        let grid_max_x = constrain(f64::floor(max_x / self.tile_width as f64), 0, self.columns - 1);
-        let grid_min_y = constrain(f64::floor(min_y / self.tile_width as f64), 0, self.rows - 1);
-        let grid_max_y = constrain(f64::floor(max_y / self.tile_width as f64), 0, self.rows - 1);
+    pub fn overlapping(&self, bbox: &BBox) -> MapIter<Tile> {
+        let grid_min_x = constrain(f64::floor(bbox.left() / self.tile_width as f64), 0, self.columns - 1);
+        let grid_max_x = constrain(f64::floor(bbox.right() / self.tile_width as f64), 0, self.columns - 1);
+        let grid_min_y = constrain(f64::floor(bbox.bottom() / self.tile_width as f64), 0, self.rows - 1);
+        let grid_max_y = constrain(f64::floor(bbox.top() / self.tile_width as f64), 0, self.rows - 1);
 
         MapIter {
             map: self,
@@ -174,7 +176,7 @@ mod tests {
 
         let mut iterated : Vec<(i32, i32)> = Vec::new();
 
-        for (pos, _tile) in map.overlapping(250.0, 450.0, 350.0, 650.0) {
+        for (pos, _tile) in map.overlapping(&BBox::from(250.0, 350.0).to(450.0, 650.0)) {
             iterated.push((pos.grid_x, pos.grid_y));
         }
 

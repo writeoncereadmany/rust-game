@@ -15,6 +15,7 @@ use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use shapes::bbox::BBox;
 use shapes::convex_mesh::ConvexMesh;
 use shapes::vec2d::Vec2d;
 use shapes::push::Push;
@@ -62,7 +63,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball_x += self.controller.x() as f64;
         self.ball_y += self.controller.y() as f64;
-        for (_pos, t) in self.map.overlapping(self.ball_x, self.ball_x + 12.0, self.ball_y, self.ball_y + 12.0) {
+        for (_pos, t) in self.map.overlapping(&BBox::from(self.ball_x, self.ball_y).size(12.0, 12.0)) {
             let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
             match t.mesh.push(&ball_rect) {
                 None => {},
