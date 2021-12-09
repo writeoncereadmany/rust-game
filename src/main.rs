@@ -1,3 +1,4 @@
+mod entities;
 mod shapes;
 mod controller;
 mod fps_counter;
