@@ -17,7 +17,6 @@ use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
 use entities::ball::Ball;
-use shapes::bbox::BBox;
 use shapes::convex_mesh::ConvexMesh;
 use shapes::vec2d::Vec2d;
 use shapes::push::Push;
@@ -63,7 +62,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball.x += self.controller.x() as f64;
         self.ball.y += self.controller.y() as f64;
-        for (_pos, t) in self.map.overlapping(&BBox::from(self.ball.x, self.ball.y).size(12.0, 12.0)) {
+        for (_pos, t) in self.map.overlapping(&self.ball.mesh().bbox()) {
             let ball_rect = ConvexMesh::rect(self.ball.x, self.ball.y, 12.0, 12.0);
             match t.mesh.push(&ball_rect) {
                 None => {},
@@ -188,14 +187,12 @@ fn main() -> Result<(), String> {
     let ball_tex = texture_creator.load_texture(assets.join("ball.png"))?;
     let ball_sprite = Sprite::new(&ball_tex, Rect::new(0, 0, 12, 12));
 
-    let ball = Ball {
-        x: (TILE_WIDTH * COLUMNS as u32 / 2) as f64,
-        y: (TILE_HEIGHT * ROWS as u32 / 2) as f64,
-        dx: 0.0,
-        dy: 0.0,
-        mesh: ConvexMesh::new(vec![(0.0, 0.0), (0.0, 12.0), (12.0, 12.0), (12.0, 0.0)], vec![]),
-        sprite: ball_sprite
-    };
+    let ball = Ball::new(
+        (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
+        (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
+        12.0, 
+        12.0, 
+        ball_sprite);
 
     let mut splatto: TileSplatter = TileSplatter {
         ball,
