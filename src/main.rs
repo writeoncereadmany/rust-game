@@ -64,15 +64,12 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
         self.ball_y += self.controller.y() as f64;
         for (_pos, t) in self.map.overlapping(self.ball_x, self.ball_x + 12.0, self.ball_y, self.ball_y + 12.0) {
             let ball_rect = ConvexMesh::rect(self.ball_x, self.ball_y, 12.0, 12.0);
-            if t.mesh.aabbs_overlap(&ball_rect)
-            {
-                match t.mesh.push(&ball_rect) {
-                    None => {},
-                    Some((x, y)) => {
-                        if (x, y).sq_len() < 100.0 {
-                            self.ball_x += x;
-                            self.ball_y += y;
-                        }
+            match t.mesh.push(&ball_rect) {
+                None => {},
+                Some((x, y)) => {
+                    if (x, y).sq_len() < 100.0 {
+                        self.ball_x += x;
+                        self.ball_y += y;
                     }
                 }
             }
