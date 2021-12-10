@@ -25,6 +25,8 @@ use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
 use graphics::lo_res_renderer::LoResRenderer;
 use graphics::sprite::Sprite;
+use graphics::renderer::Renderer;
+use graphics::map_renderer::render_map;
 use map::Map;
 
 
@@ -174,9 +176,7 @@ fn main() -> Result<(), String> {
         map.put(x, y, ColTile { tile, mesh });
     });
 
-    for (pos, _t) in &map {
-        renderer.draw(&Layer::BACKGROUND, &tile, pos.min_x, pos.min_y)
-    }
+    render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
 
     let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
     let numbers: Vec<Sprite<'_>> = (0..10).map(|n| {
