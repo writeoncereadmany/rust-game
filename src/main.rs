@@ -23,10 +23,7 @@ use shapes::push::Push;
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::{Game, run_game_loop};
-use graphics::lo_res_renderer::LoResRenderer;
-use graphics::sprite::Sprite;
-use graphics::renderer::Renderer;
-use graphics::map_renderer::render_map;
+use graphics::{ LoResRenderer, Sprite, Renderer, render_map };
 use map::Map;
 
 
