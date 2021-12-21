@@ -5,6 +5,7 @@ mod fps_counter;
 mod game_loop;
 mod graphics;
 mod map;
+mod world;
 
 use std::time::Duration;
 
@@ -28,6 +29,7 @@ use graphics::sprite::Sprite;
 use graphics::renderer::Renderer;
 use graphics::map_renderer::render_map;
 use map::Map;
+use world::world::{Tile, ColTile, World};
 
 
 const COLUMNS: usize = 32;
@@ -35,32 +37,15 @@ const ROWS: usize = 18;
 const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
 
-struct TileSplatter<'a> {
-    ball: Ball<'a>,
-    numbers: Vec<Sprite<'a>>,
-    controller: Controller,
-    map: Map<ColTile>,
-    fps_counter: FpsCounter
-}
-
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 enum Layer {
     BACKGROUND,
     FOREGROUND
 }
 
-#[derive(Clone)]
-enum Tile {
-    STONE
-}
 
-#[derive(Clone)]
-struct ColTile {
-    tile: Tile,
-    mesh: ConvexMesh
-}
 
-impl <'a> Game<'a, LoResRenderer<'a, Layer>> for TileSplatter<'a> {
+impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
         self.ball.x += self.controller.x() as f64;
         self.ball.y += self.controller.y() as f64;
@@ -193,7 +178,7 @@ fn main() -> Result<(), String> {
         12.0, 
         ball_sprite);
 
-    let mut splatto: TileSplatter = TileSplatter {
+    let mut splatto: World = World {
         ball,
         numbers,
         controller,
