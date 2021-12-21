@@ -13,7 +13,7 @@ use sdl2::EventPump;
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
-use sdl2::image::{self, LoadTexture, InitFlag};
+use sdl2::image::{self, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
@@ -29,6 +29,7 @@ use graphics::sprite::Sprite;
 use graphics::renderer::Renderer;
 use graphics::map_renderer::render_map;
 use map::Map;
+use world::assets::Assets;
 use world::world::{Tile, ColTile, World};
 
 
@@ -93,8 +94,6 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video()?;
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
-    let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
-
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
         .fullscreen_desktop()
         .build()
@@ -108,8 +107,7 @@ fn main() -> Result<(), String> {
 
     let texture_creator = canvas.texture_creator();
 
-    let tile = texture_creator.load_texture(assets.join("12x12tile.png"))?;
-    let tile = Sprite::new(&tile, Rect::new(0, 0, 12, 12));
+    let assets = Assets::new(&texture_creator)?;
 
     let mut renderer = LoResRenderer::new(
         canvas, 
@@ -161,15 +159,15 @@ fn main() -> Result<(), String> {
         map.put(x, y, ColTile { tile, mesh });
     });
 
+    let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
+
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
 
-    let numbers_spritesheet = texture_creator.load_texture(assets.join("numbers.png"))?;
     let numbers: Vec<Sprite<'_>> = (0..10).map(|n| {
-        Sprite::new(&numbers_spritesheet, Rect::new(n*8, 0, 8, 8))
+        Sprite::new(&assets.numbersheet, Rect::new(n*8, 0, 8, 8))
     }).collect();
 
-    let ball_tex = texture_creator.load_texture(assets.join("ball.png"))?;
-    let ball_sprite = Sprite::new(&ball_tex, Rect::new(0, 0, 12, 12));
+    let ball_sprite = Sprite::new(&assets.spritesheet, Rect::new(0, 0, 12, 12));
 
     let ball = Ball::new(
         (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
@@ -178,7 +176,7 @@ fn main() -> Result<(), String> {
         12.0, 
         ball_sprite);
 
-    let mut splatto: World = World {
+    let mut world: World = World {
         ball,
         numbers,
         controller,
@@ -188,7 +186,7 @@ fn main() -> Result<(), String> {
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
 
-    run_game_loop(&mut splatto, &mut renderer, &mut event_pump)?;
+    run_game_loop(&mut world, &mut renderer, &mut event_pump)?;
 
     Ok(())
 }
