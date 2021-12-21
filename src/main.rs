@@ -167,14 +167,12 @@ fn main() -> Result<(), String> {
         Sprite::new(&assets.numbersheet, Rect::new(n*8, 0, 8, 8))
     }).collect();
 
-    let ball_sprite = Sprite::new(&assets.spritesheet, Rect::new(0, 0, 12, 12));
-
     let ball = Ball::new(
         (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
         (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
-        12.0, 
-        12.0, 
-        ball_sprite);
+        12, 
+        12, 
+        &assets);
 
     let mut world: World = World {
         ball,

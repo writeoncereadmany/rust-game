@@ -1,3 +1,6 @@
+use sdl2::rect::Rect;
+
+use crate::world::assets::Assets;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 
@@ -11,14 +14,17 @@ pub struct Ball<'a> {
 }
 
 impl <'a> Ball<'a> {  
-    pub fn new(x: f64, y: f64, width: f64, height: f64, sprite: Sprite<'a>) -> Self {
+    pub fn new(x: f64, y: f64, width: u32, height: u32, assets: &'a Assets<'a>) -> Self {
+        let sprite = Sprite::new(&assets.spritesheet, Rect::new(0, 0, width, height));
         Ball {
             x,
             y,
             dx: 0.0,
             dy: 0.0,
             sprite,
-            mesh: ConvexMesh::new(vec![(0.0, 0.0), (width, 0.0), (width, height), (0.0, height)], vec![])
+            mesh: ConvexMesh::new(
+                vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
+                vec![])
         }
     }
 

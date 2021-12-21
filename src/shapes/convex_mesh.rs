@@ -42,10 +42,6 @@ impl ConvexMesh {
         }
     }
 
-    pub fn boxes_touch(&self, other: &ConvexMesh) -> bool {
-        self.bbox.touches(&other.bbox)
-    }
-
     pub fn bbox(&self) -> BBox {
         self.bbox
     }
