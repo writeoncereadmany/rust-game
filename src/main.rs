@@ -38,6 +38,12 @@ const COLUMNS: usize = 32;
 const ROWS: usize = 18;
 const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
+const ACCEL: f64 = 200.0;
+const VEL_CAP: f64 = 200.0;
+const JUMP_SPEED: f64 = 200.0;
+const WALLJUMP_DY: f64 = 150.0;
+const WALLJUMP_DX: f64 = 150.0;
+const GRAVITY: f64 = 500.0;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 enum Layer {
@@ -45,21 +51,62 @@ enum Layer {
     FOREGROUND
 }
 
+fn cap(val: f64, max: f64) -> f64 {
+    if val > max {
+        max
+    } else if val < -max {
+        -max
+    } else {
+        val
+    }
+}
+
 impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
-    fn update(&mut self, _delta: Duration) -> Result<(), String> {
-        self.ball.x += self.controller.x() as f64;
-        self.ball.y += self.controller.y() as f64;
+    fn update(&mut self, dt: Duration) -> Result<(), String> {
+
+        self.ball.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
+        self.ball.dx = cap(self.ball.dx, VEL_CAP);
+        self.ball.x += self.ball.dx * dt.as_secs_f64();
+        
+        if self.controller.jump() {
+            match self.ball.last_push {
+                (_, y) if y > 0.0 => { self.ball.dy = JUMP_SPEED; },
+                (x, _) if x > 0.0 => { 
+                    self.ball.dy = WALLJUMP_DY;
+                    self.ball.dx = WALLJUMP_DX;
+                },
+                (x, _) if x < 0.0 => {
+                    self.ball.dy = WALLJUMP_DY;
+                    self.ball.dx = -WALLJUMP_DX;
+                }
+                _ => {} 
+            }
+        }
+        self.ball.dy -= GRAVITY * dt.as_secs_f64();
+        self.ball.dy = cap(self.ball.dy, VEL_CAP);
+
+        self.ball.y += self.ball.dy * dt.as_secs_f64();
+
+        let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         for (_pos, t) in self.map.overlapping(&self.ball.mesh().bbox()) {
-            match t.mesh.push(&self.ball.mesh()) {
+            let push = t.mesh.push(&self.ball.mesh());
+            match push {
                 None => {},
                 Some((x, y)) => {
-                    if (x, y).sq_len() < 100.0 {
+                    if x != 0.0 && x.signum() == -self.ball.dx.signum() {
                         self.ball.x += x;
+                        tot_x_push += x;
+                        self.ball.dx = 0.0;
+                    }
+                    if y != 0.0 && y.signum() == -self.ball.dy.signum() {
                         self.ball.y += y;
+                        tot_y_push += y;
+                        self.ball.dy = 0.0;
                     }
                 }
             }
         }
+        self.ball.last_push = (tot_x_push, tot_y_push);
         
         Ok(())
     }
@@ -118,7 +165,7 @@ fn main() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period);
+    let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period, Keycode::RShift);
 
     let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
     border(&mut map_builder, Tile::STONE, COLUMNS, ROWS);

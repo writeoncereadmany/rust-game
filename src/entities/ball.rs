@@ -10,6 +10,7 @@ pub struct Ball<'a> {
     pub dx: f64,
     pub dy: f64,
     pub sprite: Sprite<'a>,
+    pub last_push: (f64, f64),
     mesh: ConvexMesh
 }
 
@@ -22,6 +23,7 @@ impl <'a> Ball<'a> {
             dx: 0.0,
             dy: 0.0,
             sprite,
+            last_push: (0.0, 0.0),
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
                 vec![])
