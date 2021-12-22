@@ -24,16 +24,6 @@ impl ConvexMesh {
         }
     }
 
-    pub fn rect(left: f64, bottom: f64, width: f64, height: f64) -> Self {
-        let right = left + width;
-        let top = bottom + height;
-
-        ConvexMesh::new( 
-            vec![(left, bottom), (left, top), (right, top), (right, bottom)],
-            vec![(-1.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.0, -1.0)]
-        )
-    }
-
     pub fn translate(&self, dx: f64, dy: f64) -> ConvexMesh {
         ConvexMesh {
             bbox: self.bbox.translate(dx, dy),
@@ -83,25 +73,5 @@ fn shorter(a: &Option<(f64, f64)>, b: &Option<(f64, f64)>) -> Ordering {
                 Some(ord) => ord
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn horizontally_disjoint_convex_mesh_rectangles_do_not_collide() {
-        let left = ConvexMesh::rect(100.0, 100.0, 100.0, 100.0);
-        let right = ConvexMesh::rect(300.0, 100.0, 100.0, 100.0);
-        assert_eq!(left.push(&right), None);
-    }
-
-    #[test]
-    fn pushes_convex_mesh_rect_right_with_slight_overlap() {
-        let left = ConvexMesh::rect(100.0, 100.0, 100.0, 100.0);
-        let right = ConvexMesh::rect(180.0, 100.0, 100.0, 100.0);
-        assert_eq!(left.push(&right), Some((20.0, 0.0)));
     }
 }
