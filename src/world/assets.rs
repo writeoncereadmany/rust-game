@@ -6,6 +6,7 @@ pub struct Assets<'a> {
     pub spritesheet : Texture<'a>,
     pub tilesheet : Texture<'a>,
     pub numbersheet: Texture<'a>,
+    pub spritefont: Texture<'a>,
 }
 
 impl <'a> Assets<'a> {
@@ -15,11 +16,13 @@ impl <'a> Assets<'a> {
         let spritesheet = texture_creator.load_texture(assets.join("ball.png"))?;
         let tilesheet = texture_creator.load_texture(assets.join("12x12tile.png"))?;
         let numbersheet = texture_creator.load_texture(assets.join("numbers.png"))?;
+        let spritefont = texture_creator.load_texture(assets.join("spritefont.png"))?;
 
         Ok(Assets {
             spritesheet,
             tilesheet,
-            numbersheet
+            numbersheet,
+            spritefont
         })
     }
 }

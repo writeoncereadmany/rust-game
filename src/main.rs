@@ -27,6 +27,7 @@ use graphics::lo_res_renderer::LoResRenderer;
 use graphics::sprite::Sprite;
 use graphics::renderer::Renderer;
 use graphics::map_renderer::render_map;
+use graphics::text_renderer::SpriteFont;
 use map::Map;
 use world::assets::Assets;
 use world::world::{Tile, World};
@@ -68,7 +69,8 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         renderer.draw(&Layer::FOREGROUND, &self.ball.sprite, self.ball.x as i32, self.ball.y as i32);
-        render_number(10, ((TILE_HEIGHT * ROWS as u32) - 10) as i32, self.fps_counter.fps(), renderer, &self.numbers).unwrap();
+
+        self.spritefont.render(self.fps_counter.fps().to_string() + "fps", 2, 2, renderer, &Layer::FOREGROUND);
         
         renderer.present()?;
 
@@ -116,8 +118,6 @@ fn main() -> Result<(), String> {
 
     let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period);
 
-    renderer.clear(&Layer::BACKGROUND).unwrap();
-
     let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
 
     map_builder.row(0, 0, COLUMNS, Tile::STONE)
@@ -148,6 +148,8 @@ fn main() -> Result<(), String> {
         Sprite::new(&assets.numbersheet, Rect::new(n*8, 0, 8, 8))
     }).collect();
 
+    let spritefont = SpriteFont::new(&assets.spritefont, 8, 8);
+
     let ball = Ball::new(
         (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
         (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
@@ -157,7 +159,7 @@ fn main() -> Result<(), String> {
 
     let mut world: World = World {
         ball,
-        numbers,
+        spritefont,
         controller,
         map,
         fps_counter: FpsCounter::new()
@@ -167,23 +169,5 @@ fn main() -> Result<(), String> {
 
     run_game_loop(&mut world, &mut renderer, &mut event_pump)?;
 
-    Ok(())
-}
-
-fn render_number<'a>(x: i32, y: i32, num: usize, renderer: &mut LoResRenderer<'a, Layer>, numbers : &Vec<Sprite<'a>>) 
--> Result<(), String> {
-    let mut digit = num % 10;
-    let mut remainder = num / 10;
-    let mut offset = 0;
-
-    while digit > 0 || remainder > 0
-    {
-        let num_sprite = numbers.get(digit).unwrap();
-        renderer.draw(&Layer::FOREGROUND, num_sprite, x - offset, y);
-        
-        offset += 8;
-        digit = remainder % 10;
-        remainder = remainder / 10;
-    }
     Ok(())
 }
