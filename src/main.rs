@@ -18,7 +18,6 @@ use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
 use entities::ball::Ball;
-use shapes::vec2d::Vec2d;
 use shapes::push::Push;
 use controller::Controller;
 use fps_counter::FpsCounter;
@@ -43,6 +42,7 @@ const VEL_CAP: f64 = 200.0;
 const JUMP_SPEED: f64 = 200.0;
 const WALLJUMP_DY: f64 = 150.0;
 const WALLJUMP_DX: f64 = 150.0;
+const WALL_STICK: f64 = 10.0;
 const GRAVITY: f64 = 500.0;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
@@ -66,6 +66,17 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
 
         self.ball.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
         self.ball.dx = cap(self.ball.dx, VEL_CAP);
+        if self.controller.x() == 0 {
+            match self.ball.last_push {
+                (x, _) if x > 0.0 => {
+                    self.ball.dx -= WALL_STICK;
+                }
+                (x, _) if x < 0.0 => {
+                    self.ball.dx += WALL_STICK;
+                }
+                _ => {}
+            }
+        }
         self.ball.x += self.ball.dx * dt.as_secs_f64();
         
         if self.controller.jump() {
