@@ -1,6 +1,7 @@
 use std::ops::Index;
 
 use crate::shapes::bbox::BBox;
+use crate::shapes::convex_mesh::{ ConvexMesh, Meshed };
 
 pub struct Map<Tile>
 where Tile: Clone 
@@ -75,7 +76,32 @@ where Tile: Clone {
             max_y: grid_max_y
         }
     }
+
+    pub fn add_edges(&self) -> Map<Meshed<Tile>>
+    {
+        let mut map : Map<Meshed<Tile>> = Map::new(self.columns, self.rows, self.tile_width, self.tile_height);
+
+        self.into_iter().for_each(|(pos, tile)| {
+            let (x, y) = (pos.grid_x, pos.grid_y);
+            let (left, right, top, bottom) = (pos.min_x as f64, pos.max_x as f64, pos.max_y as f64, pos.min_y as f64);
+            let points = vec![(left, bottom), (left, top), (right, top), (right, bottom)];
+
+            let mut normals : Vec<(f64, f64)> = Vec::new();
+
+            if self.get(x-1, y).is_none() { normals.push((-1.0, 0.0)); }
+            if self.get(x + 1, y).is_none() { normals.push((1.0, 0.0)); }
+            if self.get(x, y - 1).is_none() { normals.push((0.0, -1.0)); }
+            if self.get(x, y + 1).is_none() { normals.push((0.0, 1.0)); }
+
+            let mesh = ConvexMesh::new(points, normals);
+            map.put(x, y, Meshed { item: tile, mesh });
+        });
+
+        map
+    }
 }
+
+
 
 fn constrain(value: f64, min: usize, max: usize) -> usize {
     if value < min as f64 {

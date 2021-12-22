@@ -11,6 +11,13 @@ pub struct ConvexMesh {
     normals: Vec<(f64, f64)>
 }
 
+#[derive(Clone)]
+pub struct Meshed<A>
+where A: Clone {
+    pub item: A,
+    pub mesh: ConvexMesh
+}
+
 impl ConvexMesh {
     pub fn new(points: Vec<(f64, f64)>, normals: Vec<(f64, f64)>) -> Self {
         let left = points.iter().map(|&(x, _y)| x).reduce(f64::min).unwrap();

@@ -18,7 +18,6 @@ use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
 use entities::ball::Ball;
-use shapes::convex_mesh::ConvexMesh;
 use shapes::vec2d::Vec2d;
 use shapes::push::Push;
 use controller::Controller;
@@ -30,7 +29,7 @@ use graphics::renderer::Renderer;
 use graphics::map_renderer::render_map;
 use map::Map;
 use world::assets::Assets;
-use world::world::{Tile, ColTile, World};
+use world::world::{Tile, World};
 
 
 const COLUMNS: usize = 32;
@@ -43,8 +42,6 @@ enum Layer {
     BACKGROUND,
     FOREGROUND
 }
-
-
 
 impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
@@ -141,23 +138,7 @@ fn main() -> Result<(), String> {
        .column(16, 10, 8, Tile::STONE)
        ;
 
-    let mut map : Map<ColTile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
-
-    map_builder.into_iter().for_each(|(pos, tile)| {
-        let (x, y) = (pos.grid_x, pos.grid_y);
-        let (left, right, top, bottom) = (pos.min_x as f64, pos.max_x as f64, pos.max_y as f64, pos.min_y as f64);
-        let points = vec![(left, bottom), (left, top), (right, top), (right, bottom)];
-
-        let mut normals : Vec<(f64, f64)> = Vec::new();
-
-        if map_builder.get(x-1, y).is_none() { normals.push((-1.0, 0.0)); }
-        if map_builder.get(x + 1, y).is_none() { normals.push((1.0, 0.0)); }
-        if map_builder.get(x, y - 1).is_none() { normals.push((0.0, -1.0)); }
-        if map_builder.get(x, y + 1).is_none() { normals.push((0.0, 1.0)); }
-
-        let mesh = ConvexMesh::new(points, normals);
-        map.put(x, y, ColTile { tile, mesh });
-    });
+    let map = map_builder.add_edges();
 
     let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
 
