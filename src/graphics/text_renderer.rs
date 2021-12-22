@@ -31,7 +31,14 @@ impl <'a> SpriteFont<'a> {
             '0'..='9' => self.number(character), 
             'a'..='z' => self.lowercase(character),
             'A'..='Z' => self.uppercase(character),
-            _ => self.unknown()
+            ':' => self.tile(6, 3),
+            '-' => self.tile(7, 3),
+            '?' => self.tile(8, 3),
+            '!' => self.tile(9, 3),
+            '.' => self.tile(6, 6),
+            ',' => self.tile(7, 6),
+            ' ' => self.tile(8, 6),
+            _ => self.tile(9, 6),
         }
     }
 
@@ -47,8 +54,8 @@ impl <'a> SpriteFont<'a> {
         Sprite::new(self.spritesheet, self.rect(letter, 'A', 4))
     }
 
-    fn unknown(&self) -> Sprite<'a> {
-        Sprite::new(self.spritesheet, Rect::new(9 * self.char_width as i32, 6 * self.char_height as i32, self.char_width, self.char_height))
+    fn tile(&self, x: i32, y: i32) -> Sprite<'a> {
+        Sprite::new(self.spritesheet, Rect::new(x * self.char_width as i32, y * self.char_height as i32, self.char_width, self.char_height))
     }
 
     fn rect(&self, ch: char, base: char, starting_row: i32) -> Rect {

@@ -70,8 +70,9 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
 
         renderer.draw(&Layer::FOREGROUND, &self.ball.sprite, self.ball.x as i32, self.ball.y as i32);
 
-        self.spritefont.render(self.fps_counter.fps().to_string() + "fps", 2, 2, renderer, &Layer::FOREGROUND);
-        
+        self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);
+        self.spritefont.render("Score: 1,300.24?!".to_string(), 2, ROWS as i32 * TILE_HEIGHT as i32 - 10, renderer, &Layer::FOREGROUND);
+
         renderer.present()?;
 
         Ok(())
