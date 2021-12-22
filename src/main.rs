@@ -31,6 +31,7 @@ use graphics::text_renderer::SpriteFont;
 use map::Map;
 use world::assets::Assets;
 use world::world::{Tile, World};
+use world::stage::{border, stage1};
 
 
 const COLUMNS: usize = 32;
@@ -107,8 +108,6 @@ fn main() -> Result<(), String> {
 
     let texture_creator = canvas.texture_creator();
 
-    let assets = Assets::new(&texture_creator)?;
-
     let mut renderer = LoResRenderer::new(
         canvas, 
         &texture_creator, 
@@ -117,37 +116,17 @@ fn main() -> Result<(), String> {
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap();
 
+    let assets = Assets::new(&texture_creator)?;
+
     let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period);
 
     let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
-
-    map_builder.row(0, 0, COLUMNS, Tile::STONE)
-       .row(0, ROWS - 1, COLUMNS, Tile::STONE)
-       .column(0, 0, ROWS, Tile::STONE)
-       .column(COLUMNS - 1, 0, ROWS, Tile::STONE);
-    
-    map_builder.row(4, 4, 4, Tile::STONE)
-       .row(24, 4, 4, Tile::STONE)
-       .row(1, 8, 5, Tile::STONE)
-       .row(10, 6, 12, Tile::STONE)
-       .row(4, 12, 6, Tile::STONE)
-       .row(26, 8, 5, Tile::STONE)
-       .row(22, 12, 6, Tile::STONE)
-       .column(10, 6, 7, Tile::STONE)
-       .column(21, 6, 7, Tile::STONE)
-       .column(15, 10, 8, Tile::STONE)
-       .column(16, 10, 8, Tile::STONE)
-       ;
-
+    border(&mut map_builder, Tile::STONE, COLUMNS, ROWS);
+    stage1(&mut map_builder, Tile::STONE);
     let map = map_builder.add_edges();
 
     let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
-
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
-
-    let numbers: Vec<Sprite<'_>> = (0..10).map(|n| {
-        Sprite::new(&assets.numbersheet, Rect::new(n*8, 0, 8, 8))
-    }).collect();
 
     let spritefont = SpriteFont::new(&assets.spritefont, 8, 8);
 
