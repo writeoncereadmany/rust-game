@@ -130,8 +130,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
         renderer.draw(&Layer::FOREGROUND, &self.ball.sprite, self.ball.x as i32, self.ball.y as i32);
 
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);
-        self.spritefont.render("Score: 1,300.24?!".to_string(), 2, ROWS as i32 * TILE_HEIGHT as i32 - 10, renderer, &Layer::FOREGROUND);
-
+      
         renderer.present()?;
 
         Ok(())
@@ -140,6 +139,9 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
         self.controller.on_event(event);
         match event {
+            Event::ControllerDeviceAdded { which, ..} => { self.pad = 
+                
+            }
             Event::Quit {..} => return Err("Escape pressed: ending game".into()),
             Event::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
             _ => {}
@@ -151,6 +153,7 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for World<'a> {
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
+    let game_controller_subsystem = sdl_context.game_controller()?;
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)

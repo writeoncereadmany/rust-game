@@ -1,13 +1,15 @@
+use sdl2::controller::{ Button };
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 
-pub struct Button {
+pub struct ControllerItem {
     key: Keycode,
+    pad: Button,
     pressed: bool,
     fired: bool
 }
 
-impl Button {
+impl ControllerItem {
     fn on_event(&mut self, event: &Event) {
         match event {
             Event::KeyDown { keycode: Some(key_pressed), repeat: false, .. } => {
@@ -21,6 +23,17 @@ impl Button {
                     self.pressed = false;
                 }
             },
+            Event::ControllerButtonDown { button, .. } => {
+                if button == &self.pad {
+                    self.pressed = true;
+                    self.fired = true;
+                }
+            }
+            Event::ControllerButtonUp { button, .. } => {
+                if button == &self.pad {
+                    self.pressed = false;
+                }
+            }
             _ => ()
         }
     }
@@ -36,21 +49,21 @@ impl Button {
 }
 
 pub struct Controller {
-    left: Button,
-    right: Button,
-    up: Button, 
-    down: Button,
-    jump: Button
+    left: ControllerItem,
+    right: ControllerItem,
+    up: ControllerItem, 
+    down: ControllerItem,
+    jump: ControllerItem
 }
 
 impl Controller {
     pub fn new(left: Keycode, right: Keycode, up: Keycode, down: Keycode, jump: Keycode) -> Self {
         Controller {
-            left: Button{ key: left, pressed: false, fired: false },
-            right: Button{ key: right, pressed: false, fired: false },
-            up: Button{ key: up, pressed: false, fired: false },
-            down: Button{ key: down, pressed: false, fired: false },
-            jump: Button{ key: jump, pressed: false, fired: false }
+            left: ControllerItem{ key: left, pad: Button::DPadLeft, pressed: false, fired: false },
+            right: ControllerItem{ key: right, pad: Button::DPadRight, pressed: false, fired: false },
+            up: ControllerItem{ key: up, pad: Button::DPadUp, pressed: false, fired: false },
+            down: ControllerItem{ key: down, pad: Button::DPadDown, pressed: false, fired: false },
+            jump: ControllerItem{ key: jump, pad: Button::A, pressed: false, fired: false }
         }
     }
 
