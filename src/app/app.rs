@@ -28,9 +28,9 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
 
     fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         self.fps_counter.on_frame();
-
         renderer.clear(&Layer::FOREGROUND).unwrap();
-        renderer.draw(&Layer::FOREGROUND, &self.world.ball.sprite, self.world.ball.x as i32, self.world.ball.y as i32);
+
+        self.world.render(renderer)?;
 
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
 

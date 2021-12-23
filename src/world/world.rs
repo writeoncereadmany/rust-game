@@ -49,6 +49,10 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         Ok(())
     }
 
+    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
+        self.ball.render(renderer)
+    }
+
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
         self.ball.on_event(event)
     }

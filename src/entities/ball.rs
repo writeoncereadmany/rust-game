@@ -5,6 +5,7 @@ use sdl2::rect::Rect;
 
 use crate::controller::Controller;
 use crate::game_loop::GameEvents;
+use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::app::assets::Assets;
 use crate::graphics::sprite::Sprite;
@@ -88,6 +89,11 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Ball<'a> {
 
         self.y += self.dy * dt.as_secs_f64();
 
+        Ok(())
+    }
+
+    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+        renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
         Ok(())
     }
 
