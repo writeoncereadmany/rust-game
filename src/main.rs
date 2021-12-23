@@ -143,6 +143,9 @@ impl <'a> Game<'a, LoResRenderer<'a, Layer>> for App<'a> {
         match event {
             Event::Quit {..} => return Err("Escape pressed: ending game".into()),
             Event::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
+            Event::ControllerDeviceAdded{ which, .. } => { 
+                self.active_controller = self.game_controller_subsystem.open(*which).ok(); 
+            }
             _ => {}
         }
         Ok(())
@@ -197,13 +200,14 @@ fn main() -> Result<(), String> {
         12, 
         &assets);
 
-    let mut world: World = World {
+    let world: World = World {
         ball,
         map,
     };
 
     let mut app = App {
         game_controller_subsystem, 
+        active_controller: None,
         spritefont,
         controller,
         fps_counter: FpsCounter::new(),
