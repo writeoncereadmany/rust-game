@@ -9,6 +9,12 @@ use sdl2::video::{WindowContext};
 use super::renderer::Renderer;
 use super::sprite::Sprite;
 
+#[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
+pub enum Layer {
+    BACKGROUND,
+    FOREGROUND
+}
+
 pub struct LoResRenderer<'a, T> 
 where T: Ord + Debug
 {
