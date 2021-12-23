@@ -22,7 +22,7 @@ use entities::ball::Ball;
 use shapes::push::Push;
 use controller::Controller;
 use fps_counter::FpsCounter;
-use game_loop::{Game, run_game_loop};
+use game_loop::{GameEvents, run_game_loop};
 use graphics::lo_res_renderer::LoResRenderer;
 use graphics::sprite::Sprite;
 use graphics::renderer::Renderer;
@@ -63,7 +63,7 @@ fn cap(val: f64, max: f64) -> f64 {
     }
 }
 
-impl <'a> Game<'a, LoResRenderer<'a, Layer>> for App<'a> {
+impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
     fn update(&mut self, dt: Duration) -> Result<(), String> {
 
         self.world.ball.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
