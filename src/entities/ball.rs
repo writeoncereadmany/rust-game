@@ -1,6 +1,6 @@
 use sdl2::rect::Rect;
 
-use crate::world::assets::Assets;
+use crate::app::assets::Assets;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 
