@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use sdl2::event::Event;
+
 use crate::shapes::push::Push;
 use crate::entities::ball::Ball;
 use crate::map::Map;
@@ -19,8 +21,10 @@ pub struct World<'a> {
 
 impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
     
-    fn update(&mut self, _dt: Duration) -> Result<(), String> {
+    fn update(&mut self, dt: Duration) -> Result<(), String> {
         
+        self.ball.update(dt)?;
+
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         for (_pos, t) in self.map.overlapping(&self.ball.mesh().bbox()) {
             let push = t.mesh.push(&self.ball.mesh());
@@ -43,5 +47,9 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         self.ball.last_push = (tot_x_push, tot_y_push);
         
         Ok(())
+    }
+
+    fn on_event(&mut self, event: &Event) -> Result<(), String> {
+        self.ball.on_event(event)
     }
 }

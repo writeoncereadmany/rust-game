@@ -82,7 +82,9 @@ fn main() -> Result<(), String> {
         (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
         12, 
         12, 
-        &assets);
+        &assets,
+        controller
+    );
 
     let world: World = World {
         ball,
@@ -93,7 +95,6 @@ fn main() -> Result<(), String> {
         game_controller_subsystem, 
         active_controller: None,
         spritefont,
-        controller,
         fps_counter: FpsCounter::new(),
         world
     };
