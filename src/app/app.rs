@@ -5,7 +5,6 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::shapes::push::Push;
 use crate::game_loop::GameEvents;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
@@ -69,28 +68,7 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
 
         self.world.ball.y += self.world.ball.dy * dt.as_secs_f64();
 
-        let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
-        for (_pos, t) in self.world.map.overlapping(&self.world.ball.mesh().bbox()) {
-            let push = t.mesh.push(&self.world.ball.mesh());
-            match push {
-                None => {},
-                Some((x, y)) => {
-                    if x != 0.0 && x.signum() == -self.world.ball.dx.signum() {
-                        self.world.ball.x += x;
-                        tot_x_push += x;
-                        self.world.ball.dx = 0.0;
-                    }
-                    if y != 0.0 && y.signum() == -self.world.ball.dy.signum() {
-                        self.world.ball.y += y;
-                        tot_y_push += y;
-                        self.world.ball.dy = 0.0;
-                    }
-                }
-            }
-        }
-        self.world.ball.last_push = (tot_x_push, tot_y_push);
-        
-        Ok(())
+        self.world.update(dt)
     }
 
     fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
@@ -100,9 +78,8 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
         renderer.draw(&Layer::FOREGROUND, &self.world.ball.sprite, self.world.ball.x as i32, self.world.ball.y as i32);
 
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
-        renderer.present()?;
 
-        Ok(())
+        renderer.present()
     }
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {

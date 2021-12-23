@@ -29,10 +29,12 @@ use app::assets::Assets;
 use world::world::{Tile, World};
 use world::stage::{border, stage1};
 
+
 const COLUMNS: usize = 32;
 const ROWS: usize = 18;
 const TILE_WIDTH: u32 = 12;
 const TILE_HEIGHT: u32 = 12;
+
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
