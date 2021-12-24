@@ -36,12 +36,12 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
             match push {
                 None => {},
                 Some((x, y)) => {
-                    if x != 0.0 && x.signum() == -self.ball.dx.signum() {
+                    if x != 0.0 && self.ball.dx != 0.0 && x.signum() == -self.ball.dx.signum() {
                         self.ball.x += x;
                         tot_x_push += x;
                         self.ball.dx = 0.0;
                     }
-                    if y != 0.0 && y.signum() == -self.ball.dy.signum() {
+                    if y != 0.0 && self.ball.dy != 0.0 && y.signum() == -self.ball.dy.signum() {
                         self.ball.y += y;
                         tot_y_push += y;
                         self.ball.dy = 0.0;

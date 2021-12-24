@@ -8,7 +8,7 @@ use super::vec2d::Vec2d;
 pub struct ConvexMesh {
     bbox: BBox,
     points: Vec<(f64, f64)>,
-    normals: Vec<(f64, f64)>
+    pub normals: Vec<(f64, f64)>
 }
 
 #[derive(Clone)]

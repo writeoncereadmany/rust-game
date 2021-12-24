@@ -7,8 +7,6 @@ where Render : Renderer<'a, Layer>,
       Tile : Clone,
       SpriteFunc : Fn(Tile) -> &'a Sprite<'a>
 {
-    renderer.clear(layer).unwrap();
-
     for (pos, t) in map {
         renderer.draw(layer, f(t), pos.min_x, pos.min_y)
     }
