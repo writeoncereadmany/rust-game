@@ -13,3 +13,4 @@ features = ["image"]
 [dependencies]
 find_folder = "0.3.0"
 rand = "0.8.4"
+image = "0.23.14"

@@ -8,6 +8,8 @@ mod graphics;
 mod map;
 mod world;
 
+use ::image::Rgb;
+
 use sdl2::EventPump;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
@@ -29,7 +31,7 @@ use map::Map;
 use app::app::App;
 use app::assets::Assets;
 use world::world::{Tile, World};
-use world::stage::{border, stage1};
+use world::stage::{ from_image };
 
 
 const COLUMNS: usize = 32;
@@ -70,8 +72,11 @@ fn main() -> Result<(), String> {
     let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period, Keycode::RShift);
 
     let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
-    border(&mut map_builder, Tile::STONE, COLUMNS, ROWS);
-    stage1(&mut map_builder, Tile::STONE);
+    from_image(&mut map_builder, &assets.level, |pixel| { match pixel {
+        Rgb([0,0,0]) => None,
+        _ => Some(Tile::STONE)
+    }});
+
     let map = map_builder.add_edges();
 
     let coins: Vec<Coin> = vec![(1.0, 2.0)]
