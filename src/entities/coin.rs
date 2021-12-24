@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use sdl2::event::Event;
-use sdl2::rect::Rect;
 
 use crate::game_loop::GameEvents;
 use crate::graphics::renderer::Renderer;
@@ -19,11 +18,10 @@ pub struct Coin<'a> {
 
 impl <'a> Coin<'a> {  
     pub fn new(x: f64, y: f64, width: u32, height: u32, assets: &'a Assets<'a>) -> Self {
-        let sprite = Sprite::new(&assets.spritesheet, Rect::new(12, 0, width, height));
         Coin {
             x,
             y,
-            sprite,
+            sprite: assets.sprite(1, 0),
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
                 vec![])

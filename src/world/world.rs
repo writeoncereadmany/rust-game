@@ -1,7 +1,10 @@
 use std::time::Duration;
 
+use image::{Rgb, RgbImage};
+
 use sdl2::event::Event;
 
+use crate::app::assets::Assets;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
@@ -20,8 +23,49 @@ pub struct World<'a> {
     pub hero: Hero<'a>,
     pub coins: Vec<Coin<'a>>,
     pub map: Map<Meshed<Tile>>,
-    pub spritefont: &'a SpriteFont<'a>,
+    pub spritefont: SpriteFont<'a>,
     pub time: f64,
+}
+
+impl <'a> World<'a> {
+
+    pub fn new(image: &RgbImage, assets: &'a Assets<'a>) -> Self {
+        let width = image.width();
+        let height = image.height();
+        let mut map = Map::new(width as usize, height as usize, 12, 12);
+        let mut coins: Vec<Coin> = Vec::new();
+        for x in 0..image.width() {
+            for y in 0..height {
+                let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
+                match pixel {
+                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE); },
+                    Rgb([255, 255, 0]) => { coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))}
+                    _ => { }
+                }
+                
+            }
+        }
+
+        let map = map.add_edges();
+
+        let hero = Hero::new(
+            36.0, 
+            36.0, 
+            12, 
+            12, 
+            &assets
+        );
+
+        let spritefont =  assets.spritefont();
+
+        World {
+            hero,
+            map,
+            coins,
+            spritefont,
+            time: 10.0
+        }
+    }
 }
 
 impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
