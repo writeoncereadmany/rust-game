@@ -17,7 +17,7 @@ pub enum Tile {
 }
 
 pub struct World<'a> {
-    pub ball: Hero<'a>,
+    pub hero: Hero<'a>,
     pub coins: Vec<Coin<'a>>,
     pub map: Map<Meshed<Tile>>,
     pub spritefont: &'a SpriteFont<'a>,
@@ -28,30 +28,30 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
     
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         
-        self.ball.update(dt)?;
+        self.hero.update(dt)?;
 
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
-        for (_pos, t) in self.map.overlapping(&self.ball.mesh().bbox()) {
-            let push = t.mesh.push(&self.ball.mesh());
+        for (_pos, t) in self.map.overlapping(&self.hero.mesh().bbox()) {
+            let push = t.mesh.push(&self.hero.mesh());
             match push {
                 None => {},
                 Some((x, y)) => {
-                    if x != 0.0 && self.ball.dx != 0.0 && x.signum() == -self.ball.dx.signum() {
-                        self.ball.x += x;
+                    if x != 0.0 && self.hero.dx != 0.0 && x.signum() == -self.hero.dx.signum() {
+                        self.hero.x += x;
                         tot_x_push += x;
-                        self.ball.dx = 0.0;
+                        self.hero.dx = 0.0;
                     }
-                    if y != 0.0 && self.ball.dy != 0.0 && y.signum() == -self.ball.dy.signum() {
-                        self.ball.y += y;
+                    if y != 0.0 && self.hero.dy != 0.0 && y.signum() == -self.hero.dy.signum() {
+                        self.hero.y += y;
                         tot_y_push += y;
-                        self.ball.dy = 0.0;
+                        self.hero.dy = 0.0;
                     }
                 }
             }
         }
-        self.ball.last_push = (tot_x_push, tot_y_push);
+        self.hero.last_push = (tot_x_push, tot_y_push);
 
-        let ball_mesh = self.ball.mesh();
+        let ball_mesh = self.hero.mesh();
         self.coins.retain(|coin| !ball_mesh.bbox().touches(&coin.mesh().bbox()));
 
         self.time -= dt.as_secs_f64();
@@ -63,7 +63,7 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         for coin in self.coins.iter_mut() {
             coin.render(renderer)?;
         }
-        self.ball.render(renderer)?;
+        self.hero.render(renderer)?;
 
         self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND);
 
@@ -71,7 +71,7 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
     }
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
-        self.ball.on_event(event)
+        self.hero.on_event(event)
     }
 }
 

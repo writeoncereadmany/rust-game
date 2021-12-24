@@ -12,7 +12,6 @@ use ::image::Rgb;
 
 use sdl2::EventPump;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::Rect;
 use sdl2::image::{self, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
@@ -23,9 +22,7 @@ use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::lo_res_renderer::{ Layer, LoResRenderer };
-use graphics::sprite::Sprite;
-use graphics::map_renderer::{render_map, render_map_normals};
-use graphics::text_renderer::SpriteFont;
+use graphics::map_renderer::{render_map};
 use graphics::renderer::Renderer;
 use map::Map;
 use app::app::App;
@@ -84,21 +81,14 @@ fn main() -> Result<(), String> {
         .map(|(x, y)| Coin::new(x, y, 12, 12, &assets))
         .collect();
 
-    let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
-    let up = Sprite::new(&assets.spritesheet, Rect::new(0, 12, 12, 12));
-    let down = Sprite::new(&assets.spritesheet, Rect::new(12, 12, 12, 12));
-    let left = Sprite::new(&assets.spritesheet, Rect::new(24, 12, 12, 12));
-    let right = Sprite::new(&assets.spritesheet, Rect::new(36, 12, 12, 12));
+    let tile = assets.sprite(0, 1);
 
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
-    render_map_normals(&map, &Layer::BACKGROUND, &mut renderer, &up, &down, &left, &right);
 
-    let timebox = Sprite::new(&assets.spritesheet, Rect::new(24, 0, 24, 12));
+    let timebox = &assets.multisprite(2, 0, 2, 1);
     renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
 
-    let spritefont = SpriteFont::new(&assets.spritefont, 8, 8);
-
-    let ball = Hero::new(
+    let hero = Hero::new(
         (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
         (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
         12, 
@@ -108,17 +98,17 @@ fn main() -> Result<(), String> {
     );
 
     let world: World = World {
-        ball,
+        hero,
         coins,
         map,
-        spritefont: &spritefont,
+        spritefont: &assets.spritefont(),
         time: 10.0,
     };
 
     let mut app = App {
         game_controller_subsystem, 
         active_controller: None,
-        spritefont: &spritefont,
+        spritefont: &assets.spritefont(),
         fps_counter: FpsCounter::new(),
         world
     };
