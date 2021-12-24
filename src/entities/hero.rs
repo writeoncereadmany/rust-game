@@ -19,7 +19,7 @@ const WALLJUMP_DX: f64 = 150.0;
 const WALL_STICK: f64 = 10.0;
 const GRAVITY: f64 = 500.0;
 
-pub struct Ball<'a> {
+pub struct Hero<'a> {
     pub controller: Controller,
     pub x: f64,
     pub y: f64,
@@ -30,10 +30,10 @@ pub struct Ball<'a> {
     mesh: ConvexMesh
 }
 
-impl <'a> Ball<'a> {  
+impl <'a> Hero<'a> {  
     pub fn new(x: f64, y: f64, width: u32, height: u32, assets: &'a Assets<'a>, controller: Controller) -> Self {
         let sprite = Sprite::new(&assets.spritesheet, Rect::new(0, 0, width, height));
-        Ball {
+        Hero {
             controller,
             x,
             y,
@@ -52,7 +52,7 @@ impl <'a> Ball<'a> {
     }
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Ball<'a> {
+impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Hero<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         self.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            

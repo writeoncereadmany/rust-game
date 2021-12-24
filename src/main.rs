@@ -15,7 +15,7 @@ use sdl2::image::{self, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use entities::ball::Ball;
+use entities::hero::Hero;
 use controller::Controller;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
@@ -77,7 +77,7 @@ fn main() -> Result<(), String> {
 
     let spritefont = SpriteFont::new(&assets.spritefont, 8, 8);
 
-    let ball = Ball::new(
+    let ball = Hero::new(
         (TILE_WIDTH * COLUMNS as u32 / 2) as f64, 
         (TILE_HEIGHT * ROWS as u32 / 2) as f64, 
         12, 

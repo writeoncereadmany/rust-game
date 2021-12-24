@@ -3,7 +3,7 @@ use std::time::Duration;
 use sdl2::event::Event;
 
 use crate::shapes::push::Push;
-use crate::entities::ball::Ball;
+use crate::entities::hero::Hero;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameEvents;
@@ -15,7 +15,7 @@ pub enum Tile {
 }
 
 pub struct World<'a> {
-    pub ball: Ball<'a>,
+    pub ball: Hero<'a>,
     pub map: Map<Meshed<Tile>>,
 }
 
