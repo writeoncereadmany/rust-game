@@ -17,7 +17,7 @@ pub struct App<'a> {
     pub active_controller: Option<GameController>,
     pub world: World<'a>,
     pub fps_counter: FpsCounter,
-    pub spritefont: SpriteFont<'a>,
+    pub spritefont: &'a SpriteFont<'a>,
 }
 
 impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {

@@ -9,6 +9,7 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameEvents;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
+use crate::graphics::text_renderer::SpriteFont;
 
 #[derive(Clone)]
 pub enum Tile {
@@ -19,6 +20,8 @@ pub struct World<'a> {
     pub ball: Hero<'a>,
     pub coins: Vec<Coin<'a>>,
     pub map: Map<Meshed<Tile>>,
+    pub spritefont: &'a SpriteFont<'a>,
+    pub time: f64,
 }
 
 impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
@@ -50,6 +53,8 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
 
         let ball_mesh = self.ball.mesh();
         self.coins.retain(|coin| !ball_mesh.bbox().touches(&coin.mesh().bbox()));
+
+        self.time -= dt.as_secs_f64();
         
         Ok(())
     }
@@ -58,10 +63,18 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         for coin in self.coins.iter_mut() {
             coin.render(renderer)?;
         }
-        self.ball.render(renderer)
+        self.ball.render(renderer)?;
+
+        self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND);
+
+        Ok(())
     }
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {
         self.ball.on_event(event)
     }
+}
+
+fn time_units(time: f64) -> String {
+    format!("{:02}", (time * 10.0) as u32)
 }

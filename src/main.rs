@@ -24,6 +24,7 @@ use graphics::lo_res_renderer::{ Layer, LoResRenderer };
 use graphics::sprite::Sprite;
 use graphics::map_renderer::render_map;
 use graphics::text_renderer::SpriteFont;
+use graphics::renderer::Renderer;
 use map::Map;
 use app::app::App;
 use app::assets::Assets;
@@ -82,6 +83,9 @@ fn main() -> Result<(), String> {
     let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
 
+    let timebox = Sprite::new(&assets.spritesheet, Rect::new(24, 0, 24, 12));
+    renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
+
     let spritefont = SpriteFont::new(&assets.spritefont, 8, 8);
 
     let ball = Hero::new(
@@ -97,12 +101,14 @@ fn main() -> Result<(), String> {
         ball,
         coins,
         map,
+        spritefont: &spritefont,
+        time: 10.0,
     };
 
     let mut app = App {
         game_controller_subsystem, 
         active_controller: None,
-        spritefont,
+        spritefont: &spritefont,
         fps_counter: FpsCounter::new(),
         world
     };
