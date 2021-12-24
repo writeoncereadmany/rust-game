@@ -3,6 +3,7 @@ use std::time::Duration;
 use sdl2::event::Event;
 
 use crate::shapes::push::Push;
+use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
@@ -16,6 +17,7 @@ pub enum Tile {
 
 pub struct World<'a> {
     pub ball: Hero<'a>,
+    pub coins: Vec<Coin<'a>>,
     pub map: Map<Meshed<Tile>>,
 }
 
@@ -45,11 +47,17 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
             }
         }
         self.ball.last_push = (tot_x_push, tot_y_push);
+
+        let ball_mesh = self.ball.mesh();
+        self.coins.retain(|coin| !ball_mesh.bbox().touches(&coin.mesh().bbox()));
         
         Ok(())
     }
 
     fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
+        for coin in self.coins.iter_mut() {
+            coin.render(renderer)?;
+        }
         self.ball.render(renderer)
     }
 

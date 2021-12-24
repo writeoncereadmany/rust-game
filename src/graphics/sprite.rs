@@ -1,6 +1,7 @@
 use sdl2::rect::Rect;
 use sdl2::render::Texture;
 
+#[derive(Clone)]
 pub struct Sprite<'a> {
     pub spritesheet: &'a Texture<'a>,
     pub source_rect: Rect

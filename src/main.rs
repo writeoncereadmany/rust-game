@@ -15,6 +15,7 @@ use sdl2::image::{self, InitFlag};
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use entities::coin::Coin;
 use entities::hero::Hero;
 use controller::Controller;
 use fps_counter::FpsCounter;
@@ -72,6 +73,12 @@ fn main() -> Result<(), String> {
     stage1(&mut map_builder, Tile::STONE);
     let map = map_builder.add_edges();
 
+    let coins: Vec<Coin> = vec![(1.0, 2.0)]
+        .iter()
+        .map(|(x, y)| (x * TILE_WIDTH as f64, y * TILE_WIDTH as f64))
+        .map(|(x, y)| Coin::new(x, y, 12, 12, &assets))
+        .collect();
+
     let tile = Sprite::new(&assets.tilesheet, Rect::new(0, 0, 12, 12));
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
 
@@ -88,6 +95,7 @@ fn main() -> Result<(), String> {
 
     let world: World = World {
         ball,
+        coins,
         map,
     };
 
