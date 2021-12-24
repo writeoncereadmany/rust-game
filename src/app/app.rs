@@ -27,14 +27,15 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
     }
 
     fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
-        self.fps_counter.on_frame();
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         self.world.render(renderer)?;
 
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
 
-        renderer.present()
+        renderer.present()?;
+        self.fps_counter.on_frame();
+        Ok(())
     }
 
     fn on_event(&mut self, event: &Event) -> Result<(), String> {

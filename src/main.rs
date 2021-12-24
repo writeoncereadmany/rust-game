@@ -24,7 +24,7 @@ use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::lo_res_renderer::{ Layer, LoResRenderer };
 use graphics::sprite::Sprite;
-use graphics::map_renderer::render_map;
+use graphics::map_renderer::{render_map, render_map_normals};
 use graphics::text_renderer::SpriteFont;
 use graphics::renderer::Renderer;
 use map::Map;
@@ -53,7 +53,6 @@ fn main() -> Result<(), String> {
 
     let canvas : Canvas<Window> = window
         .into_canvas()
-        .present_vsync()
         .build()
         .expect("could not make a canvas");
 
@@ -90,23 +89,9 @@ fn main() -> Result<(), String> {
     let down = Sprite::new(&assets.spritesheet, Rect::new(12, 12, 12, 12));
     let left = Sprite::new(&assets.spritesheet, Rect::new(24, 12, 12, 12));
     let right = Sprite::new(&assets.spritesheet, Rect::new(36, 12, 12, 12));
-    let none = Sprite::new(&assets.spritesheet, Rect::new(0, 0, 0, 0));
-
 
     render_map(&map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
-    render_map(&map, &Layer::BACKGROUND, &mut renderer, | t | { 
-        if t.mesh.normals.contains(&(0.0, 1.0)) { &up } else { &none }
-    });
-    render_map(&map, &Layer::BACKGROUND, &mut renderer, | t | { 
-        if t.mesh.normals.contains(&(0.0, -1.0)) { &down } else { &none }
-    });
-    render_map(&map, &Layer::BACKGROUND, &mut renderer, | t | { 
-        if t.mesh.normals.contains(&(-1.0, 0.0)) { &left } else { &none }
-    });
-    render_map(&map, &Layer::BACKGROUND, &mut renderer, | t | { 
-        if t.mesh.normals.contains(&(1.0, 0.0)) { &right } else { &none }
-    });
-
+    render_map_normals(&map, &Layer::BACKGROUND, &mut renderer, &up, &down, &left, &right);
 
     let timebox = Sprite::new(&assets.spritesheet, Rect::new(24, 0, 24, 12));
     renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
