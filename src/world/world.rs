@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use image::{Rgb, RgbImage};
+use image::Rgb;
 
 use sdl2::event::Event;
 
@@ -8,6 +8,7 @@ use crate::app::assets::Assets;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
+use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameEvents;
@@ -22,6 +23,7 @@ pub enum Tile {
 pub struct World<'a> {
     pub hero: Hero<'a>,
     pub coins: Vec<Coin<'a>>,
+    pub doors: Vec<Door<'a>>,
     pub map: Map<Meshed<Tile>>,
     pub spritefont: SpriteFont<'a>,
     pub time: f64,
@@ -29,17 +31,26 @@ pub struct World<'a> {
 
 impl <'a> World<'a> {
 
-    pub fn new(image: &RgbImage, assets: &'a Assets<'a>) -> Self {
+    pub fn new(assets: &'a Assets<'a>) -> Self {
+        let image = &assets.level;
         let width = image.width();
         let height = image.height();
         let mut map = Map::new(width as usize, height as usize, 12, 12);
         let mut coins: Vec<Coin> = Vec::new();
+        let mut hero: Option<Hero> = None;
+        let mut doors: Vec<Door> = Vec::new();
+
         for x in 0..image.width() {
             for y in 0..height {
                 let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE); },
-                    Rgb([255, 255, 0]) => { coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))}
+                    Rgb([255, 255, 0]) => { coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))},
+                    Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))},
+                    Rgb([0, 255, 0]) => { match hero {
+                        None => { hero = Some(Hero::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets)); }
+                        Some(_) => { panic!("Multiple hero start positions defined"); }
+                    }},
                     _ => { }
                 }
                 
@@ -48,20 +59,13 @@ impl <'a> World<'a> {
 
         let map = map.add_edges();
 
-        let hero = Hero::new(
-            36.0, 
-            36.0, 
-            12, 
-            12, 
-            &assets
-        );
-
         let spritefont =  assets.spritefont();
 
         World {
-            hero,
+            hero: hero.unwrap(),
             map,
             coins,
+            doors,
             spritefont,
             time: 10.0
         }
@@ -107,6 +111,11 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         for coin in self.coins.iter_mut() {
             coin.render(renderer)?;
         }
+
+        for door in self.doors.iter_mut() {
+            door.render(renderer)?;
+        }
+        
         self.hero.render(renderer)?;
 
         self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND);

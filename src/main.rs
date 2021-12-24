@@ -55,7 +55,7 @@ fn main() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let world: World = World::new(&assets.level, &assets);
+    let world: World = World::new(&assets);
 
     let tile = assets.sprite(0, 1);
     render_map(&world.map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
