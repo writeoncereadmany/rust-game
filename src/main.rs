@@ -69,7 +69,7 @@ fn main() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::Semicolon, Keycode::Period, Keycode::RShift);
+    let controller = Controller::new(Keycode::Z, Keycode::X, Keycode::RShift);
 
     let mut map_builder : Map<Tile> = Map::new(COLUMNS, ROWS, TILE_WIDTH, TILE_HEIGHT);
     from_image(&mut map_builder, &assets.level, |pixel| { match pixel {

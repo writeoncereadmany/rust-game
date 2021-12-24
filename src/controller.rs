@@ -51,18 +51,14 @@ impl ControllerItem {
 pub struct Controller {
     left: ControllerItem,
     right: ControllerItem,
-    up: ControllerItem, 
-    down: ControllerItem,
     jump: ControllerItem
 }
 
 impl Controller {
-    pub fn new(left: Keycode, right: Keycode, up: Keycode, down: Keycode, jump: Keycode) -> Self {
+    pub fn new(left: Keycode, right: Keycode, jump: Keycode) -> Self {
         Controller {
             left: ControllerItem{ key: left, pad: Button::DPadLeft, pressed: false, fired: false },
             right: ControllerItem{ key: right, pad: Button::DPadRight, pressed: false, fired: false },
-            up: ControllerItem{ key: up, pad: Button::DPadUp, pressed: false, fired: false },
-            down: ControllerItem{ key: down, pad: Button::DPadDown, pressed: false, fired: false },
             jump: ControllerItem{ key: jump, pad: Button::A, pressed: false, fired: false }
         }
     }
@@ -70,8 +66,6 @@ impl Controller {
     pub fn on_event(&mut self, event: &Event) {
         self.left.on_event(event);
         self.right.on_event(event);
-        self.up.on_event(event);
-        self.down.on_event(event);
         self.jump.on_event(event);
     }
 
@@ -81,14 +75,6 @@ impl Controller {
             (false, true) => 1,
             _ => 0
         }
-    }
-
-    pub fn y(&self) -> i32 {
-        match (self.up.pressed, self.down.pressed) {
-            (true, false) => 1,
-            (false, true) => -1,
-            _ => 0
-        }   
     }
 
     pub fn jump(&mut self) -> bool {
