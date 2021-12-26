@@ -31,8 +31,8 @@ pub struct World<'a> {
 
 impl <'a> World<'a> {
 
-    pub fn new(assets: &'a Assets<'a>) -> Self {
-        let image = &assets.level;
+    pub fn new(assets: &'a Assets<'a>, level: usize) -> Self {
+        let image = &assets.level[level];
         let width = image.width();
         let height = image.height();
         let mut map = Map::new(width as usize, height as usize, 12, 12);
@@ -115,7 +115,7 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
         for door in self.doors.iter_mut() {
             door.render(renderer)?;
         }
-        
+
         self.hero.render(renderer)?;
 
         self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND);

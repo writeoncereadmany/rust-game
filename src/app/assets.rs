@@ -15,7 +15,7 @@ pub struct Assets<'a> {
     char_height: u32,
     pub spritesheet : Texture<'a>,
     pub spritefont: Texture<'a>,
-    pub level: RgbImage,
+    pub level: Vec<RgbImage>,
 }
 
 impl <'a> Assets<'a> {
@@ -28,7 +28,10 @@ impl <'a> Assets<'a> {
         let spritefont = texture_creator.load_texture(graphics.join("spritefont.png"))?;
 
         let levels = assets.join("levels");
-        let level : RgbImage = image::open(levels.join("level1.png")).unwrap().to_rgb8();
+        let level : Vec<RgbImage> = ["level0.png", "level1.png"]
+            .iter()
+            .map(|file| { image::open(levels.join(file)).unwrap().to_rgb8() })
+            .collect();
 
         Ok(Assets {
             tile_width: 12,
