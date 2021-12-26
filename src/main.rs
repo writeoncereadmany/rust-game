@@ -6,6 +6,7 @@ mod fps_counter;
 mod game_loop;
 mod graphics;
 mod map;
+mod game;
 mod world;
 
 use sdl2::EventPump;
@@ -21,6 +22,7 @@ use graphics::renderer::Renderer;
 use app::app::App;
 use app::assets::Assets;
 use world::world::World;
+use game::game::Game;
 
 const COLUMNS: usize = 32;
 const ROWS: usize = 18;
@@ -63,12 +65,14 @@ fn main() -> Result<(), String> {
     let timebox = &assets.multisprite(2, 0, 2, 1);
     renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
 
+    let game: Game = Game{ world };
+
     let mut app = App {
         game_controller_subsystem, 
         active_controller: None,
         spritefont: &assets.spritefont(),
         fps_counter: FpsCounter::new(),
-        world
+        game
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;

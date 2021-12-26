@@ -9,13 +9,13 @@ use crate::game_loop::GameEvents;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::graphics::text_renderer::SpriteFont;
-use crate::world::world::World;
+use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
     pub active_controller: Option<GameController>,
-    pub world: World<'a>,
+    pub game: Game<'a>,
     pub fps_counter: FpsCounter,
     pub spritefont: &'a SpriteFont<'a>,
 }
@@ -23,13 +23,13 @@ pub struct App<'a> {
 impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
-        self.world.update(dt)
+        self.game.update(dt)
     }
 
     fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
-        self.world.render(renderer)?;
+        self.game.render(renderer)?;
 
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
 
@@ -48,6 +48,6 @@ impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
             _ => {}
         }
 
-        self.world.on_event(event)
+        self.game.on_event(event)
     }
 }
