@@ -27,26 +27,12 @@ impl <E> Events<E> {
 
 pub trait GameLoop<'a, R, E>
 {
-    fn update(&mut self, _delta: &Duration) -> Result<(), String> {
-        Ok(())
-    }
-
     fn render(&self, _renderer: &mut R) -> Result<(), String> {
         Ok(())
     }
  
-    fn on_event(&mut self, _event: &SdlEvent) -> Result<(), String> {
+    fn event(&mut self, _event: &Event<E>, _events: &mut Events<E>) -> Result<(), String> {
         Ok(())
-    }
-
-    // temporary routing harness: this allows me to replace update and on_event on a per-
-    // implementation 
-    fn event(&mut self, event: &Event<E>, _events: &mut Events<E>) -> Result<(), String> {
-        match event {
-            Event::Sdl(e) => self.on_event(e),
-            Event::Time(dt) => self.update(dt),
-            Event::Game(_) => Ok(())
-        }
     }
 }
 

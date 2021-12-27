@@ -1,10 +1,9 @@
 use std::time::Duration;
 
-use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 use crate::controller::Controller;
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::app::assets::Assets;
@@ -53,53 +52,57 @@ impl <'a> Hero<'a> {
 
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Hero<'a> {
 
-    fn update(&mut self, dt: &Duration) -> Result<(), String> {
-        self.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
-        self.dx = cap(self.dx, VEL_CAP);
-        if self.controller.x() == 0 {
-            match self.last_push {
-                (x, _) if x > 0.0 => {
-                    self.dx -= WALL_STICK;
-                }
-                (x, _) if x < 0.0 => {
-                    self.dx += WALL_STICK;
-                }
-                _ => {}
-            }
-        }
-        self.x += self.dx * dt.as_secs_f64();
-        
-        if self.controller.jump() {
-            match self.last_push {
-                (_, y) if y > 0.0 => { self.dy = JUMP_SPEED; },
-                (x, _) if x > 0.0 => { 
-                    self.dy = WALLJUMP_DY;
-                    self.dx = WALLJUMP_DX;
-                },
-                (x, _) if x < 0.0 => {
-                    self.dy = WALLJUMP_DY;
-                    self.dx = -WALLJUMP_DX;
-                }
-                _ => {} 
-            }
-        }
-        self.dy -= GRAVITY * dt.as_secs_f64();
-        self.dy = cap(self.dy, VEL_CAP);
-
-        self.y += self.dy * dt.as_secs_f64();
-
-        Ok(())
-    }
-
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
         Ok(())
     }
 
-    fn on_event(&mut self, event: &Event) -> Result<(), String> {
-        self.controller.on_event(event);
+    fn event(&mut self, event: &Event<f64>, _events: &mut Events<f64>) -> Result<(), String> {
+        match event {
+            Event::Sdl(e) => self.controller.on_event(e),
+            Event::Time(dt) => { update(self, dt)?; },
+            Event::Game(_) => { }
+        }
         Ok(())
     }
+}
+
+fn update<'a>(hero: &mut Hero<'a>, dt: &Duration) -> Result<(), String> {
+    hero.dx += hero.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
+    hero.dx = cap(hero.dx, VEL_CAP);
+    if hero.controller.x() == 0 {
+        match hero.last_push {
+            (x, _) if x > 0.0 => {
+                hero.dx -= WALL_STICK;
+            }
+            (x, _) if x < 0.0 => {
+                hero.dx += WALL_STICK;
+            }
+            _ => {}
+        }
+    }
+    
+    if hero.controller.jump() {
+        match hero.last_push {
+            (_, y) if y > 0.0 => { hero.dy = JUMP_SPEED; },
+            (x, _) if x > 0.0 => { 
+                hero.dy = WALLJUMP_DY;
+                hero.dx = WALLJUMP_DX;
+            },
+            (x, _) if x < 0.0 => {
+                hero.dy = WALLJUMP_DY;
+                hero.dx = -WALLJUMP_DX;
+            }
+            _ => {} 
+        }
+    }
+    hero.dy -= GRAVITY * dt.as_secs_f64();
+    hero.dy = cap(hero.dy, VEL_CAP);
+
+    hero.x += hero.dx * dt.as_secs_f64();
+    hero.y += hero.dy * dt.as_secs_f64();
+
+    Ok(())
 }
 
 fn cap(val: f64, max: f64) -> f64 {

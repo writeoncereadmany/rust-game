@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use sdl2::event::Event as SdlEvent;
 use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
@@ -22,11 +20,6 @@ pub struct App<'a> {
 
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
 
-    fn update(&mut self, dt: &Duration) -> Result<(), String> {
-        self.fps_counter.on_frame();
-        self.game.update(dt)
-    }
-
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
@@ -37,19 +30,6 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
         renderer.present()?;
 
         Ok(())
-    }
-
-    fn on_event(&mut self, event: &SdlEvent) -> Result<(), String> {
-        match event {
-            SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
-            SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
-            SdlEvent::ControllerDeviceAdded{ which, .. } => { 
-                self.active_controller = self.game_controller_subsystem.open(*which).ok(); 
-            }
-            _ => {}
-        }
-
-        self.game.on_event(event)
     }
 
     fn event(&mut self, event: &Event<f64>, events: &mut Events<f64>) -> Result<(), String> {
@@ -67,10 +47,9 @@ fn on_event<'a> (app: &mut App<'a>, event: &SdlEvent) -> Result<(), String> {
         SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
         SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
         SdlEvent::ControllerDeviceAdded{ which, .. } => { 
-            app.active_controller = app.game_controller_subsystem.open(*which).ok(); 
+            app.active_controller = app.game_controller_subsystem.open(*which).ok();
         }
         _ => {}
     }
-
-    app.game.on_event(event)
+    Ok(())
 }

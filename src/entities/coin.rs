@@ -1,7 +1,3 @@
-use std::time::Duration;
-
-use sdl2::event::Event;
-
 use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
@@ -35,16 +31,8 @@ impl <'a> Coin<'a> {
 
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Coin<'a> {
 
-    fn update(&mut self, _dt: &Duration) -> Result<(), String> {
-        Ok(())
-    }
-
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
-        Ok(())
-    }
-
-    fn on_event(&mut self, _event: &Event) -> Result<(), String> {
         Ok(())
     }
 }
