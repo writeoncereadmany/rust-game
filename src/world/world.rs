@@ -89,7 +89,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for World<'a> {
 
         self.hero.render(renderer)?;
 
-        self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND, Justification::LEFT);
+        self.spritefont.render(time_units(self.time), 12*16, 12 * 17 + 2, renderer, &Layer::FOREGROUND, Justification::CENTER);
 
         Ok(())
     }
@@ -146,5 +146,5 @@ fn update<'a>(world: &mut World<'a>, dt: &Duration, events: &mut Events) -> Resu
 }
 
 fn time_units(time: f64) -> String {
-    format!("{:02}", (time * 10.0) as u32)
+    format!("{:01}", (time * 10.0) as u32)
 }
