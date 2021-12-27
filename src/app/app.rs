@@ -4,7 +4,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::game_loop::GameLoop;
-use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
+use crate::graphics::renderer::{Layer, Renderer};
 use crate::graphics::text_renderer::{ SpriteFont, Justification };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
@@ -19,9 +19,9 @@ pub struct App<'a> {
     pub spritefont: &'a SpriteFont<'a>,
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for App<'a> {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for App<'a> {
 
-    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
         renderer.clear(&Layer::BACKGROUND).unwrap();
         renderer.clear(&Layer::FOREGROUND).unwrap();
 

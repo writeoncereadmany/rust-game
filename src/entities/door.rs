@@ -1,5 +1,5 @@
 use crate::game_loop::GameLoop;
-use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
+use crate::graphics::renderer::{Layer, Renderer};
 use crate::shapes::convex_mesh::ConvexMesh;
 
 pub struct Door {
@@ -24,9 +24,9 @@ impl Door {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Door {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, f64> for Door {
 
-    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
         renderer.draw_tile(&Layer::FOREGROUND, (1, 1), self.x as i32, self.y as i32);
         Ok(())
     }

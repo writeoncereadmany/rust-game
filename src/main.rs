@@ -16,7 +16,7 @@ use sdl2::video::Window;
 
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
-use graphics::lo_res_renderer::{ Layer, LoResRenderer };
+use graphics::renderer::{ Layer, Renderer };
 use graphics::sprite::SpriteSheet;
 use app::app::App;
 use app::assets::Assets;
@@ -50,7 +50,7 @@ fn main() -> Result<(), String> {
 
     let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
 
-    let mut renderer = LoResRenderer::new(
+    let mut renderer = Renderer::new(
         canvas,
         &texture_creator,
         spritesheet,

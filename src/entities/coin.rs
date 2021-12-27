@@ -1,5 +1,5 @@
 use crate::game_loop::GameLoop;
-use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
+use crate::graphics::renderer::{Layer, Renderer};
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
@@ -29,9 +29,9 @@ impl Coin {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Coin {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Coin {
 
-    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
         renderer.draw_tile(&Layer::FOREGROUND, (1, 0), self.x as i32, self.y as i32);
         Ok(())
     }

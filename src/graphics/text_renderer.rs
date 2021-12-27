@@ -1,5 +1,5 @@
 use super::sprite::{ SpriteSheet };
-use super::lo_res_renderer::LoResRenderer;
+use super::renderer::Renderer;
 use sdl2::render::Texture;
 use std::fmt::Debug;
 
@@ -23,7 +23,7 @@ impl <'a> SpriteFont<'a> {
         SpriteFont { spritesheet, char_width, char_height }
     }
 
-    pub fn render<Layer>(&self, text: String, x: i32, y: i32, renderer: &mut LoResRenderer<'a, Layer>, layer: &Layer, justification: Justification) 
+    pub fn render<Layer>(&self, text: String, x: i32, y: i32, renderer: &mut Renderer<'a, Layer>, layer: &Layer, justification: Justification) 
     where Layer : Ord + Debug {
         let text_width = text.len() as i32 * self.char_width as i32;
         let mut current_x = match justification {

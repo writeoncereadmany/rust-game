@@ -1,4 +1,4 @@
-use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
+use crate::graphics::renderer::{Layer, Renderer};
 use crate::graphics::text_renderer::{ Justification, SpriteFont };
 use crate::app::assets::Assets;
 use crate::world::world::World;
@@ -13,9 +13,9 @@ pub struct Game<'a> {
     pub score: u32,
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Game<'a> {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Game<'a> {
 
-    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
         self.world.render(renderer)?;
         self.spritefont.render(
             self.score.to_string(), 

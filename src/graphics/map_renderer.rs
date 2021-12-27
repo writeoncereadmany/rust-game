@@ -1,13 +1,13 @@
 use std::fmt::Debug;
 
 use crate::map::Map;
-use super::lo_res_renderer::LoResRenderer;
+use super::renderer::Renderer;
 
 pub trait Tiled {
     fn tile(&self) -> (i32, i32);
 }
 
-pub fn render_map<'a, Tile, Layer>(map: &Map<Tile>, layer: &Layer, renderer: &mut LoResRenderer<'a, Layer>) 
+pub fn render_map<'a, Tile, Layer>(map: &Map<Tile>, layer: &Layer, renderer: &mut Renderer<'a, Layer>) 
 where Tile : Clone + Tiled,
       Layer : Ord + Debug
 {

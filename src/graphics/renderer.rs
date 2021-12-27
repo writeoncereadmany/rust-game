@@ -15,7 +15,7 @@ pub enum Layer {
     FOREGROUND
 }
 
-pub struct LoResRenderer<'a, T> 
+pub struct Renderer<'a, T> 
 where T: Ord + Debug
 {
     canvas: WindowCanvas,
@@ -26,7 +26,7 @@ where T: Ord + Debug
     target_rect: Rect,
 }
 
-impl <'a, T> LoResRenderer<'a, T>
+impl <'a, T> Renderer<'a, T>
 where T: Ord + Debug
 {
     // Creates a new LoResRenderer with the given width and height, for the given canvas.
@@ -48,7 +48,7 @@ where T: Ord + Debug
             texture.set_blend_mode(BlendMode::Blend);
             layer_map.insert(layer, texture);
         }
-        Ok(LoResRenderer {
+        Ok(Renderer {
             canvas,
             layers: layer_map,
             spritesheet,
@@ -62,7 +62,7 @@ where T: Ord + Debug
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
 
-    fn draw(&mut self, layer: &Layer, sprite: &Sprite<'a>, x: i32, y: i32) {
+    pub fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
         self.canvas.with_texture_canvas(texture, |c| { 
@@ -70,7 +70,7 @@ where T: Ord + Debug
         }).unwrap();
     }
 
-    fn clear(&mut self, layer: &Layer) -> Result<(), TargetRenderError> {
+    pub fn clear(&mut self, layer: &T) -> Result<(), TargetRenderError> {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         self.canvas.with_texture_canvas(texture, |c| {
             c.set_draw_color(Color::from((0, 0, 0, 0)));
@@ -79,7 +79,7 @@ where T: Ord + Debug
         })
     }
 
-    fn present(&mut self) -> Result<(), String>
+    pub fn present(&mut self) -> Result<(), String>
     where
     {
         self.canvas.set_draw_color(Color::BLACK);

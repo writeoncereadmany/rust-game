@@ -11,7 +11,7 @@ use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
-use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
+use crate::graphics::renderer::{ Layer, Renderer };
 use crate::graphics::map_renderer::{ Tiled, render_map };
 use crate::graphics::text_renderer::{ SpriteFont, Justification };
 
@@ -85,9 +85,9 @@ impl <'a> World<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for World<'a> {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World<'a> {
     
-    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
+    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result <(), String> {
         render_map(&self.map, &Layer::BACKGROUND, renderer);
 
         for coin in &self.coins {
