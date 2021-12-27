@@ -10,9 +10,9 @@ pub struct Game<'a> {
     pub world: World<'a>
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Game<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Game<'a> {
 
-    fn update(&mut self, dt: Duration) -> Result<(), String> {
+    fn update(&mut self, dt: &Duration) -> Result<(), String> {
         self.world.update(dt)
     }
 

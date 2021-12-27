@@ -33,9 +33,9 @@ impl <'a> Door<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Door<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Door<'a> {
 
-    fn update(&mut self, _dt: Duration) -> Result<(), String> {
+    fn update(&mut self, _dt: &Duration) -> Result<(), String> {
         Ok(())
     }
 

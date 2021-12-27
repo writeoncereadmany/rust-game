@@ -51,9 +51,9 @@ impl <'a> Hero<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Hero<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Hero<'a> {
 
-    fn update(&mut self, dt: Duration) -> Result<(), String> {
+    fn update(&mut self, dt: &Duration) -> Result<(), String> {
         self.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
         self.dx = cap(self.dx, VEL_CAP);
         if self.controller.x() == 0 {

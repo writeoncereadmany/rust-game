@@ -20,9 +20,9 @@ pub struct App<'a> {
     pub spritefont: &'a SpriteFont<'a>,
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for App<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
 
-    fn update(&mut self, dt: Duration) -> Result<(), String> {
+    fn update(&mut self, dt: &Duration) -> Result<(), String> {
         self.fps_counter.on_frame();
         self.game.update(dt)
     }

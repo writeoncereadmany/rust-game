@@ -33,9 +33,9 @@ impl <'a> Coin<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Coin<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Coin<'a> {
 
-    fn update(&mut self, _dt: Duration) -> Result<(), String> {
+    fn update(&mut self, _dt: &Duration) -> Result<(), String> {
         Ok(())
     }
 

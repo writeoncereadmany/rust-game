@@ -72,9 +72,9 @@ impl <'a> World<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for World<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for World<'a> {
     
-    fn update(&mut self, dt: Duration) -> Result<(), String> {
+    fn update(&mut self, dt: &Duration) -> Result<(), String> {
         
         self.hero.update(dt)?;
 
