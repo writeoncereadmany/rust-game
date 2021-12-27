@@ -7,6 +7,10 @@ pub struct Sprite<'a> {
     pub source_rect: Rect
 }
 
+pub trait Sprited<'a> {
+    fn sprite(&self) -> &Sprite<'a>; 
+}
+
 impl <'a> Sprite<'a> {
     pub fn new(spritesheet: &'a Texture<'a>, source_rect: Rect) -> Self {
         Sprite{

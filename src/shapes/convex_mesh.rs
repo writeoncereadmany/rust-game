@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
+use crate::graphics::sprite::{ Sprite, Sprited };
 
 #[derive(Clone)]
 pub struct ConvexMesh {
@@ -16,6 +17,13 @@ pub struct Meshed<A>
 where A: Clone {
     pub item: A,
     pub mesh: ConvexMesh
+}
+
+impl <'a, A> Sprited<'a> for Meshed<A> where A: Clone + Sprited<'a> {
+
+    fn sprite(&self) -> &Sprite<'a> {
+        self.item.sprite()
+    }
 }
 
 impl ConvexMesh {

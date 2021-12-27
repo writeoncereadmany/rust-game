@@ -59,12 +59,6 @@ fn main() -> Result<(), String> {
 
     let world: World = World::new(&assets, 0);
 
-    let tile = assets.sprite(0, 1);
-    render_map(&world.map, &Layer::BACKGROUND, &mut renderer, | _t | { &tile });
-
-    let timebox = &assets.multisprite(2, 0, 2, 1);
-    renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
-
     let spritefont = &assets.spritefont();
     let game: Game = Game{ world, assets: &assets, level: 0, spritefont, score: 0 };
 

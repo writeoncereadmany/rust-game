@@ -23,6 +23,7 @@ pub struct App<'a> {
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for App<'a> {
 
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+        renderer.clear(&Layer::BACKGROUND).unwrap();
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         self.game.render(renderer)?;

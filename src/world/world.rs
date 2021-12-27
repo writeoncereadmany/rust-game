@@ -12,18 +12,28 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
+use crate::graphics::sprite::{ Sprite, Sprited };
+use crate::graphics::map_renderer::render_map;
 use crate::graphics::text_renderer::{ SpriteFont, Justification };
 
 #[derive(Clone)]
-pub enum Tile {
-    STONE
+pub enum Tile<'a> {
+    STONE(Sprite<'a>)
+}
+
+impl <'a> Sprited<'a> for Tile<'a> {
+    fn sprite(&self) -> &Sprite<'a> {
+        match self {
+            Tile::STONE(spr) => spr
+        }
+    }
 }
 
 pub struct World<'a> {
     pub hero: Hero<'a>,
     pub coins: Vec<Coin<'a>>,
     pub doors: Vec<Door<'a>>,
-    pub map: Map<Meshed<Tile>>,
+    pub map: Map<Meshed<Tile<'a>>>,
     pub spritefont: SpriteFont<'a>,
     pub time: f64,
 }
@@ -34,7 +44,7 @@ impl <'a> World<'a> {
         let image = &assets.level[level];
         let width = image.width();
         let height = image.height();
-        let mut map = Map::new(width as usize, height as usize, 12, 12);
+        let mut map : Map<Tile<'a>> = Map::new(width as usize, height as usize, 12, 12);
         let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
@@ -45,7 +55,7 @@ impl <'a> World<'a> {
             for y in 0..height {
                 let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
                 match pixel {
-                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE); },
+                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE(assets.sprite(0, 1))); },
                     Rgb([255, 255, 0]) => { 
                         coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, id, assets));
                         id += 1;
@@ -79,6 +89,8 @@ impl <'a> World<'a> {
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for World<'a> {
     
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
+        render_map(&self.map, &Layer::BACKGROUND, renderer);
+
         for coin in &self.coins {
             coin.render(renderer)?;
         }
