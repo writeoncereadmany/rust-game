@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use sdl2::event::Event;
 
-use crate::game_loop::GameEvents;
+use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::app::assets::Assets;
@@ -33,7 +33,7 @@ impl <'a> Door<'a> {
     }
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Door<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Door<'a> {
 
     fn update(&mut self, _dt: Duration) -> Result<(), String> {
         Ok(())

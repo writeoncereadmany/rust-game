@@ -3,7 +3,7 @@ use std::time::{Instant, Duration};
 use sdl2::EventPump;
 use sdl2::event::Event;
 
-pub trait GameEvents<'a, R>
+pub trait GameLoop<'a, R>
 {
 
     fn update(&mut self, _delta: Duration) -> Result<(), String> {
@@ -20,7 +20,7 @@ pub trait GameEvents<'a, R>
 }
 
 pub fn run_game_loop<'a, R, G>(game: &mut G, renderer: &mut R, events: &mut EventPump) -> Result<(), String> 
-where G: GameEvents<'a, R>
+where G: GameLoop<'a, R>
 {
     let mut last_frame = Instant::now();
     loop {

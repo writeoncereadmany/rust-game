@@ -5,7 +5,7 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::game_loop::GameEvents;
+use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::graphics::text_renderer::SpriteFont;
@@ -20,7 +20,7 @@ pub struct App<'a> {
     pub spritefont: &'a SpriteFont<'a>,
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for App<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for App<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         self.game.update(dt)

@@ -4,13 +4,13 @@ use sdl2::event::Event;
 
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::world::world::World;
-use crate::game_loop::GameEvents;
+use crate::game_loop::GameLoop;
 
 pub struct Game<'a> {
     pub world: World<'a>
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Game<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Game<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         self.world.update(dt)

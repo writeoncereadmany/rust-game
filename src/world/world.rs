@@ -11,7 +11,7 @@ use crate::entities::hero::Hero;
 use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
-use crate::game_loop::GameEvents;
+use crate::game_loop::GameLoop;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
 use crate::graphics::text_renderer::SpriteFont;
 
@@ -72,7 +72,7 @@ impl <'a> World<'a> {
     }
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for World<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for World<'a> {
     
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         

@@ -4,7 +4,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
 use crate::controller::Controller;
-use crate::game_loop::GameEvents;
+use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::app::assets::Assets;
@@ -51,7 +51,7 @@ impl <'a> Hero<'a> {
     }
 }
 
-impl <'a> GameEvents<'a, LoResRenderer<'a, Layer>> for Hero<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Hero<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
         self.dx += self.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
