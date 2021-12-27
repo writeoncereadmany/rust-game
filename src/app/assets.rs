@@ -59,16 +59,4 @@ impl <'a> Assets<'a> {
             )
         )
     }
-
-    pub fn multisprite(&'a self, x: i32, y: i32, width: u32, height: u32) -> Sprite<'a> {
-        Sprite::new(
-            &self.spritesheet, 
-            Rect::new(
-                x * self.tile_width as i32, 
-                y * self.tile_height as i32, 
-                self.tile_width * width, 
-                self.tile_height * height
-            )
-        )
-    }
 }

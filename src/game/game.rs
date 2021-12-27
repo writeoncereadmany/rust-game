@@ -30,10 +30,10 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Game<'a> {
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         match event {
             Event::Game(GEvent::CoinCollected(_)) => self.score += 10,
-            Event::Game(GEvent::TimeLimitExpired) => self.world = World::new(self.assets, self.level),
+            Event::Game(GEvent::TimeLimitExpired) => self.world = World::new(self.assets, &self.assets.level,  self.level),
             Event::Game(GEvent::ReachedDoor) => {
                 self.level = (self.level + 1) % self.assets.level.len();
-                self.world = World::new(self.assets, self.level);
+                self.world = World::new(self.assets, &self.assets.level, self.level);
             }
             _ => { }
         }

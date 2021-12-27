@@ -4,11 +4,8 @@ use sdl2::keyboard::Keycode;
 
 use crate::controller::Controller;
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
-use crate::app::assets::Assets;
 use crate::app::events::*;
-use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 
 const ACCEL: f64 = 200.0;
@@ -19,26 +16,24 @@ const WALLJUMP_DX: f64 = 150.0;
 const WALL_STICK: f64 = 10.0;
 const GRAVITY: f64 = 500.0;
 
-pub struct Hero<'a> {
+pub struct Hero {
     pub controller: Controller,
     pub x: f64,
     pub y: f64,
     pub dx: f64,
     pub dy: f64,
-    pub sprite: Sprite<'a>,
     pub last_push: (f64, f64),
     mesh: ConvexMesh
 }
 
-impl <'a> Hero<'a> {  
-    pub fn new(x: f64, y: f64, width: u32, height: u32, assets: &'a Assets<'a>) -> Self {
+impl Hero {  
+    pub fn new(x: f64, y: f64, width: u32, height: u32) -> Self {
         Hero {
             controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift),
             x,
             y,
             dx: 0.0,
             dy: 0.0,
-            sprite: assets.sprite(0, 0),
             last_push: (0.0, 0.0),
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
@@ -51,10 +46,10 @@ impl <'a> Hero<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Hero<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Hero {
 
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
-        renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
+        renderer.draw_tile(&Layer::FOREGROUND, (0, 0), self.x as i32, self.y as i32);
         Ok(())
     }
 
@@ -68,7 +63,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Hero<'a> {
     }
 }
 
-fn update<'a>(hero: &mut Hero<'a>, dt: &Duration) -> Result<(), String> {
+fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     hero.dx += hero.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
     hero.dx = cap(hero.dx, VEL_CAP);
     if hero.controller.x() == 0 {

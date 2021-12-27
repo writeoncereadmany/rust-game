@@ -17,6 +17,7 @@ use sdl2::video::Window;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::lo_res_renderer::{ Layer, LoResRenderer };
+use graphics::sprite::SpriteSheet;
 use app::app::App;
 use app::assets::Assets;
 use world::world::World;
@@ -45,18 +46,21 @@ fn main() -> Result<(), String> {
 
     let texture_creator = canvas.texture_creator();
 
+    let assets = Assets::new(&texture_creator)?;
+
+    let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
+
     let mut renderer = LoResRenderer::new(
         canvas,
         &texture_creator,
+        spritesheet,
+        assets.spritefont(),
         TILE_WIDTH * COLUMNS as u32,
         TILE_HEIGHT * ROWS as u32,
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
-    ).unwrap();
+    ).unwrap(); 
 
-    let assets = Assets::new(&texture_creator)?;
-
-    let world: World = World::new(&assets, 0);
-
+    let world: World = World::new(&assets, &assets.level, 0);
     let spritefont = &assets.spritefont();
     let game: Game = Game{ world, assets: &assets, level: 0, spritefont, score: 0 };
 

@@ -3,7 +3,8 @@ use std::cmp::Ordering;
 use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
-use crate::graphics::sprite::{ Sprite, Sprited };
+use crate::graphics::map_renderer::Tiled;
+use crate::graphics::sprite::{ Sprite };
 
 #[derive(Clone)]
 pub struct ConvexMesh {
@@ -19,10 +20,10 @@ where A: Clone {
     pub mesh: ConvexMesh
 }
 
-impl <'a, A> Sprited<'a> for Meshed<A> where A: Clone + Sprited<'a> {
+impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
 
-    fn sprite(&self) -> &Sprite<'a> {
-        self.item.sprite()
+    fn tile(&self) -> (i32, i32) {
+        self.item.tile()
     }
 }
 

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use image::Rgb;
+use image::{ Rgb, RgbImage };
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
@@ -12,39 +12,38 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
-use crate::graphics::sprite::{ Sprite, Sprited };
-use crate::graphics::map_renderer::render_map;
+use crate::graphics::map_renderer::{ Tiled, render_map };
 use crate::graphics::text_renderer::{ SpriteFont, Justification };
 
 #[derive(Clone)]
-pub enum Tile<'a> {
-    STONE(Sprite<'a>)
+pub enum Tile {
+    STONE((i32, i32))
 }
 
-impl <'a> Sprited<'a> for Tile<'a> {
-    fn sprite(&self) -> &Sprite<'a> {
+impl Tiled for Tile {
+    fn tile(&self) -> (i32, i32) {
         match self {
-            Tile::STONE(spr) => spr
+            Tile::STONE(tile) => *tile
         }
     }
 }
 
 pub struct World<'a> {
-    pub hero: Hero<'a>,
-    pub coins: Vec<Coin<'a>>,
-    pub doors: Vec<Door<'a>>,
-    pub map: Map<Meshed<Tile<'a>>>,
+    pub hero: Hero,
+    pub coins: Vec<Coin>,
+    pub doors: Vec<Door>,
+    pub map: Map<Meshed<Tile>>,
     pub spritefont: SpriteFont<'a>,
     pub time: f64,
 }
 
 impl <'a> World<'a> {
 
-    pub fn new(assets: &'a Assets<'a>, level: usize) -> Self {
-        let image = &assets.level[level];
+    pub fn new(assets: &'a Assets<'a>, levels: &Vec<RgbImage>, level: usize) -> Self {
+        let image = &levels[level];
         let width = image.width();
         let height = image.height();
-        let mut map : Map<Tile<'a>> = Map::new(width as usize, height as usize, 12, 12);
+        let mut map : Map<Tile> = Map::new(width as usize, height as usize, 12, 12);
         let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
@@ -55,14 +54,14 @@ impl <'a> World<'a> {
             for y in 0..height {
                 let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
                 match pixel {
-                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE(assets.sprite(0, 1))); },
+                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
                     Rgb([255, 255, 0]) => { 
-                        coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, id, assets));
+                        coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, id));
                         id += 1;
                     },
-                    Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))},
+                    Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12))},
                     Rgb([0, 255, 0]) => { match hero {
-                        None => { hero = Some(Hero::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets)); }
+                        None => { hero = Some(Hero::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},
                     _ => { }

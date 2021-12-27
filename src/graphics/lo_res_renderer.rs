@@ -7,7 +7,8 @@ use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureC
 use sdl2::video::{WindowContext};
 
 use super::renderer::Renderer;
-use super::sprite::Sprite;
+use super::sprite::{ Sprite, SpriteSheet };
+use super::text_renderer::{ Justification, SpriteFont };
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 pub enum Layer {
@@ -20,6 +21,8 @@ where T: Ord + Debug
 {
     canvas: WindowCanvas,
     layers: BTreeMap<T, Texture<'a>>,
+    spritesheet: SpriteSheet<'a>,
+    spritefont: SpriteFont<'a>,
     source_rect: Rect,
     target_rect: Rect,
 }
@@ -28,8 +31,15 @@ impl <'a, T> LoResRenderer<'a, T>
 where T: Ord + Debug
 {
     // Creates a new LoResRenderer with the given width and height, for the given canvas.
-    pub fn new(canvas: WindowCanvas, texture_creator: &'a TextureCreator<WindowContext>, width: u32, height: u32, layers: Vec<T>) 
-    -> Result<Self, TextureValueError>
+    pub fn new(
+        canvas: WindowCanvas, 
+        texture_creator: &'a TextureCreator<WindowContext>, 
+        spritesheet: SpriteSheet<'a>, 
+        spritefont: SpriteFont<'a>,
+        width: u32, 
+        height: u32, 
+        layers: Vec<T>
+    ) -> Result<Self, TextureValueError>
     {
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
@@ -42,9 +52,15 @@ where T: Ord + Debug
         Ok(LoResRenderer {
             canvas,
             layers: layer_map,
+            spritesheet,
+            spritefont,
             source_rect,
             target_rect,
         })
+    }
+
+    pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: i32, y: i32) {
+        self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
 }
 
