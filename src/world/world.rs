@@ -36,8 +36,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(levels: &Vec<RgbImage>, level: usize) -> Self {
-        let image = &levels[level];
+    pub fn new(image: &RgbImage) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize, 12, 12);
