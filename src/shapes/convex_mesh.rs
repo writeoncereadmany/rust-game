@@ -4,7 +4,6 @@ use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
 use crate::graphics::map_renderer::Tiled;
-use crate::graphics::sprite::{ Sprite };
 
 #[derive(Clone)]
 pub struct ConvexMesh {

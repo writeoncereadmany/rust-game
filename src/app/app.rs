@@ -4,7 +4,6 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::graphics::text_renderer::{ SpriteFont, Justification };
 use crate::game::game::Game;

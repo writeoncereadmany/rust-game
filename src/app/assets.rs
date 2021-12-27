@@ -1,16 +1,12 @@
 use image::RgbImage;
 
-use sdl2::rect::Rect;
 use sdl2::image::LoadTexture;
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
 
-use crate::graphics::sprite::Sprite;
 use crate::graphics::text_renderer::SpriteFont;
 
 pub struct Assets<'a> {
-    tile_width: u32,
-    tile_height: u32,
     char_width: u32,
     char_height: u32,
     pub spritesheet : Texture<'a>,
@@ -34,8 +30,6 @@ impl <'a> Assets<'a> {
             .collect();
 
         Ok(Assets {
-            tile_width: 12,
-            tile_height: 12,
             char_width: 8,
             char_height: 8,
             spritesheet,
@@ -46,17 +40,5 @@ impl <'a> Assets<'a> {
 
     pub fn spritefont(&'a self) -> SpriteFont<'a> {
         SpriteFont::new(&self.spritefont, self.char_width, self.char_height)
-    }
-
-    pub fn sprite(&'a self, x: i32, y: i32) -> Sprite<'a> {
-        Sprite::new(
-            &self.spritesheet, 
-            Rect::new(
-                x * self.tile_width as i32, 
-                y * self.tile_height as i32, 
-                self.tile_width, 
-                self.tile_height
-            )
-        )
     }
 }

@@ -1,6 +1,5 @@
 use super::sprite::{ SpriteSheet };
 use super::lo_res_renderer::LoResRenderer;
-use super::renderer::Renderer;
 use sdl2::render::Texture;
 use std::fmt::Debug;
 

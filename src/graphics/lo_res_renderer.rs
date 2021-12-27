@@ -6,7 +6,6 @@ use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
 use sdl2::video::{WindowContext};
 
-use super::renderer::Renderer;
 use super::sprite::{ Sprite, SpriteSheet };
 use super::text_renderer::{ Justification, SpriteFont };
 
@@ -62,10 +61,7 @@ where T: Ord + Debug
     pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: i32, y: i32) {
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
-}
 
-impl <'a, Layer> Renderer<'a, Layer> for LoResRenderer<'a, Layer>
-where Layer : Ord + Debug {
     fn draw(&mut self, layer: &Layer, sprite: &Sprite<'a>, x: i32, y: i32) {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
