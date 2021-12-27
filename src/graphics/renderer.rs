@@ -7,12 +7,18 @@ use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureC
 use sdl2::video::{WindowContext};
 
 use super::sprite::{ Sprite, SpriteSheet };
-use super::text_renderer::{ Justification, SpriteFont };
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 pub enum Layer {
     BACKGROUND,
     FOREGROUND
+}
+
+pub enum Justification {
+    LEFT,
+    CENTER,
+    RIGHT,
+
 }
 
 pub struct Renderer<'a, T> 
@@ -21,22 +27,23 @@ where T: Ord + Debug
     canvas: WindowCanvas,
     layers: BTreeMap<T, Texture<'a>>,
     spritesheet: SpriteSheet<'a>,
-    spritefont: SpriteFont<'a>,
+    spritefont: SpriteSheet<'a>,
     source_rect: Rect,
     target_rect: Rect,
+    text_width: u32,
 }
 
 impl <'a, T> Renderer<'a, T>
 where T: Ord + Debug
 {
-    // Creates a new LoResRenderer with the given width and height, for the given canvas.
     pub fn new(
         canvas: WindowCanvas, 
         texture_creator: &'a TextureCreator<WindowContext>, 
         spritesheet: SpriteSheet<'a>, 
-        spritefont: SpriteFont<'a>,
+        spritefont: SpriteSheet<'a>,
         width: u32, 
-        height: u32, 
+        height: u32,
+        text_width: u32, 
         layers: Vec<T>
     ) -> Result<Self, TextureValueError>
     {
@@ -55,11 +62,26 @@ where T: Ord + Debug
             spritefont,
             source_rect,
             target_rect,
+            text_width,
         })
     }
 
     pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: i32, y: i32) {
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
+    }
+
+    pub fn draw_text(&mut self, text: String, layer: &T, x: i32, y: i32, justification: Justification) {
+        let text_width = text.len() as i32 * self.text_width as i32;
+        let mut current_x = match justification {
+            Justification::LEFT => x,
+            Justification::CENTER => x - (text_width / 2),
+            Justification::RIGHT => x - text_width,
+        };
+
+        for ch in text.chars() {
+            self.draw(layer, &self.spritefont.sprite(tile(ch)), current_x, y);
+            current_x += self.text_width as i32;
+        }
     }
 
     pub fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
@@ -104,4 +126,25 @@ fn calculate_target_rect(canvas: &WindowCanvas, width: u32, height: u32) -> Rect
     let y_offset = (window_height - scaled_height) / 2;
 
     Rect::new(x_offset as i32, y_offset as i32, scaled_width, scaled_height)    
+}
+
+fn tile(ch: char) -> (i32, i32) {
+    match ch {
+        '0'..='9' => position(ch, '0', 0), 
+        'a'..='z' => position(ch, 'a', 1),
+        'A'..='Z' => position(ch, 'A', 4),
+        ':' => (6, 3),
+        '-' => (7, 3),
+        '?' => (8, 3),
+        '!' => (9, 3),
+        '.' => (6, 6),
+        ',' => (7, 6),
+        ' ' => (8, 6),
+        _ => (9, 6),
+    }
+}
+
+fn position(ch: char, base: char, starting_row: i32) -> (i32, i32) {
+    let offset = ch as i32 - base as i32;
+    (offset % 10, (offset / 10) + starting_row)
 }

@@ -50,24 +50,25 @@ fn main() -> Result<(), String> {
 
     let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
 
+    let spritefont = SpriteSheet::new(&assets.spritefont, 8, 8);
+
     let mut renderer = Renderer::new(
         canvas,
         &texture_creator,
         spritesheet,
-        assets.spritefont(),
+        spritefont,
         TILE_WIDTH * COLUMNS as u32,
         TILE_HEIGHT * ROWS as u32,
+        8,
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap(); 
 
-    let world: World = World::new(&assets, &assets.level, 0);
-    let spritefont = &assets.spritefont();
-    let game: Game = Game{ world, assets: &assets, level: 0, spritefont, score: 0 };
+    let world: World = World::new(&assets.level, 0);
+    let game: Game = Game{ world, assets: &assets, level: 0, score: 0 };
 
     let mut app = App {
         game_controller_subsystem, 
         active_controller: None,
-        spritefont,
         fps_counter: FpsCounter::new(),
         game
     };

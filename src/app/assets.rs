@@ -4,11 +4,7 @@ use sdl2::image::LoadTexture;
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
 
-use crate::graphics::text_renderer::SpriteFont;
-
 pub struct Assets<'a> {
-    char_width: u32,
-    char_height: u32,
     pub spritesheet : Texture<'a>,
     pub spritefont: Texture<'a>,
     pub level: Vec<RgbImage>,
@@ -30,15 +26,9 @@ impl <'a> Assets<'a> {
             .collect();
 
         Ok(Assets {
-            char_width: 8,
-            char_height: 8,
             spritesheet,
             spritefont,
             level,
         })
-    }
-
-    pub fn spritefont(&'a self) -> SpriteFont<'a> {
-        SpriteFont::new(&self.spritefont, self.char_width, self.char_height)
     }
 }

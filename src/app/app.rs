@@ -4,8 +4,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{Layer, Renderer};
-use crate::graphics::text_renderer::{ SpriteFont, Justification };
+use crate::graphics::renderer::{ Layer, Renderer, Justification };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
 
@@ -15,8 +14,7 @@ pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
     pub active_controller: Option<GameController>,
     pub game: Game<'a>,
-    pub fps_counter: FpsCounter,
-    pub spritefont: &'a SpriteFont<'a>,
+    pub fps_counter: FpsCounter
 }
 
 impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for App<'a> {
@@ -27,7 +25,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for App<'a> {
 
         self.game.render(renderer)?;
 
-        self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND, Justification::LEFT);      
+        renderer.draw_text(self.fps_counter.fps().to_string() + " fps", &Layer::FOREGROUND, 2, 2, Justification::LEFT);      
 
         renderer.present()?;
 

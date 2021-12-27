@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use image::{ Rgb, RgbImage };
 
-use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
@@ -11,9 +10,8 @@ use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{ Layer, Renderer };
+use crate::graphics::renderer::{ Layer, Renderer, Justification };
 use crate::graphics::map_renderer::{ Tiled, render_map };
-use crate::graphics::text_renderer::{ SpriteFont, Justification };
 
 #[derive(Clone)]
 pub enum Tile {
@@ -28,18 +26,17 @@ impl Tiled for Tile {
     }
 }
 
-pub struct World<'a> {
+pub struct World {
     pub hero: Hero,
     pub coins: Vec<Coin>,
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
-    pub spritefont: SpriteFont<'a>,
     pub time: f64,
 }
 
-impl <'a> World<'a> {
+impl World {
 
-    pub fn new(assets: &'a Assets<'a>, levels: &Vec<RgbImage>, level: usize) -> Self {
+    pub fn new(levels: &Vec<RgbImage>, level: usize) -> Self {
         let image = &levels[level];
         let width = image.width();
         let height = image.height();
@@ -72,20 +69,17 @@ impl <'a> World<'a> {
 
         let map = map.add_edges();
 
-        let spritefont =  assets.spritefont();
-
         World {
             hero: hero.unwrap(),
             map,
             coins,
             doors,
-            spritefont,
             time: 10.0
         }
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World<'a> {
+impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
     
     fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result <(), String> {
         render_map(&self.map, &Layer::BACKGROUND, renderer);
@@ -100,7 +94,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World<'a> {
 
         self.hero.render(renderer)?;
 
-        self.spritefont.render(time_units(self.time), 12*16, 12 * 17 + 2, renderer, &Layer::FOREGROUND, Justification::CENTER);
+        renderer.draw_text(time_units(self.time), &Layer::FOREGROUND, 12*16, 12 * 17 + 2, Justification::CENTER);
 
         Ok(())
     }
@@ -121,7 +115,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World<'a> {
     }
 }
 
-fn update<'a>(world: &mut World<'a>, dt: &Duration, events: &mut Events) -> Result<(), String> {
+fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(), String> {
         
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     for (_pos, t) in world.map.overlapping(&world.hero.mesh().bbox()) {

@@ -5,8 +5,7 @@ use std::fmt::Debug;
 
 pub struct SpriteFont<'a> {
     spritesheet: SpriteSheet<'a>,
-    char_width: u32,
-    char_height: u32
+    char_width: u32
 }
 
 pub enum Justification {
@@ -20,7 +19,7 @@ impl <'a> SpriteFont<'a> {
 
     pub fn new(spritesheet: &'a Texture<'a>, char_width: u32, char_height: u32) -> Self {
         let spritesheet = SpriteSheet::new(spritesheet, char_width, char_height);
-        SpriteFont { spritesheet, char_width, char_height }
+        SpriteFont { spritesheet, char_width }
     }
 
     pub fn render<Layer>(&self, text: String, x: i32, y: i32, renderer: &mut Renderer<'a, Layer>, layer: &Layer, justification: Justification) 
