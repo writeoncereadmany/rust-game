@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use sdl2::event::Event;
+use sdl2::event::Event as SdlEvent;
 use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::graphics::text_renderer::SpriteFont;
@@ -39,11 +39,11 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
         Ok(())
     }
 
-    fn on_event(&mut self, event: &Event) -> Result<(), String> {
+    fn on_event(&mut self, event: &SdlEvent) -> Result<(), String> {
         match event {
-            Event::Quit {..} => return Err("Escape pressed: ending game".into()),
-            Event::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
-            Event::ControllerDeviceAdded{ which, .. } => { 
+            SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
+            SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
+            SdlEvent::ControllerDeviceAdded{ which, .. } => { 
                 self.active_controller = self.game_controller_subsystem.open(*which).ok(); 
             }
             _ => {}
@@ -51,4 +51,26 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
 
         self.game.on_event(event)
     }
+
+    fn event(&mut self, event: &Event<f64>, events: &mut Events<f64>) -> Result<(), String> {
+        match event {
+            Event::Sdl(e) => { on_event(self, e)?; },
+            Event::Time(_) => { self.fps_counter.on_frame(); },
+            Event::Game(_) => { }
+        }
+        self.game.event(event, events)
+    }
+}
+
+fn on_event<'a> (app: &mut App<'a>, event: &SdlEvent) -> Result<(), String> {
+    match event {
+        SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
+        SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
+        SdlEvent::ControllerDeviceAdded{ which, .. } => { 
+            app.active_controller = app.game_controller_subsystem.open(*which).ok(); 
+        }
+        _ => {}
+    }
+
+    app.game.on_event(event)
 }
