@@ -10,8 +10,7 @@ use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{ Layer, Renderer, Justification };
-use crate::graphics::map_renderer::{ Tiled, render_map };
+use crate::graphics::renderer::{ Layer, Renderer, Justification, Tiled };
 
 #[derive(Clone)]
 pub enum Tile {
@@ -81,7 +80,9 @@ impl World {
 impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
     
     fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result <(), String> {
-        render_map(&self.map, &Layer::BACKGROUND, renderer);
+        renderer.draw_map(&self.map, &Layer::BACKGROUND);
+
+        renderer.draw_multitile(&Layer::BACKGROUND, (2, 0), (2, 1), 15*12, 17*12);
 
         for coin in &self.coins {
             coin.render(renderer)?;

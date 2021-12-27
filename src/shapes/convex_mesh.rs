@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
-use crate::graphics::map_renderer::Tiled;
+use crate::graphics::renderer::Tiled;
 
 #[derive(Clone)]
 pub struct ConvexMesh {
@@ -20,7 +20,6 @@ where A: Clone {
 }
 
 impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
-
     fn tile(&self) -> (i32, i32) {
         self.item.tile()
     }

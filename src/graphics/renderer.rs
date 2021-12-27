@@ -6,6 +6,7 @@ use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
 use sdl2::video::{WindowContext};
 
+use crate::map::Map;
 use super::sprite::{ Sprite, SpriteSheet };
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
@@ -31,6 +32,10 @@ where T: Ord + Debug
     source_rect: Rect,
     target_rect: Rect,
     text_width: u32,
+}
+
+pub trait Tiled {
+    fn tile(&self) -> (i32, i32);
 }
 
 impl <'a, T> Renderer<'a, T>
@@ -88,7 +93,15 @@ where T: Ord + Debug
         }
     }
 
-    pub fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
+    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>, layer: &T) 
+    where Tile : Clone + Tiled,
+    {
+        for (pos, t) in map {
+            self.draw_tile(layer, t.tile(), pos.min_x, pos.min_y)
+        }
+    }
+
+    fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
         self.canvas.with_texture_canvas(texture, |c| { 
