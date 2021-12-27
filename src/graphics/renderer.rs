@@ -70,6 +70,10 @@ where T: Ord + Debug
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
 
+    pub fn draw_multitile(&mut self, layer: &T, tile: (i32, i32), size: (u32, u32), x: i32, y: i32) {
+        self.draw(&layer, &self.spritesheet.multisprite(tile, size), x, y);
+    }
+
     pub fn draw_text(&mut self, text: String, layer: &T, x: i32, y: i32, justification: Justification) {
         let text_width = text.len() as i32 * self.text_width as i32;
         let mut current_x = match justification {

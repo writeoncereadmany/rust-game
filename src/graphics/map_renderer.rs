@@ -14,4 +14,6 @@ where Tile : Clone + Tiled,
     for (pos, t) in map {
         renderer.draw_tile(layer, t.tile(), pos.min_x, pos.min_y)
     }
+
+    renderer.draw_multitile(layer, (2, 0), (2, 1), 15*12, 17*12)
 }
