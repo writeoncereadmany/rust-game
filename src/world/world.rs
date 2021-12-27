@@ -3,13 +3,14 @@ use std::time::Duration;
 use image::Rgb;
 
 use crate::app::assets::Assets;
+use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::entities::door::Door;
 use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
-use crate::game_loop::*;
+use crate::game_loop::GameLoop;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
 use crate::graphics::text_renderer::SpriteFont;
 
@@ -38,12 +39,17 @@ impl <'a> World<'a> {
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
 
+        let mut id = 0;
+
         for x in 0..image.width() {
             for y in 0..height {
                 let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE); },
-                    Rgb([255, 255, 0]) => { coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))},
+                    Rgb([255, 255, 0]) => { 
+                        coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, id, assets));
+                        id += 1;
+                    },
                     Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets))},
                     Rgb([0, 255, 0]) => { match hero {
                         None => { hero = Some(Hero::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, assets)); }
@@ -70,7 +76,7 @@ impl <'a> World<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for World<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for World<'a> {
     
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
         for coin in &self.coins {
@@ -88,17 +94,23 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for World<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event<f64>, events: &mut Events<f64>) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         self.hero.event(event, events)?;
-        
-        match event {
-            Event::Time(dt) => { update(self, dt) },
-            _ => { Ok(())},
+        for coin in self.coins.iter_mut() {
+            coin.event(event, events)?;
         }
+
+        match event {
+            Event::Time(dt) => { update(self, dt, events)?; },
+            Event::Cleanup => { self.coins.retain(|coin| !coin.collected); }
+            _ => { },
+        }
+
+        Ok(())
     }
 }
 
-fn update<'a>(world: &mut World<'a>, dt: &Duration) -> Result<(), String> {
+fn update<'a>(world: &mut World<'a>, dt: &Duration, events: &mut Events) -> Result<(), String> {
         
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     for (_pos, t) in world.map.overlapping(&world.hero.mesh().bbox()) {
@@ -122,7 +134,11 @@ fn update<'a>(world: &mut World<'a>, dt: &Duration) -> Result<(), String> {
     world.hero.last_push = (tot_x_push, tot_y_push);
 
     let ball_mesh = world.hero.mesh();
-    world.coins.retain(|coin| !ball_mesh.bbox().touches(&coin.mesh().bbox()));
+    for coin in world.coins.iter() {
+        if ball_mesh.bbox().touches(&coin.mesh().bbox()) {
+            events.fire(Event::Game(GEvent::CoinCollected(coin.id)));
+        }
+    }
 
     world.time -= dt.as_secs_f64();
     

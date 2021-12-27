@@ -3,10 +3,11 @@ use std::time::Duration;
 use sdl2::keyboard::Keycode;
 
 use crate::controller::Controller;
-use crate::game_loop::*;
+use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::app::assets::Assets;
+use crate::app::events::*;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 
@@ -50,18 +51,18 @@ impl <'a> Hero<'a> {
     }
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for Hero<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for Hero<'a> {
 
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
         Ok(())
     }
 
-    fn event(&mut self, event: &Event<f64>, _events: &mut Events<f64>) -> Result<(), String> {
+    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
         match event {
             Event::Sdl(e) => self.controller.on_event(e),
             Event::Time(dt) => { update(self, dt)?; },
-            Event::Game(_) => { }
+            _ => { }
         }
         Ok(())
     }

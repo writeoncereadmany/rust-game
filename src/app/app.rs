@@ -3,12 +3,14 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::game_loop::*;
+use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
 use crate::graphics::text_renderer::SpriteFont;
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
+
+use super::events::*;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
@@ -18,7 +20,7 @@ pub struct App<'a> {
     pub spritefont: &'a SpriteFont<'a>,
 }
 
-impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
+impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for App<'a> {
 
     fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
@@ -32,7 +34,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event<f64>, events: &mut Events<f64>) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         match event {
             Event::Sdl(e) => { 
                 match e {
@@ -45,7 +47,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
                 }
             },
             Event::Time(_) => { self.fps_counter.on_frame(); },
-            Event::Game(_) => { }
+            _ => { }
         }
         self.game.event(event, events)
     }

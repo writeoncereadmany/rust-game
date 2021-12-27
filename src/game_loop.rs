@@ -7,7 +7,8 @@ use sdl2::event::Event as SdlEvent;
 pub enum Event<E> {
     Sdl(SdlEvent),
     Time(Duration),
-    Game(E)
+    Game(E),
+    Cleanup,
 }
 
 pub struct Events<E> {
@@ -59,6 +60,8 @@ where G: GameLoop<'a, R, E>
                 }
             }
         }
+
+        game.event(&Event::Cleanup, &mut events)?;
 
         game.render(renderer)?;
 
