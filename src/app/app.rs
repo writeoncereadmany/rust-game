@@ -34,22 +34,19 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, f64> for App<'a> {
 
     fn event(&mut self, event: &Event<f64>, events: &mut Events<f64>) -> Result<(), String> {
         match event {
-            Event::Sdl(e) => { on_event(self, e)?; },
+            Event::Sdl(e) => { 
+                match e {
+                    SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
+                    SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
+                    SdlEvent::ControllerDeviceAdded{ which, .. } => { 
+                        self.active_controller = self.game_controller_subsystem.open(*which).ok();
+                    },
+                    _ => {}
+                }
+            },
             Event::Time(_) => { self.fps_counter.on_frame(); },
             Event::Game(_) => { }
         }
         self.game.event(event, events)
     }
-}
-
-fn on_event<'a> (app: &mut App<'a>, event: &SdlEvent) -> Result<(), String> {
-    match event {
-        SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
-        SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
-        SdlEvent::ControllerDeviceAdded{ which, .. } => { 
-            app.active_controller = app.game_controller_subsystem.open(*which).ok();
-        }
-        _ => {}
-    }
-    Ok(())
 }
