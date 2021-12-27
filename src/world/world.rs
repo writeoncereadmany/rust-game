@@ -12,7 +12,7 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
 use crate::graphics::lo_res_renderer::{ Layer, LoResRenderer };
-use crate::graphics::text_renderer::SpriteFont;
+use crate::graphics::text_renderer::{ SpriteFont, Justification };
 
 #[derive(Clone)]
 pub enum Tile {
@@ -89,7 +89,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for World<'a> {
 
         self.hero.render(renderer)?;
 
-        self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND);
+        self.spritefont.render(time_units(self.time), 12*15 + 4, 12 * 17 + 2, renderer, &Layer::FOREGROUND, Justification::LEFT);
 
         Ok(())
     }

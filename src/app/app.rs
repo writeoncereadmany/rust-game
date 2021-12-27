@@ -6,7 +6,7 @@ use sdl2::controller::GameController;
 use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::graphics::lo_res_renderer::{Layer, LoResRenderer};
-use crate::graphics::text_renderer::SpriteFont;
+use crate::graphics::text_renderer::{ SpriteFont, Justification };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
 
@@ -27,7 +27,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>, GEvent> for App<'a> {
 
         self.game.render(renderer)?;
 
-        self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
+        self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND, Justification::LEFT);      
 
         renderer.present()?;
 

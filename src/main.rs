@@ -65,12 +65,13 @@ fn main() -> Result<(), String> {
     let timebox = &assets.multisprite(2, 0, 2, 1);
     renderer.draw(&Layer::BACKGROUND, &timebox, TILE_WIDTH as i32 * 15, TILE_HEIGHT as i32 * (ROWS as i32- 1));
 
-    let game: Game = Game{ world };
+    let spritefont = &assets.spritefont();
+    let game: Game = Game{ world, spritefont, score: 0 };
 
     let mut app = App {
         game_controller_subsystem, 
         active_controller: None,
-        spritefont: &assets.spritefont(),
+        spritefont,
         fps_counter: FpsCounter::new(),
         game
     };

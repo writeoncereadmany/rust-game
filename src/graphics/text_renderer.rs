@@ -11,15 +11,28 @@ pub struct SpriteFont<'a> {
     char_height: u32
 }
 
+pub enum Justification {
+    LEFT,
+    CENTER,
+    RIGHT,
+
+}
+
 impl <'a> SpriteFont<'a> {
 
     pub fn new(spritesheet: &'a Texture<'a>, char_width: u32, char_height: u32) -> Self {
         SpriteFont { spritesheet, char_width, char_height }
     }
 
-    pub fn render<Layer>(&self, text: String, x: i32, y: i32, renderer: &mut LoResRenderer<'a, Layer>, layer: &Layer) 
+    pub fn render<Layer>(&self, text: String, x: i32, y: i32, renderer: &mut LoResRenderer<'a, Layer>, layer: &Layer, justification: Justification) 
     where Layer : Ord + Debug {
-        let mut current_x = x;
+        let text_width = text.len() as i32 * self.char_width as i32;
+        let mut current_x = match justification {
+            Justification::LEFT => x,
+            Justification::CENTER => x - (text_width / 2),
+            Justification::RIGHT => x - text_width,
+        };
+
         for ch in text.chars() {
             renderer.draw(layer, &self.char(ch), current_x, y);
             current_x += self.char_width as i32;
