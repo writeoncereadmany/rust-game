@@ -23,10 +23,11 @@ pub struct App<'a> {
 impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for App<'a> {
 
     fn update(&mut self, dt: Duration) -> Result<(), String> {
+        self.fps_counter.on_frame();
         self.game.update(dt)
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.clear(&Layer::FOREGROUND).unwrap();
 
         self.game.render(renderer)?;
@@ -34,7 +35,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for App<'a> {
         self.spritefont.render(self.fps_counter.fps().to_string() + " fps", 2, 2, renderer, &Layer::FOREGROUND);      
 
         renderer.present()?;
-        self.fps_counter.on_frame();
+
         Ok(())
     }
 

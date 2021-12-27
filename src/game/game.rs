@@ -16,7 +16,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Game<'a> {
         self.world.update(dt)
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         self.world.render(renderer)
     }
 

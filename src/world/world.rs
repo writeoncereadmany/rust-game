@@ -107,12 +107,12 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for World<'a> {
         Ok(())
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
-        for coin in self.coins.iter_mut() {
+    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result <(), String> {
+        for coin in &self.coins {
             coin.render(renderer)?;
         }
 
-        for door in self.doors.iter_mut() {
+        for door in &self.doors {
             door.render(renderer)?;
         }
 

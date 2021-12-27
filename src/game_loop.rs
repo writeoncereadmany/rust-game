@@ -10,7 +10,7 @@ pub trait GameLoop<'a, R>
         Ok(())
     }
 
-    fn render(&mut self, _renderer: &mut R) -> Result<(), String> {
+    fn render(&self, _renderer: &mut R) -> Result<(), String> {
         Ok(())
     }
  

@@ -91,7 +91,7 @@ impl <'a> GameLoop<'a, LoResRenderer<'a, Layer>> for Hero<'a> {
         Ok(())
     }
 
-    fn render(&mut self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut LoResRenderer<'a, Layer>) -> Result<(), String> {
         renderer.draw(&Layer::FOREGROUND, &self.sprite, self.x as i32, self.y as i32);
         Ok(())
     }
