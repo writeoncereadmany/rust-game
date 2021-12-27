@@ -37,7 +37,7 @@ pub trait GameLoop<'a, R, E>
     }
 }
 
-pub fn run_game_loop<'a, R, G, E>(game: &mut G, renderer: &mut R, sdl_events: &mut EventPump) -> Result<(), String> 
+pub fn run_game_loop<'a, R, G, E>(game: &'a mut G, renderer: &mut R, sdl_events: &mut EventPump) -> Result<(), String> 
 where G: GameLoop<'a, R, E>
 {
     let mut last_frame = Instant::now();

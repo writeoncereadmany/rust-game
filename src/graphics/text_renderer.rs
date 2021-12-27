@@ -1,12 +1,11 @@
-use super::sprite::Sprite;
+use super::sprite::{ SpriteSheet };
 use super::lo_res_renderer::LoResRenderer;
 use super::renderer::Renderer;
-use sdl2::rect::Rect;
 use sdl2::render::Texture;
 use std::fmt::Debug;
 
 pub struct SpriteFont<'a> {
-    spritesheet: &'a Texture<'a>,
+    spritesheet: SpriteSheet<'a>,
     char_width: u32,
     char_height: u32
 }
@@ -21,6 +20,7 @@ pub enum Justification {
 impl <'a> SpriteFont<'a> {
 
     pub fn new(spritesheet: &'a Texture<'a>, char_width: u32, char_height: u32) -> Self {
+        let spritesheet = SpriteSheet::new(spritesheet, char_width, char_height);
         SpriteFont { spritesheet, char_width, char_height }
     }
 
@@ -34,51 +34,29 @@ impl <'a> SpriteFont<'a> {
         };
 
         for ch in text.chars() {
-            renderer.draw(layer, &self.char(ch), current_x, y);
+            renderer.draw(layer, &self.spritesheet.sprite(tile(ch)), current_x, y);
             current_x += self.char_width as i32;
         }
     }
+}
 
-    fn char(&self, character: char) -> Sprite<'a> {
-        match character {
-            '0'..='9' => self.number(character), 
-            'a'..='z' => self.lowercase(character),
-            'A'..='Z' => self.uppercase(character),
-            ':' => self.tile(6, 3),
-            '-' => self.tile(7, 3),
-            '?' => self.tile(8, 3),
-            '!' => self.tile(9, 3),
-            '.' => self.tile(6, 6),
-            ',' => self.tile(7, 6),
-            ' ' => self.tile(8, 6),
-            _ => self.tile(9, 6),
-        }
+fn tile(ch: char) -> (i32, i32) {
+    match ch {
+        '0'..='9' => position(ch, '0', 0), 
+        'a'..='z' => position(ch, 'a', 1),
+        'A'..='Z' => position(ch, 'A', 4),
+        ':' => (6, 3),
+        '-' => (7, 3),
+        '?' => (8, 3),
+        '!' => (9, 3),
+        '.' => (6, 6),
+        ',' => (7, 6),
+        ' ' => (8, 6),
+        _ => (9, 6),
     }
+}
 
-    fn number(&self, num: char) -> Sprite<'a> {
-        Sprite::new(self.spritesheet, self.rect(num, '0', 0))
-    }
-
-    fn lowercase(&self, letter: char) -> Sprite<'a> {
-        Sprite::new(self.spritesheet, self.rect(letter, 'a', 1))
-    }
-
-    fn uppercase(&self, letter: char) -> Sprite<'a> {
-        Sprite::new(self.spritesheet, self.rect(letter, 'A', 4))
-    }
-
-    fn tile(&self, x: i32, y: i32) -> Sprite<'a> {
-        Sprite::new(self.spritesheet, Rect::new(x * self.char_width as i32, y * self.char_height as i32, self.char_width, self.char_height))
-    }
-
-    fn rect(&self, ch: char, base: char, starting_row: i32) -> Rect {
-        let offset = SpriteFont::offset(ch, base);
-        let x = offset % 10;
-        let y = (offset / 10) + starting_row;
-        Rect::new(x * self.char_width as i32, y * self.char_height as i32, self.char_width, self.char_height)
-    }
-
-    fn offset(ch: char, base: char) -> i32 {
-        ch as i32 - base as i32
-    }
+fn position(ch: char, base: char, starting_row: i32) -> (i32, i32) {
+    let offset = ch as i32 - base as i32;
+    (offset % 10, (offset / 10) + starting_row)
 }

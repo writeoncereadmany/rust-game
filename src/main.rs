@@ -17,8 +17,6 @@ use sdl2::video::Window;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::lo_res_renderer::{ Layer, LoResRenderer };
-use graphics::map_renderer::{render_map};
-use graphics::renderer::Renderer;
 use app::app::App;
 use app::assets::Assets;
 use world::world::World;
@@ -48,10 +46,10 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
 
     let mut renderer = LoResRenderer::new(
-        canvas, 
-        &texture_creator, 
-        TILE_WIDTH * COLUMNS as u32, 
-        TILE_HEIGHT * ROWS as u32, 
+        canvas,
+        &texture_creator,
+        TILE_WIDTH * COLUMNS as u32,
+        TILE_HEIGHT * ROWS as u32,
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap();
 
