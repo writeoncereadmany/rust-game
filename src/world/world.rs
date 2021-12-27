@@ -134,13 +134,23 @@ fn update<'a>(world: &mut World<'a>, dt: &Duration, events: &mut Events) -> Resu
     world.hero.last_push = (tot_x_push, tot_y_push);
 
     let ball_mesh = world.hero.mesh();
-    for coin in world.coins.iter() {
+    for coin in &world.coins {
         if ball_mesh.bbox().touches(&coin.mesh().bbox()) {
             events.fire(Event::Game(GEvent::CoinCollected(coin.id)));
         }
     }
 
+    for door in &world.doors {
+        if ball_mesh.bbox().touches(&door.mesh().bbox()) {
+            events.fire(Event::Game(GEvent::ReachedDoor));
+        }
+    }
+
     world.time -= dt.as_secs_f64();
+
+    if world.time < 0.0 {
+        events.fire(Event::Game(GEvent::TimeLimitExpired))
+    }
     
     Ok(())
 }
