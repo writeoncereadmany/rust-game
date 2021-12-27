@@ -39,8 +39,9 @@ pub trait GameLoop<'a, R, E>
         Ok(())
     }
 
-    // temporary routing harness
-    fn event(&mut self, event: &Event<E>) -> Result<(), String> {
+    // temporary routing harness: this allows me to replace update and on_event on a per-
+    // implementation 
+    fn event(&mut self, event: &Event<E>, _events: &mut Events<E>) -> Result<(), String> {
         match event {
             Event::Sdl(e) => self.on_event(e),
             Event::Time(dt) => self.update(dt),
@@ -60,10 +61,17 @@ where G: GameLoop<'a, R, E>
             events.fire(Event::Sdl(event));
         }
 
-        game.event(&Event::Time(this_frame.duration_since(last_frame)))?;
+        events.fire(Event::Time(this_frame.duration_since(last_frame)));
 
-        for event in events.events.drain(..) {
-            game.event(&event)?;
+        let mut event = events.events.pop_front();
+        loop {
+            match event {
+                None => { break; }
+                Some(e) => { 
+                    game.event(&e, &mut events)?;
+                    event = events.events.pop_front();
+                }
+            }
         }
 
         game.render(renderer)?;
