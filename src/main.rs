@@ -63,8 +63,8 @@ fn main() -> Result<(), String> {
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap(); 
 
-    let world: World = World::new(&assets.level[0], 12, 12);
-    let game: Game = Game{ world, levels: &assets.level, level: 0, score: 0 };
+    let world: World = World::new(&assets.levels[0], 12, 12);
+    let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let mut app = App {
         game_controller_subsystem, 
