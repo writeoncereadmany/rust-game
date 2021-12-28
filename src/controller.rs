@@ -2,6 +2,7 @@ use sdl2::controller::{ Button };
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 
+#[derive(Clone, Copy)]
 pub struct ControllerItem {
     key: Keycode,
     pad: Button,
@@ -48,6 +49,7 @@ impl ControllerItem {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Controller {
     left: ControllerItem,
     right: ControllerItem,

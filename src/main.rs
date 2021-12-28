@@ -11,6 +11,7 @@ mod world;
 
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
+use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
@@ -18,6 +19,7 @@ use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::renderer::{ Layer, Renderer };
 use graphics::sprite::SpriteSheet;
+use controller::Controller;
 use app::app::App;
 use app::assets::Assets;
 use world::world::World;
@@ -63,7 +65,7 @@ fn main() -> Result<(), String> {
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap(); 
 
-    let world: World = World::new(&assets.levels[0], 12, 12);
+    let world: World = World::new(&assets.levels[0], 12, 12, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let mut app = App {

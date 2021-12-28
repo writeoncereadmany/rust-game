@@ -8,6 +8,7 @@ use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::entities::door::Door;
 use crate::map::Map;
+use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
 use crate::graphics::renderer::{ Layer, Renderer, Justification, Tiled };
@@ -35,7 +36,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, tile_width: u32, tile_height: u32) -> Self {
+    pub fn new(image: &RgbImage, tile_width: u32, tile_height: u32, controller: Controller) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize, tile_width, tile_height);
@@ -56,7 +57,12 @@ impl World {
                     },
                     Rgb([255, 0, 0]) => { doors.push(Door::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height))},
                     Rgb([0, 255, 0]) => { match hero {
-                        None => { hero = Some(Hero::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height)); }
+                        None => { hero = Some(Hero::new(
+                            (x * tile_width) as f64, 
+                            (y * tile_height) as f64, 
+                            tile_width, 
+                            tile_height,
+                            controller)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},
                     _ => { }
