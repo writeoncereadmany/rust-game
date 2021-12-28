@@ -35,10 +35,10 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage) -> Self {
+    pub fn new(image: &RgbImage, tile_width: u32, tile_height: u32) -> Self {
         let width = image.width();
         let height = image.height();
-        let mut map : Map<Tile> = Map::new(width as usize, height as usize, 12, 12);
+        let mut map : Map<Tile> = Map::new(width as usize, height as usize, tile_width, tile_height);
         let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
@@ -51,12 +51,12 @@ impl World {
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
                     Rgb([255, 255, 0]) => { 
-                        coins.push(Coin::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12, id));
+                        coins.push(Coin::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height, id));
                         id += 1;
                     },
-                    Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12))},
+                    Rgb([255, 0, 0]) => { doors.push(Door::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height))},
                     Rgb([0, 255, 0]) => { match hero {
-                        None => { hero = Some(Hero::new(x as f64 * 12.0, y as f64 * 12.0, 12, 12)); }
+                        None => { hero = Some(Hero::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},
                     _ => { }
