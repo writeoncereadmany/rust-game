@@ -72,7 +72,7 @@ impl World {
             map,
             coins,
             doors,
-            time: 10.0
+            time: 100.0
         }
     }
 }
@@ -161,5 +161,5 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
 }
 
 fn time_units(time: f64) -> String {
-    format!("{:01}", (time * 10.0) as u32)
+    format!("{:01}", (time * 1.0) as u32)
 }
