@@ -79,7 +79,11 @@ impl Controller {
         }
     }
 
-    pub fn jump(&mut self) -> bool {
+    pub fn jump_pressed(&mut self) -> bool {
         self.jump.fired()
+    }
+
+    pub fn jump_held(&self) -> bool {
+        self.jump.pressed
     }
 }

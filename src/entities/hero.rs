@@ -7,12 +7,14 @@ use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
 const ACCEL: f64 = 600.0;
-const VEL_CAP: f64 = 200.0;
-const JUMP_SPEED: f64 = 320.0;
+const VEL_CAP: f64 = 150.0;
+const JUMP_SPEED: f64 = 180.0;
 const WALLJUMP_DY: f64 = 180.0;
 const WALLJUMP_DX: f64 = 150.0;
 const WALL_STICK: f64 = 10.0;
 const GRAVITY: f64 = 1200.0;
+const EXTRA_JUMP: f64 = 900.0;
+const EXTRA_JUMP_DURATION: f64 = 0.35;
 
 pub struct Hero {
     pub controller: Controller,
@@ -21,6 +23,7 @@ pub struct Hero {
     pub dx: f64,
     pub dy: f64,
     pub last_push: (f64, f64),
+    extrajump: f64,
     mesh: ConvexMesh
 }
 
@@ -33,6 +36,7 @@ impl Hero {
             dx: 0.0,
             dy: 0.0,
             last_push: (0.0, 0.0),
+            extrajump: 0.0,
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
                 vec![])
@@ -62,7 +66,9 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Hero {
 }
 
 fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
-    hero.dx += hero.controller.x() as f64 * ACCEL * dt.as_secs_f64();            
+    let dt = dt.as_secs_f64();
+
+    hero.dx += hero.controller.x() as f64 * ACCEL * dt;            
     hero.dx = cap(hero.dx, VEL_CAP);
     if hero.controller.x() == 0 {
         match hero.last_push {
@@ -76,24 +82,38 @@ fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
         }
     }
     
-    if hero.controller.jump() {
+    if hero.controller.jump_pressed() {
         match hero.last_push {
-            (_, y) if y > 0.0 => { hero.dy = JUMP_SPEED; },
+            (_, y) if y > 0.0 => { 
+                hero.dy = JUMP_SPEED; 
+                hero.extrajump = EXTRA_JUMP_DURATION;
+            },
             (x, _) if x > 0.0 => { 
                 hero.dy = WALLJUMP_DY;
                 hero.dx = WALLJUMP_DX;
+                hero.extrajump = EXTRA_JUMP_DURATION;
+
             },
             (x, _) if x < 0.0 => {
                 hero.dy = WALLJUMP_DY;
                 hero.dx = -WALLJUMP_DX;
+                hero.extrajump = EXTRA_JUMP_DURATION;
+
             }
             _ => {} 
         }
     }
-    hero.dy -= GRAVITY * dt.as_secs_f64();
+    else if hero.extrajump > 0.0 && hero.controller.jump_held() {
+        hero.dy += EXTRA_JUMP * dt;
+        hero.extrajump -= dt;
+    }
+    else {
+        hero.extrajump = 0.0;
+    }
+    hero.dy -= GRAVITY * dt;
 
-    hero.x += hero.dx * dt.as_secs_f64();
-    hero.y += hero.dy * dt.as_secs_f64();
+    hero.x += hero.dx * dt;
+    hero.y += hero.dy * dt;
 
     Ok(())
 }
