@@ -37,7 +37,7 @@ pub trait GameLoop<'a, R, E>
     }
 }
 
-pub fn run_game_loop<'a, R, G, E>(game: &'a mut G, renderer: &mut R, sdl_events: &mut EventPump) -> Result<(), String> 
+pub fn run_game_loop<'a, R, G, E>(game: &'a mut G, renderer: &mut R, sdl_events: &mut EventPump, updates_per_frame: u32) -> Result<(), String> 
 where G: GameLoop<'a, R, E>
 {
     let mut last_frame = Instant::now();
@@ -48,18 +48,21 @@ where G: GameLoop<'a, R, E>
             events.fire(Event::Sdl(event));
         }
 
-        events.fire(Event::Time(this_frame.duration_since(last_frame)));
+        for _ in 0..updates_per_frame {
+            events.fire(Event::Time(this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64)));
 
-        let mut event = events.events.pop_front();
-        loop {
-            match event {
-                None => { break; }
-                Some(e) => { 
-                    game.event(&e, &mut events)?;
-                    event = events.events.pop_front();
+            let mut event = events.events.pop_front();
+            loop {
+                match event {
+                    None => { break; }
+                    Some(e) => { 
+                        game.event(&e, &mut events)?;
+                        event = events.events.pop_front();
+                    }
                 }
             }
         }
+
 
         game.event(&Event::Cleanup, &mut events)?;
 

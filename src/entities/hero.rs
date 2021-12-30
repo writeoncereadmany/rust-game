@@ -7,14 +7,14 @@ use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
 const ACCEL: f64 = 600.0;
-const VEL_CAP: f64 = 150.0;
-const JUMP_SPEED: f64 = 180.0;
-const WALLJUMP_DY: f64 = 180.0;
-const WALLJUMP_DX: f64 = 150.0;
+const VEL_CAP: f64 = 200.0;
+const WALLJUMP_DY: f64 = 220.0;
+const WALLJUMP_DX: f64 = 200.0;
 const WALL_STICK: f64 = 10.0;
-const GRAVITY: f64 = 1200.0;
-const EXTRA_JUMP: f64 = 900.0;
-const EXTRA_JUMP_DURATION: f64 = 0.35;
+const JUMP_SPEED: f64 = 250.0;
+const GRAVITY: f64 = 2000.0;
+const EXTRA_JUMP: f64 = 1500.0;
+const EXTRA_JUMP_DURATION: f64 = 0.20;
 
 pub struct Hero {
     pub controller: Controller,
