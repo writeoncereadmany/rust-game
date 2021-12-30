@@ -32,6 +32,7 @@ pub struct World {
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
     pub time: f64,
+    frame: u32,
 }
 
 impl World {
@@ -78,7 +79,8 @@ impl World {
             map,
             coins,
             doors,
-            time: 100.0
+            time: 100.0,
+            frame: 0,
         }
     }
 }
@@ -124,24 +126,27 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(), String> {
         
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
-    for (_pos, t) in world.map.overlapping(&world.hero.mesh().bbox()) {
-        let push = t.mesh.push(&world.hero.mesh());
+    let mut hero_mesh = world.hero.mesh().clone();
+    for (_pos, t) in world.map.overlapping(&hero_mesh.bbox()) {
+        let push = t.mesh.push(&hero_mesh);
         match push {
             None => {},
             Some((x, y)) => {
                 if x != 0.0 && world.hero.dx != 0.0 && x.signum() == -world.hero.dx.signum() {
-                    world.hero.x += x;
+                    hero_mesh = hero_mesh.translate(x, 0.0);
                     tot_x_push += x;
-                    world.hero.dx = 0.0;
                 }
                 if y != 0.0 && world.hero.dy != 0.0 && y.signum() == -world.hero.dy.signum() {
-                    world.hero.y += y;
+                    hero_mesh = hero_mesh.translate(0.0, y);
                     tot_y_push += y;
-                    world.hero.dy = 0.0;
                 }
             }
         }
     }
+    world.hero.x += tot_x_push;
+    world.hero.y += tot_y_push;
+    if tot_x_push != 0.0 { world.hero.dx = 0.0; }
+    if tot_y_push != 0.0 { world.hero.dy = 0.0; }
     world.hero.last_push = (tot_x_push, tot_y_push);
 
     let ball_mesh = world.hero.mesh();
@@ -163,6 +168,8 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
         events.fire(Event::Game(GEvent::TimeLimitExpired))
     }
     
+    world.frame += 1;
+
     Ok(())
 }
 
