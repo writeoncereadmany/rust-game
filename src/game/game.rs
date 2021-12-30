@@ -19,8 +19,8 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Game<'a> {
         renderer.draw_text(
             self.score.to_string(), 
             &Layer::FOREGROUND, 
-            8 * 3 + 2, 
-            12 * 17 + 2, 
+            (8 * 3 + 2) as f64, 
+            (12 * 17 + 2) as f64, 
             Justification::RIGHT);
         Ok(())
     }

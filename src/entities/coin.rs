@@ -32,7 +32,7 @@ impl Coin {
 impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Coin {
 
     fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
-        renderer.draw_tile(&Layer::FOREGROUND, (1, 0), self.x as i32, self.y as i32);
+        renderer.draw_tile(&Layer::FOREGROUND, (1, 0), self.x, self.y);
         Ok(())
     }
 

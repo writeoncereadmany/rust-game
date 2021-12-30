@@ -90,7 +90,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
     fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result <(), String> {
         renderer.draw_map(&self.map, &Layer::BACKGROUND);
 
-        renderer.draw_multitile(&Layer::BACKGROUND, (2, 0), (2, 1), 15*12, 17*12);
+        renderer.draw_multitile(&Layer::BACKGROUND, (2, 0), (2, 1), 15.0*12.0, 17.0*12.0);
 
         for coin in &self.coins {
             coin.render(renderer)?;
@@ -102,7 +102,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
 
         self.hero.render(renderer)?;
 
-        renderer.draw_text(time_units(self.time), &Layer::FOREGROUND, 12*16, 12 * 17 + 2, Justification::CENTER);
+        renderer.draw_text(time_units(self.time), &Layer::FOREGROUND, 12.0*16.0, 12.0 * 17.0 + 2.0, Justification::CENTER);
 
         Ok(())
     }

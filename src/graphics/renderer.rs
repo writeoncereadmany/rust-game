@@ -71,25 +71,25 @@ where T: Ord + Debug
         })
     }
 
-    pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: i32, y: i32) {
+    pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: f64, y: f64) {
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
 
-    pub fn draw_multitile(&mut self, layer: &T, tile: (i32, i32), size: (u32, u32), x: i32, y: i32) {
+    pub fn draw_multitile(&mut self, layer: &T, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
         self.draw(&layer, &self.spritesheet.multisprite(tile, size), x, y);
     }
 
-    pub fn draw_text(&mut self, text: String, layer: &T, x: i32, y: i32, justification: Justification) {
-        let text_width = text.len() as i32 * self.text_width as i32;
+    pub fn draw_text(&mut self, text: String, layer: &T, x: f64, y: f64, justification: Justification) {
+        let text_width = text.len() as f64 * self.text_width as f64;
         let mut current_x = match justification {
             Justification::LEFT => x,
-            Justification::CENTER => x - (text_width / 2),
+            Justification::CENTER => x - (text_width / 2.0),
             Justification::RIGHT => x - text_width,
         };
 
         for ch in text.chars() {
             self.draw(layer, &self.spritefont.sprite(tile(ch)), current_x, y);
-            current_x += self.text_width as i32;
+            current_x += self.text_width as f64;
         }
     }
 
@@ -97,11 +97,13 @@ where T: Ord + Debug
     where Tile : Clone + Tiled,
     {
         for (pos, t) in map {
-            self.draw_tile(layer, t.tile(), pos.min_x, pos.min_y)
+            self.draw_tile(layer, t.tile(), pos.min_x as f64, pos.min_y as f64)
         }
     }
 
-    fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: i32, y: i32) {
+    fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: f64, y: f64) {
+        let x = x.round() as i32;
+        let y = y.round() as i32;
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
         self.canvas.with_texture_canvas(texture, |c| { 
