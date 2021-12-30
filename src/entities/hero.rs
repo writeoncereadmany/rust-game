@@ -7,6 +7,8 @@ use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
 const ACCEL: f64 = 600.0;
+const REVERSE_ACCEL: f64 = 1200.0;
+const STOPPING_SPEED: f64 = 50.0;
 const VEL_CAP: f64 = 200.0;
 const WALLJUMP_DY: f64 = 220.0;
 const WALLJUMP_DX: f64 = 200.0;
@@ -68,6 +70,37 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Hero {
 fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     let dt = dt.as_secs_f64();
 
+    if hero.dx == 0.0 {
+        hero.dx += hero.controller.x() as f64 * ACCEL * dt;
+    }
+    else if hero.dx > 0.0 {
+        if hero.controller.x() > 0 {
+            hero.dx += ACCEL * dt;
+        }
+        else if hero.controller.x() < 0 {
+            hero.dx -= REVERSE_ACCEL * dt;
+        }
+        else if hero.dx.abs() < STOPPING_SPEED {
+            hero.dx = 0.0;
+        }
+        else {
+            hero.dx -= REVERSE_ACCEL * dt;
+        }
+    }
+    else {
+        if hero.controller.x() < 0 {
+            hero.dx -= ACCEL * dt;
+        }
+        else if hero.controller.x() < 0 {
+            hero.dx += REVERSE_ACCEL * dt;
+        }
+        else if hero.dx.abs() < STOPPING_SPEED {
+            hero.dx = 0.0;
+        }
+        else {
+            hero.dx += REVERSE_ACCEL * dt;
+        }
+    }
     hero.dx += hero.controller.x() as f64 * ACCEL * dt;            
     hero.dx = cap(hero.dx, VEL_CAP);
     if hero.controller.x() == 0 {
