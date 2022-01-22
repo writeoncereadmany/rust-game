@@ -63,7 +63,6 @@ where G: GameLoop<'a, R, E>
             }
         }
 
-
         game.event(&Event::Cleanup, &mut events)?;
 
         game.render(renderer)?;

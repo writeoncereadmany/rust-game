@@ -32,7 +32,8 @@ pub struct World {
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
     pub time: f64,
-    frame: u32,
+    tile_width: u32,
+    tile_height: u32
 }
 
 impl World {
@@ -80,7 +81,8 @@ impl World {
             coins,
             doors,
             time: 10.0,
-            frame: 0,
+            tile_width,
+            tile_height
         }
     }
 }
@@ -90,7 +92,7 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
     fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result <(), String> {
         renderer.draw_map(&self.map, &Layer::BACKGROUND);
 
-        renderer.draw_multitile(&Layer::BACKGROUND, (2, 0), (2, 1), 15.0*12.0, 17.0*12.0);
+        renderer.draw_multitile(&Layer::BACKGROUND, (2, 0), (2, 1), 15.0* self.tile_width as f64, 17.0*self.tile_height as f64);
 
         for coin in &self.coins {
             coin.render(renderer)?;
@@ -102,7 +104,12 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for World {
 
         self.hero.render(renderer)?;
 
-        renderer.draw_text(time_units(self.time), &Layer::FOREGROUND, 12.0*16.0, 12.0 * 17.0 + 2.0, Justification::CENTER);
+        renderer.draw_text(
+            time_units(self.time), 
+            &Layer::FOREGROUND, 
+            self.tile_width as f64 * 16.0, 
+            self.tile_height as f64 * 17.0 + 2.0, 
+            Justification::CENTER);
 
         Ok(())
     }
@@ -167,8 +174,6 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
     if world.time < 0.0 {
         events.fire(Event::Game(GEvent::TimeLimitExpired))
     }
-    
-    world.frame += 1;
 
     Ok(())
 }

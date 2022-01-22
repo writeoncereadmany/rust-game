@@ -8,6 +8,7 @@ use sdl2::video::WindowContext;
 
 pub struct Assets<'a> {
     pub spritesheet : Texture<'a>,
+    pub spritesheet15 : Texture<'a>,
     pub spritefont: Texture<'a>,
     pub levels: Vec<RgbImage>,
 }
@@ -19,6 +20,7 @@ impl <'a> Assets<'a> {
         let graphics = assets.join("graphics");
 
         let spritesheet = texture_creator.load_texture(graphics.join("spritesheet.png"))?;
+        let spritesheet15 = texture_creator.load_texture(graphics.join("spritesheet-15.png"))?;
         let spritefont = texture_creator.load_texture(graphics.join("spritefont.png"))?;
 
         let mut levels: Vec<PathBuf> = assets.join("levels").read_dir()
@@ -33,6 +35,7 @@ impl <'a> Assets<'a> {
 
         Ok(Assets {
             spritesheet,
+            spritesheet15,
             spritefont,
             levels,
         })

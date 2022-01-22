@@ -27,8 +27,6 @@ use game::game::Game;
 
 const COLUMNS: usize = 32;
 const ROWS: usize = 18;
-const TILE_WIDTH: u32 = 12;
-const TILE_HEIGHT: u32 = 12;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -59,8 +57,8 @@ fn main() -> Result<(), String> {
         &texture_creator,
         spritesheet,
         spritefont,
-        TILE_WIDTH * COLUMNS as u32,
-        TILE_HEIGHT * ROWS as u32,
+        COLUMNS as u32,
+        ROWS as u32,
         8,
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap(); 

@@ -46,12 +46,14 @@ where T: Ord + Debug
         texture_creator: &'a TextureCreator<WindowContext>, 
         spritesheet: SpriteSheet<'a>, 
         spritefont: SpriteSheet<'a>,
-        width: u32, 
-        height: u32,
+        columns: u32, 
+        rows: u32,
         text_width: u32, 
         layers: Vec<T>
     ) -> Result<Self, TextureValueError>
     {
+        let width = columns * spritesheet.tile_width;
+        let height = rows * spritesheet.tile_height;
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut layer_map = BTreeMap::new();

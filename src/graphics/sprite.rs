@@ -18,8 +18,8 @@ impl <'a> Sprite<'a> {
 
 pub struct SpriteSheet<'a> {
     spritesheet: &'a Texture<'a>,
-    tile_width: u32,
-    tile_height: u32,
+    pub tile_width: u32,
+    pub tile_height: u32,
 }
 
 impl <'a> SpriteSheet<'a> {
