@@ -48,7 +48,7 @@ fn main() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
+    let spritesheet = SpriteSheet::new(&assets.spritesheet15, 15, 15);
 
     let spritefont = SpriteSheet::new(&assets.spritefont, 8, 8);
 
@@ -63,7 +63,7 @@ fn main() -> Result<(), String> {
         vec!(Layer::BACKGROUND, Layer::FOREGROUND)
     ).unwrap(); 
 
-    let world: World = World::new(&assets.levels[0], 12, 12, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
+    let world: World = World::new(&assets.levels[0], 15, 15, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let mut app = App {

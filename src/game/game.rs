@@ -29,11 +29,11 @@ impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Game<'a> {
         match event {
             Event::Game(GEvent::CoinCollected(_)) => self.score += 10,
             Event::Game(GEvent::TimeLimitExpired) => {
-                self.world = World::new(&self.levels[self.level], 12, 12, self.world.hero.controller)
+                self.world = World::new(&self.levels[self.level], 15, 15, self.world.hero.controller)
             },
             Event::Game(GEvent::ReachedDoor) => {
                 self.level = (self.level + 1) % self.levels.len();
-                self.world = World::new(&self.levels[self.level], 12, 12, self.world.hero.controller);
+                self.world = World::new(&self.levels[self.level], 15, 15, self.world.hero.controller);
             }
             _ => { }
         }
