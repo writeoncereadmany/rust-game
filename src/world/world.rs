@@ -32,8 +32,8 @@ pub struct World {
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
     pub time: f64,
-    tile_width: u32,
-    tile_height: u32
+    pub tile_width: u32,
+    pub tile_height: u32
 }
 
 impl World {
@@ -156,15 +156,15 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
     if tot_y_push != 0.0 { world.hero.dy = 0.0; }
     world.hero.last_push = (tot_x_push, tot_y_push);
 
-    let ball_mesh = world.hero.mesh();
+    let hero_mesh = world.hero.mesh();
     for coin in &world.coins {
-        if ball_mesh.bbox().touches(&coin.mesh().bbox()) {
+        if hero_mesh.bbox().touches(&coin.mesh().bbox()) {
             events.fire(Event::Game(GEvent::CoinCollected(coin.id)));
         }
     }
 
     for door in &world.doors {
-        if ball_mesh.bbox().touches(&door.mesh().bbox()) {
+        if hero_mesh.bbox().touches(&door.mesh().bbox()) {
             events.fire(Event::Game(GEvent::ReachedDoor));
         }
     }
