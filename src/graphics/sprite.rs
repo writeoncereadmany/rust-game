@@ -16,6 +16,23 @@ impl <'a> Sprite<'a> {
     }
 }
 
+pub struct SpriteBatch<'a> {
+    pub spritesheet: &'a Texture<'a>,
+    pub blits: Vec<(Rect, (i32, i32))>
+}
+
+impl <'a> SpriteBatch<'a> {
+    pub fn new(spritesheet: &'a Texture<'a>) -> Self {
+        SpriteBatch { spritesheet, blits: Vec::new() }
+    }
+
+    pub fn blit(&mut self, source: Rect, x: f64, y: f64) {
+        let x = x.round() as i32;
+        let y = y.round() as i32;
+        self.blits.push((source, (x, y)));
+    }
+}
+
 pub struct SpriteSheet<'a> {
     spritesheet: &'a Texture<'a>,
     pub tile_width: u32,
@@ -51,5 +68,13 @@ impl <'a> SpriteSheet<'a> {
                 self.tile_height * height
             )
         )
+    }
+
+    pub fn tile(&self, x: i32, y: i32) -> Rect {
+        Rect::new(x * self.tile_width as i32, y * self.tile_height as i32, self.tile_width, self.tile_height)
+    }
+
+    pub fn batch(&self) -> SpriteBatch<'a> {
+        SpriteBatch::new(&self.spritesheet)
     }
 }

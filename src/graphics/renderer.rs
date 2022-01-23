@@ -7,7 +7,7 @@ use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureC
 use sdl2::video::{WindowContext};
 
 use crate::map::Map;
-use super::sprite::{ Sprite, SpriteSheet };
+use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 pub enum Layer {
@@ -98,18 +98,33 @@ where T: Ord + Debug
     pub fn draw_map<Tile>(&mut self, map: &Map<Tile>, layer: &T) 
     where Tile : Clone + Tiled,
     {
+        let mut batch = self.spritesheet.batch();
         for (pos, t) in map {
-            self.draw_tile(layer, t.tile(), pos.min_x as f64, pos.min_y as f64)
+            let (x, y) = t.tile();
+            let source_rect = self.spritesheet.tile(x, y);
+            batch.blit(source_rect, pos.min_x as f64, pos.min_y as f64);
         }
+        self.draw_batch(layer, batch);
     }
 
     fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: f64, y: f64) {
         let x = x.round() as i32;
         let y = y.round() as i32;
-        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+        let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
-        self.canvas.with_texture_canvas(texture, |c| { 
+        self.canvas.with_texture_canvas(target, |c| { 
             c.copy(sprite.spritesheet, sprite.source_rect, Rect::new(x, corrected_y, sprite.source_rect.width(), sprite.source_rect.height())).unwrap();
+        }).unwrap();
+    }
+
+    fn draw_batch(&mut self, layer: &T, batch: SpriteBatch<'a>) {
+        let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+        let height = self.source_rect.height() as i32;
+        self.canvas.with_texture_canvas(target, |c| { 
+            for (source_rect, (x, y)) in batch.blits {
+                let corrected_y = (height - y) - source_rect.height() as i32;
+                c.copy(batch.spritesheet, source_rect, Rect::new(x, corrected_y, source_rect.width(), source_rect.height())).unwrap();
+            }
         }).unwrap();
     }
 
