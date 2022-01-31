@@ -46,8 +46,7 @@ impl <'a> Renderer<'a>
         spritefont: SpriteSheet<'a>,
         columns: u32, 
         rows: u32,
-        text_width: u32, 
-        layers: Vec<Layer>
+        text_width: u32
     ) -> Result<Self, TextureValueError>
     {
         let width = columns * spritesheet.tile_width;
@@ -55,7 +54,7 @@ impl <'a> Renderer<'a>
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut layer_map = BTreeMap::new();
-        for layer in layers {
+        for layer in vec![Layer::BACKGROUND, Layer::FOREGROUND] {
             let mut texture: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
             texture.set_blend_mode(BlendMode::Blend);
             layer_map.insert(layer, texture);

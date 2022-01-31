@@ -17,7 +17,7 @@ use sdl2::video::Window;
 
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
-use graphics::renderer::{ Layer, Renderer };
+use graphics::renderer::{ Renderer };
 use graphics::sprite::SpriteSheet;
 use controller::Controller;
 use app::app::App;
@@ -59,8 +59,7 @@ fn main() -> Result<(), String> {
         spritefont,
         COLUMNS as u32,
         ROWS as u32,
-        8,
-        vec!(Layer::BACKGROUND, Layer::FOREGROUND)
+        8
     ).unwrap(); 
 
     let world: World = World::new(&assets.levels[0], 15, 15, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
