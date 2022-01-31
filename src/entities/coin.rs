@@ -1,5 +1,5 @@
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{Layer, Renderer};
+use crate::graphics::renderer::Renderer;
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
@@ -32,7 +32,7 @@ impl Coin {
 impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Coin {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.draw_tile(&Layer::FOREGROUND, (1, 0), self.x, self.y);
+        renderer.draw_tile((1, 0), self.x, self.y);
         Ok(())
     }
 

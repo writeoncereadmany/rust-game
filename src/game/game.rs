@@ -1,6 +1,6 @@
 use image::RgbImage;
 
-use crate::graphics::renderer::{ Layer, Renderer, Justification };
+use crate::graphics::renderer::{ Renderer, Justification };
 use crate::world::world::World;
 use crate::game_loop::GameLoop;
 use crate::app::events::*;
@@ -18,7 +18,6 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
         self.world.render(renderer)?;
         renderer.draw_text(
             self.score.to_string(), 
-            &Layer::FOREGROUND, 
             (8 * 3 + 2) as f64, 
             (self.world.tile_height * 17 + 2) as f64, 
             Justification::RIGHT);

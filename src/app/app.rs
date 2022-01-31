@@ -4,7 +4,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{ Layer, Renderer, Justification };
+use crate::graphics::renderer::{ Renderer, Justification };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
 
@@ -20,12 +20,11 @@ pub struct App<'a> {
 impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for App<'a> {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.clear(&Layer::BACKGROUND).unwrap();
-        renderer.clear(&Layer::FOREGROUND).unwrap();
+        renderer.clear().unwrap();
 
         self.game.render(renderer)?;
 
-        renderer.draw_text(self.fps_counter.fps().to_string() + " fps", &Layer::FOREGROUND, 2.0, 2.0, Justification::LEFT);      
+        renderer.draw_text(self.fps_counter.fps().to_string() + " fps", 2.0, 2.0, Justification::LEFT);      
 
         renderer.present()?;
 

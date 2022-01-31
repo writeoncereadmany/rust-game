@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::controller::Controller;
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{Layer, Renderer};
+use crate::graphics::renderer::Renderer;
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
@@ -53,7 +53,7 @@ impl Hero {
 impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.draw_tile(&Layer::FOREGROUND, (0, 0), self.x, self.y);
+        renderer.draw_tile((0, 0), self.x, self.y);
         Ok(())
     }
 

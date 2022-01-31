@@ -1,6 +1,3 @@
-use std::collections::BTreeMap;
-use std::fmt::Debug;
-
 use sdl2::pixels::{Color};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
@@ -8,12 +5,6 @@ use sdl2::video::{WindowContext};
 
 use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
-
-#[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
-pub enum Layer {
-    BACKGROUND,
-    FOREGROUND
-}
 
 pub enum Justification {
     LEFT,
@@ -25,7 +16,7 @@ pub enum Justification {
 pub struct Renderer<'a> 
 {
     canvas: WindowCanvas,
-    layers: BTreeMap<Layer, Texture<'a>>,
+    surface: Texture<'a>,
     spritesheet: SpriteSheet<'a>,
     spritefont: SpriteSheet<'a>,
     source_rect: Rect,
@@ -53,15 +44,11 @@ impl <'a> Renderer<'a>
         let height = rows * spritesheet.tile_height;
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
-        let mut layer_map = BTreeMap::new();
-        for layer in vec![Layer::BACKGROUND, Layer::FOREGROUND] {
-            let mut texture: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
-            texture.set_blend_mode(BlendMode::Blend);
-            layer_map.insert(layer, texture);
-        }
+        let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
+        surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
             canvas,
-            layers: layer_map,
+            surface,
             spritesheet,
             spritefont,
             source_rect,
@@ -70,15 +57,15 @@ impl <'a> Renderer<'a>
         })
     }
 
-    pub fn draw_tile(&mut self, layer: &Layer, tile: (i32, i32), x: f64, y: f64) {
-        self.draw(layer, &self.spritesheet.sprite(tile), x, y);
+    pub fn draw_tile(&mut self, tile: (i32, i32), x: f64, y: f64) {
+        self.draw(&self.spritesheet.sprite(tile), x, y);
     }
 
-    pub fn draw_multitile(&mut self, layer: &Layer, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
-        self.draw(&layer, &self.spritesheet.multisprite(tile, size), x, y);
+    pub fn draw_multitile(&mut self, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
+        self.draw(&self.spritesheet.multisprite(tile, size), x, y);
     }
 
-    pub fn draw_text(&mut self, text: String, layer: &Layer, x: f64, y: f64, justification: Justification) {
+    pub fn draw_text(&mut self, text: String, x: f64, y: f64, justification: Justification) {
         let text_width = text.len() as f64 * self.text_width as f64;
         let mut current_x = match justification {
             Justification::LEFT => x,
@@ -87,12 +74,12 @@ impl <'a> Renderer<'a>
         };
 
         for ch in text.chars() {
-            self.draw(layer, &self.spritefont.sprite(tile(ch)), current_x, y);
+            self.draw(&self.spritefont.sprite(tile(ch)), current_x, y);
             current_x += self.text_width as f64;
         }
     }
 
-    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>, layer: &Layer) 
+    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>) 
     where Tile : Clone + Tiled,
     {
         let mut batch = self.spritesheet.batch();
@@ -101,23 +88,21 @@ impl <'a> Renderer<'a>
             let source_rect = self.spritesheet.tile(x, y);
             batch.blit(source_rect, pos.min_x as f64, pos.min_y as f64);
         }
-        self.draw_batch(layer, batch);
+        self.draw_batch(batch);
     }
 
-    fn draw(&mut self, layer: &Layer, sprite: &Sprite<'a>, x: f64, y: f64) {
+    fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
         let x = x.round() as i32;
         let y = y.round() as i32;
-        let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
-        self.canvas.with_texture_canvas(target, |c| { 
+        self.canvas.with_texture_canvas(&mut self.surface, |c| { 
             c.copy(sprite.spritesheet, sprite.source_rect, Rect::new(x, corrected_y, sprite.source_rect.width(), sprite.source_rect.height())).unwrap();
         }).unwrap();
     }
 
-    fn draw_batch(&mut self, layer: &Layer, batch: SpriteBatch<'a>) {
-        let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
+    fn draw_batch(&mut self, batch: SpriteBatch<'a>) {
         let height = self.source_rect.height() as i32;
-        self.canvas.with_texture_canvas(target, |c| { 
+        self.canvas.with_texture_canvas(&mut self.surface, |c| { 
             for (source_rect, (x, y)) in batch.blits {
                 let corrected_y = (height - y) - source_rect.height() as i32;
                 c.copy(batch.spritesheet, source_rect, Rect::new(x, corrected_y, source_rect.width(), source_rect.height())).unwrap();
@@ -125,9 +110,8 @@ impl <'a> Renderer<'a>
         }).unwrap();
     }
 
-    pub fn clear(&mut self, layer: &Layer) -> Result<(), TargetRenderError> {
-        let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
-        self.canvas.with_texture_canvas(texture, |c| {
+    pub fn clear(&mut self) -> Result<(), TargetRenderError> {
+        self.canvas.with_texture_canvas(&mut self.surface, |c| {
             c.set_draw_color(Color::from((0, 0, 0, 0)));
             c.clear();
             ()
@@ -139,9 +123,7 @@ impl <'a> Renderer<'a>
     {
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
-        for (_, texture) in self.layers.iter_mut() {
-            self.canvas.copy(&texture, None, self.target_rect)?;
-        }
+        self.canvas.copy(&mut self.surface, None, self.target_rect)?;
         self.canvas.present();
         Ok(())
     }

@@ -65,7 +65,7 @@ fn main() -> Result<(), String> {
     let world: World = World::new(&assets.levels[0], 15, 15, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
-    let mut app = App {
+    let app = App {
         game_controller_subsystem, 
         active_controller: None,
         fps_counter: FpsCounter::new(),
@@ -74,7 +74,7 @@ fn main() -> Result<(), String> {
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
 
-    run_game_loop(&mut app, &mut renderer, &mut event_pump, 1)?;
+    run_game_loop(app, &mut renderer, &mut event_pump, 1)?;
 
     Ok(())
 }
