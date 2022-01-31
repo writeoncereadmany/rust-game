@@ -17,9 +17,9 @@ pub struct App<'a> {
     pub fps_counter: FpsCounter
 }
 
-impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for App<'a> {
+impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for App<'a> {
 
-    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.clear(&Layer::BACKGROUND).unwrap();
         renderer.clear(&Layer::FOREGROUND).unwrap();
 

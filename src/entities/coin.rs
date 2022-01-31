@@ -29,9 +29,9 @@ impl Coin {
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Coin {
+impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Coin {
 
-    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.draw_tile(&Layer::FOREGROUND, (1, 0), self.x, self.y);
         Ok(())
     }

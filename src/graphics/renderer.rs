@@ -22,11 +22,10 @@ pub enum Justification {
 
 }
 
-pub struct Renderer<'a, T> 
-where T: Ord + Debug
+pub struct Renderer<'a> 
 {
     canvas: WindowCanvas,
-    layers: BTreeMap<T, Texture<'a>>,
+    layers: BTreeMap<Layer, Texture<'a>>,
     spritesheet: SpriteSheet<'a>,
     spritefont: SpriteSheet<'a>,
     source_rect: Rect,
@@ -38,8 +37,7 @@ pub trait Tiled {
     fn tile(&self) -> (i32, i32);
 }
 
-impl <'a, T> Renderer<'a, T>
-where T: Ord + Debug
+impl <'a> Renderer<'a>
 {
     pub fn new(
         canvas: WindowCanvas, 
@@ -49,7 +47,7 @@ where T: Ord + Debug
         columns: u32, 
         rows: u32,
         text_width: u32, 
-        layers: Vec<T>
+        layers: Vec<Layer>
     ) -> Result<Self, TextureValueError>
     {
         let width = columns * spritesheet.tile_width;
@@ -73,15 +71,15 @@ where T: Ord + Debug
         })
     }
 
-    pub fn draw_tile(&mut self, layer: &T, tile: (i32, i32), x: f64, y: f64) {
+    pub fn draw_tile(&mut self, layer: &Layer, tile: (i32, i32), x: f64, y: f64) {
         self.draw(layer, &self.spritesheet.sprite(tile), x, y);
     }
 
-    pub fn draw_multitile(&mut self, layer: &T, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
+    pub fn draw_multitile(&mut self, layer: &Layer, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
         self.draw(&layer, &self.spritesheet.multisprite(tile, size), x, y);
     }
 
-    pub fn draw_text(&mut self, text: String, layer: &T, x: f64, y: f64, justification: Justification) {
+    pub fn draw_text(&mut self, text: String, layer: &Layer, x: f64, y: f64, justification: Justification) {
         let text_width = text.len() as f64 * self.text_width as f64;
         let mut current_x = match justification {
             Justification::LEFT => x,
@@ -95,7 +93,7 @@ where T: Ord + Debug
         }
     }
 
-    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>, layer: &T) 
+    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>, layer: &Layer) 
     where Tile : Clone + Tiled,
     {
         let mut batch = self.spritesheet.batch();
@@ -107,7 +105,7 @@ where T: Ord + Debug
         self.draw_batch(layer, batch);
     }
 
-    fn draw(&mut self, layer: &T, sprite: &Sprite<'a>, x: f64, y: f64) {
+    fn draw(&mut self, layer: &Layer, sprite: &Sprite<'a>, x: f64, y: f64) {
         let x = x.round() as i32;
         let y = y.round() as i32;
         let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
@@ -117,7 +115,7 @@ where T: Ord + Debug
         }).unwrap();
     }
 
-    fn draw_batch(&mut self, layer: &T, batch: SpriteBatch<'a>) {
+    fn draw_batch(&mut self, layer: &Layer, batch: SpriteBatch<'a>) {
         let target: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         let height = self.source_rect.height() as i32;
         self.canvas.with_texture_canvas(target, |c| { 
@@ -128,7 +126,7 @@ where T: Ord + Debug
         }).unwrap();
     }
 
-    pub fn clear(&mut self, layer: &T) -> Result<(), TargetRenderError> {
+    pub fn clear(&mut self, layer: &Layer) -> Result<(), TargetRenderError> {
         let texture: &mut Texture<'a> = self.layers.get_mut(layer).unwrap();
         self.canvas.with_texture_canvas(texture, |c| {
             c.set_draw_color(Color::from((0, 0, 0, 0)));

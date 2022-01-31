@@ -12,9 +12,9 @@ pub struct Game<'a> {
     pub score: u32,
 }
 
-impl <'a> GameLoop<'a, Renderer<'a, Layer>, GEvent> for Game<'a> {
+impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
 
-    fn render(&self, renderer: &mut Renderer<'a, Layer>) -> Result<(), String> {
+    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
         renderer.draw_text(
             self.score.to_string(), 
