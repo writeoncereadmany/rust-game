@@ -19,6 +19,8 @@ pub struct Renderer<'a>
     surface: Texture<'a>,
     spritesheet: SpriteSheet<'a>,
     spritefont: SpriteSheet<'a>,
+    batch: SpriteBatch<'a>,
+    textbatch: SpriteBatch<'a>,
     source_rect: Rect,
     target_rect: Rect,
     text_width: u32,
@@ -45,6 +47,8 @@ impl <'a> Renderer<'a>
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
+        let batch = spritesheet.batch();
+        let textbatch = spritefont.batch();
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
             canvas,
@@ -53,6 +57,8 @@ impl <'a> Renderer<'a>
             spritefont,
             source_rect,
             target_rect,
+            batch,
+            textbatch,
             text_width,
         })
     }
@@ -74,7 +80,7 @@ impl <'a> Renderer<'a>
         };
 
         for ch in text.chars() {
-            self.draw(&self.spritefont.sprite(tile(ch)), current_x, y);
+            self.draw_char(&self.spritefont.sprite(tile(ch)), current_x, y);
             current_x += self.text_width as f64;
         }
     }
@@ -92,12 +98,11 @@ impl <'a> Renderer<'a>
     }
 
     fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
-        let x = x.round() as i32;
-        let y = y.round() as i32;
-        let corrected_y = (self.source_rect.height() as i32 - y) - sprite.source_rect.height() as i32;
-        self.canvas.with_texture_canvas(&mut self.surface, |c| { 
-            c.copy(sprite.spritesheet, sprite.source_rect, Rect::new(x, corrected_y, sprite.source_rect.width(), sprite.source_rect.height())).unwrap();
-        }).unwrap();
+        self.batch.blit(sprite.source_rect, x, y);
+    }
+
+    fn draw_char(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
+        self.textbatch.blit(sprite.source_rect, x, y);
     }
 
     fn draw_batch(&mut self, batch: SpriteBatch<'a>) {
@@ -121,6 +126,12 @@ impl <'a> Renderer<'a>
     pub fn present(&mut self) -> Result<(), String>
     where
     {
+        let batch = std::mem::replace(&mut self.batch, self.spritesheet.batch());
+        self.draw_batch(batch);
+
+        let textbatch = std::mem::replace(&mut self.textbatch, self.spritefont.batch());
+        self.draw_batch(textbatch);
+
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();
         self.canvas.copy(&mut self.surface, None, self.target_rect)?;
