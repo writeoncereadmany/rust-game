@@ -88,13 +88,11 @@ impl <'a> Renderer<'a>
     pub fn draw_map<Tile>(&mut self, map: &Map<Tile>) 
     where Tile : Clone + Tiled,
     {
-        let mut batch = self.spritesheet.batch();
         for (pos, t) in map {
             let (x, y) = t.tile();
             let source_rect = self.spritesheet.tile(x, y);
-            batch.blit(source_rect, pos.min_x as f64, pos.min_y as f64);
+            self.batch.blit(source_rect, pos.min_x as f64, pos.min_y as f64);
         }
-        self.draw_batch(batch);
     }
 
     fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
