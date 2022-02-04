@@ -48,7 +48,7 @@ fn main() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let spritesheet = SpriteSheet::new(&assets.spritesheet15, 15, 15);
+    let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
 
     let spritefont = SpriteSheet::new(&assets.spritefont, 8, 8);
 
