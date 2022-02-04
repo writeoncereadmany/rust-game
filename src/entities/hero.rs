@@ -30,7 +30,7 @@ pub struct Hero {
 }
 
 impl Hero {  
-    pub fn new(x: f64, y: f64, width: u32, height: u32, controller: Controller) -> Self {
+    pub fn new(x: f64, y: f64, controller: Controller) -> Self {
         Hero {
             controller,
             x,
@@ -40,7 +40,7 @@ impl Hero {
             last_push: (0.0, 0.0),
             extrajump: 0.0,
             mesh: ConvexMesh::new(
-                vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
+                vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
                 vec![])
         }
     }

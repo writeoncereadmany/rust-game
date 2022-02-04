@@ -12,14 +12,14 @@ pub struct Coin {
 }
 
 impl Coin {  
-    pub fn new(x: f64, y: f64, width: u32, height: u32, id: u32) -> Self {
+    pub fn new(x: f64, y: f64, id: u32) -> Self {
         Coin {
             x,
             y,
             id,
             collected: false,
             mesh: ConvexMesh::new(
-                vec![(0.0, 0.0), (width as f64, 0.0), (width as f64, height as f64), (0.0, height as f64)], 
+                vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
                 vec![])
         }
     }

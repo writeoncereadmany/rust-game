@@ -23,7 +23,7 @@ pub struct Renderer<'a>
     textbatch: SpriteBatch<'a>,
     source_rect: Rect,
     target_rect: Rect,
-    text_width: u32,
+    text_width: f64,
 }
 
 pub trait Tiled {
@@ -38,8 +38,7 @@ impl <'a> Renderer<'a>
         spritesheet: SpriteSheet<'a>, 
         spritefont: SpriteSheet<'a>,
         columns: u32, 
-        rows: u32,
-        text_width: u32
+        rows: u32
     ) -> Result<Self, TextureValueError>
     {
         let width = columns * spritesheet.tile_width;
@@ -49,6 +48,7 @@ impl <'a> Renderer<'a>
         let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
         let batch = spritesheet.batch();
         let textbatch = spritefont.batch();
+        let text_width = spritefont.tile_width as f64 / spritesheet.tile_width as f64;
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
             canvas,
@@ -91,16 +91,19 @@ impl <'a> Renderer<'a>
         for (pos, t) in map {
             let (x, y) = t.tile();
             let source_rect = self.spritesheet.tile(x, y);
-            self.batch.blit(source_rect, pos.min_x as f64, pos.min_y as f64);
+            self.batch.blit(
+                source_rect, 
+                (pos.min_x * self.spritesheet.tile_width as i32) as f64, 
+                (pos.min_y * self.spritesheet.tile_height as i32) as f64);
         }
     }
 
     fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
-        self.batch.blit(sprite.source_rect, x, y);
+        self.batch.blit(sprite.source_rect, x * self.spritesheet.tile_width as f64, y * self.spritesheet.tile_height as f64);
     }
 
     fn draw_char(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
-        self.textbatch.blit(sprite.source_rect, x, y);
+        self.textbatch.blit(sprite.source_rect, x * self.spritesheet.tile_width as f64, y * self.spritesheet.tile_height as f64);
     }
 
     fn draw_batch(&mut self, batch: SpriteBatch<'a>) {

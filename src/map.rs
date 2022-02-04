@@ -7,8 +7,6 @@ pub struct Map<Tile>
 where Tile: Clone 
 {
     grid: Vec<Vec<Option<Tile>>>,
-    tile_height: u32,
-    tile_width: u32,
     columns: usize,
     rows: usize,
 }
@@ -24,11 +22,9 @@ pub struct Position {
 
 impl <Tile> Map<Tile> 
 where Tile: Clone {
-    pub fn new(columns: usize, rows: usize, tile_width: u32, tile_height: u32) -> Self {
+    pub fn new(columns: usize, rows: usize) -> Self {
         Map {
             grid: vec![vec![Option::None; rows]; columns],
-            tile_height,
-            tile_width,
             columns,
             rows
         }
@@ -62,10 +58,10 @@ where Tile: Clone {
     }
 
     pub fn overlapping(&self, bbox: &BBox) -> MapIter<Tile> {
-        let grid_min_x = constrain(f64::floor(bbox.left() / self.tile_width as f64), 0, self.columns - 1);
-        let grid_max_x = constrain(f64::floor(bbox.right() / self.tile_width as f64), 0, self.columns - 1);
-        let grid_min_y = constrain(f64::floor(bbox.bottom() / self.tile_width as f64), 0, self.rows - 1);
-        let grid_max_y = constrain(f64::floor(bbox.top() / self.tile_width as f64), 0, self.rows - 1);
+        let grid_min_x = constrain(f64::floor(bbox.left()), 0, self.columns - 1);
+        let grid_max_x = constrain(f64::floor(bbox.right()), 0, self.columns - 1);
+        let grid_min_y = constrain(f64::floor(bbox.bottom()), 0, self.rows - 1);
+        let grid_max_y = constrain(f64::floor(bbox.top()), 0, self.rows - 1);
 
         MapIter {
             map: self,
@@ -79,7 +75,7 @@ where Tile: Clone {
 
     pub fn add_edges(&self) -> Map<Meshed<Tile>>
     {
-        let mut map : Map<Meshed<Tile>> = Map::new(self.columns, self.rows, self.tile_width, self.tile_height);
+        let mut map : Map<Meshed<Tile>> = Map::new(self.columns, self.rows);
 
         self.into_iter().for_each(|(pos, tile)| {
             let (x, y) = (pos.grid_x, pos.grid_y);
@@ -165,10 +161,10 @@ where Tile: Clone {
                     let position = Position {
                         grid_x: x as i32,
                         grid_y: y as i32,
-                        min_x: x as i32 * self.map.tile_width as i32,
-                        max_x: (x + 1) as i32 * self.map.tile_width as i32,
-                        min_y: y as i32 * self.map.tile_height as i32,
-                        max_y: (y + 1) as i32 * self.map.tile_height as i32
+                        min_x: x as i32,
+                        max_x: (x + 1) as i32,
+                        min_y: y as i32,
+                        max_y: (y + 1) as i32
                     };
                     return Some((position, present.clone()))
                 },
@@ -194,7 +190,7 @@ mod tests {
 
     #[test]
     fn should_iterate_only_over_subset(){
-        let mut map : Map<u32> = Map::new(10, 10, 100, 100);
+        let mut map : Map<u32> = Map::new(10, 10);
         // fill entire map with tiles
         for i in 0..10 {
             map.row(0, i, 10, 3);
@@ -202,7 +198,7 @@ mod tests {
 
         let mut iterated : Vec<(i32, i32)> = Vec::new();
 
-        for (pos, _tile) in map.overlapping(&BBox::from(250.0, 350.0).to(450.0, 650.0)) {
+        for (pos, _tile) in map.overlapping(&BBox::from(2.5, 3.5).to(4.5, 6.5)) {
             iterated.push((pos.grid_x, pos.grid_y));
         }
 

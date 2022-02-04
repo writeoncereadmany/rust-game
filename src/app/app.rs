@@ -24,7 +24,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for App<'a> {
 
         self.game.render(renderer)?;
 
-        renderer.draw_text(self.fps_counter.fps().to_string() + " fps", 2.0, 2.0, Justification::LEFT);      
+        renderer.draw_text(self.fps_counter.fps().to_string() + " fps", 0.25, 0.25, Justification::LEFT);      
 
         renderer.present()?;
 

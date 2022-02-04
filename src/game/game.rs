@@ -18,8 +18,8 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
         self.world.render(renderer)?;
         renderer.draw_text(
             self.score.to_string(), 
-            (8 * 3 + 2) as f64, 
-            (self.world.tile_height * 17 + 2) as f64, 
+            1.0, 
+            17.0, 
             Justification::RIGHT);
         Ok(())
     }
@@ -28,11 +28,11 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
         match event {
             Event::Game(GEvent::CoinCollected(_)) => self.score += 10,
             Event::Game(GEvent::TimeLimitExpired) => {
-                self.world = World::new(&self.levels[self.level], self.world.tile_width, self.world.tile_height, self.world.hero.controller)
+                self.world = World::new(&self.levels[self.level], self.world.hero.controller)
             },
             Event::Game(GEvent::ReachedDoor) => {
                 self.level = (self.level + 1) % self.levels.len();
-                self.world = World::new(&self.levels[self.level], self.world.tile_width, self.world.tile_height, self.world.hero.controller);
+                self.world = World::new(&self.levels[self.level], self.world.hero.controller);
             }
             _ => { }
         }

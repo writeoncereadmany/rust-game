@@ -59,10 +59,9 @@ fn main() -> Result<(), String> {
         spritefont,
         COLUMNS as u32,
         ROWS as u32,
-        8
     ).unwrap(); 
 
-    let world: World = World::new(&assets.levels[0], 15, 15, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
+    let world: World = World::new(&assets.levels[0], Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let app = App {

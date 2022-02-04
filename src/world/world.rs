@@ -32,16 +32,14 @@ pub struct World {
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
     pub time: f64,
-    pub tile_width: u32,
-    pub tile_height: u32
 }
 
 impl World {
 
-    pub fn new(image: &RgbImage, tile_width: u32, tile_height: u32, controller: Controller) -> Self {
+    pub fn new(image: &RgbImage, controller: Controller) -> Self {
         let width = image.width();
         let height = image.height();
-        let mut map : Map<Tile> = Map::new(width as usize, height as usize, tile_width, tile_height);
+        let mut map : Map<Tile> = Map::new(width as usize, height as usize);
         let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
@@ -54,16 +52,14 @@ impl World {
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
                     Rgb([255, 255, 0]) => { 
-                        coins.push(Coin::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height, id));
+                        coins.push(Coin::new(x as f64, y as f64, id));
                         id += 1;
                     },
-                    Rgb([255, 0, 0]) => { doors.push(Door::new((x * tile_width) as f64, (y * tile_height) as f64, tile_width, tile_height))},
+                    Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64, y as f64))},
                     Rgb([0, 255, 0]) => { match hero {
                         None => { hero = Some(Hero::new(
-                            (x * tile_width) as f64, 
-                            (y * tile_height) as f64, 
-                            tile_width, 
-                            tile_height,
+                            x as f64, 
+                            y as f64, 
                             controller)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},
@@ -81,8 +77,6 @@ impl World {
             coins,
             doors,
             time: 10.0,
-            tile_width,
-            tile_height
         }
     }
 }
@@ -92,7 +86,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         renderer.draw_map(&self.map);
 
-        renderer.draw_multitile((2, 0), (2, 1), 15.0* self.tile_width as f64, 17.0*self.tile_height as f64);
+        renderer.draw_multitile((2, 0), (2, 1), 15.0, 17.0);
 
         for coin in &self.coins {
             coin.render(renderer)?;
@@ -106,8 +100,8 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
 
         renderer.draw_text(
             time_units(self.time), 
-            self.tile_width as f64 * 16.0, 
-            self.tile_height as f64 * 17.0 + 2.0, 
+            16.0, 
+            17.0, 
             Justification::CENTER);
 
         Ok(())
