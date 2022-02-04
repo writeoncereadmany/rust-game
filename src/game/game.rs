@@ -1,6 +1,6 @@
 use image::RgbImage;
 
-use crate::graphics::renderer::{ Renderer, Justification };
+use crate::graphics::renderer::{ Renderer, align };
 use crate::world::world::World;
 use crate::game_loop::GameLoop;
 use crate::app::events::*;
@@ -18,9 +18,9 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
         self.world.render(renderer)?;
         renderer.draw_text(
             self.score.to_string(), 
-            1.0, 
-            17.0, 
-            Justification::RIGHT);
+            3.0, 
+            17.5, 
+            align::RIGHT & align::MIDDLE);
         Ok(())
     }
 

@@ -6,11 +6,13 @@ use sdl2::video::{WindowContext};
 use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
-pub enum Justification {
-    LEFT,
-    CENTER,
-    RIGHT,
-
+pub mod align {
+    pub const CENTER: u8 = 0b_0000_0000;
+    pub const LEFT: u8 = 0b_0000_0001;
+    pub const RIGHT: u8 = 0b_0000_0010;
+    pub const MIDDLE: u8 = 0b_0000_0000;
+    pub const BOTTOM: u8 = 0b_0000_0100;
+    pub const TOP: u8 = 0b_0000_1000;
 }
 
 pub struct Renderer<'a> 
@@ -24,6 +26,7 @@ pub struct Renderer<'a>
     source_rect: Rect,
     target_rect: Rect,
     text_width: f64,
+    text_height: f64
 }
 
 pub trait Tiled {
@@ -49,6 +52,8 @@ impl <'a> Renderer<'a>
         let batch = spritesheet.batch();
         let textbatch = spritefont.batch();
         let text_width = spritefont.tile_width as f64 / spritesheet.tile_width as f64;
+        let text_height = spritefont.tile_height as f64 / spritesheet.tile_height as f64;
+
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
             canvas,
@@ -60,6 +65,7 @@ impl <'a> Renderer<'a>
             batch,
             textbatch,
             text_width,
+            text_height
         })
     }
 
@@ -71,12 +77,18 @@ impl <'a> Renderer<'a>
         self.draw(&self.spritesheet.multisprite(tile, size), x, y);
     }
 
-    pub fn draw_text(&mut self, text: String, x: f64, y: f64, justification: Justification) {
+    pub fn draw_text(&mut self, text: String, x: f64, y: f64, j: u8) {
         let text_width = text.len() as f64 * self.text_width as f64;
-        let mut current_x = match justification {
-            Justification::LEFT => x,
-            Justification::CENTER => x - (text_width / 2.0),
-            Justification::RIGHT => x - text_width,
+        let mut current_x = match (j & align::LEFT > 0, j & align::RIGHT > 0) {
+            (true, false) => x,
+            (false, true) => x - text_width,
+            _ => x - (text_width / 2.0),
+        };
+
+        let y = match (j & align::BOTTOM > 0, j & align::TOP > 0) {
+            (true, false) => y,
+            (false, true) => y - self.text_height,
+            _ => y - (self.text_height / 2.0),
         };
 
         for ch in text.chars() {

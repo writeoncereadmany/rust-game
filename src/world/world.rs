@@ -11,7 +11,7 @@ use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
 use crate::game_loop::GameLoop;
-use crate::graphics::renderer::{ Renderer, Justification, Tiled };
+use crate::graphics::renderer::{ Renderer, align, Tiled };
 
 #[derive(Clone)]
 pub enum Tile {
@@ -101,8 +101,8 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
         renderer.draw_text(
             time_units(self.time), 
             16.0, 
-            17.0, 
-            Justification::CENTER);
+            17.5, 
+            align::CENTER & align::MIDDLE);
 
         Ok(())
     }
