@@ -6,16 +6,17 @@ use crate::graphics::renderer::Renderer;
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 
-const ACCEL: f64 = 600.0;
-const REVERSE_ACCEL: f64 = 1200.0;
-const STOPPING_SPEED: f64 = 50.0;
-const VEL_CAP: f64 = 200.0;
-const WALLJUMP_DY: f64 = 220.0;
-const WALLJUMP_DX: f64 = 200.0;
-const WALL_STICK: f64 = 10.0;
-const JUMP_SPEED: f64 = 250.0;
-const GRAVITY: f64 = 2000.0;
-const EXTRA_JUMP: f64 = 1500.0;
+const ACCEL: f64 = 20.0;
+const REVERSE_ACCEL: f64 = 60.0;
+const AIR_ACCEL: f64 = 10.0;
+const STOPPING_SPEED: f64 = 1.0;
+const VEL_CAP: f64 = 15.0;
+const WALLJUMP_DY: f64 = 12.0;
+const WALLJUMP_DX: f64 = 12.0;
+const WALL_STICK: f64 = 0.1;
+const JUMP_SPEED: f64 = 15.0;
+const GRAVITY: f64 = 70.0;
+const EXTRA_JUMP: f64 = 55.0;
 const EXTRA_JUMP_DURATION: f64 = 0.20;
 
 pub struct Hero {
@@ -69,8 +70,13 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
 fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     let dt = dt.as_secs_f64();
+    let (_, last_push_y) = hero.last_push;
+    let grounded = last_push_y > 0.0;
 
-    if hero.dx == 0.0 {
+    if !grounded {
+        hero.dx += hero.controller.x() as f64 * AIR_ACCEL * dt;
+    }
+    else if hero.dx == 0.0 {
         hero.dx += hero.controller.x() as f64 * ACCEL * dt;
     }
     else if hero.dx > 0.0 {
