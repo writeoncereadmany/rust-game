@@ -54,7 +54,7 @@ impl Hero {
 impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.draw_tile((2, 1), self.x, self.y);
+        renderer.draw_tile((0, 2), self.x, self.y);
         Ok(())
     }
 
