@@ -2,6 +2,8 @@ use sdl2::controller::{ Button };
 use sdl2::event::{Event};
 use sdl2::keyboard::Keycode;
 
+use crate::sign::Sign;
+
 #[derive(Clone, Copy)]
 pub struct ControllerItem {
     key: Keycode,
@@ -71,11 +73,11 @@ impl Controller {
         self.jump.on_event(event);
     }
 
-    pub fn x(&self) -> i32 {
+    pub fn x(&self) -> Sign {
         match (self.left.pressed, self.right.pressed) {
-            (true, false) => -1,
-            (false, true) => 1,
-            _ => 0
+            (true, false) => Sign::NEGATIVE,
+            (false, true) => Sign::POSITIVE,
+            _ => Sign::ZERO
         }
     }
 

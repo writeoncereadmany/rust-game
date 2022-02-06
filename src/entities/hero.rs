@@ -5,10 +5,12 @@ use crate::game_loop::GameLoop;
 use crate::graphics::renderer::Renderer;
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
+use crate::sign::{ Sign, Signed };
 
 const ACCEL: f64 = 20.0;
 const REVERSE_ACCEL: f64 = 60.0;
 const AIR_ACCEL: f64 = 10.0;
+const AIR_SLOWDOWN: f64 = 10.0;
 const STOPPING_SPEED: f64 = 1.0;
 const VEL_CAP: f64 = 15.0;
 const WALLJUMP_DY: f64 = 12.0;
@@ -70,54 +72,45 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
 fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     let dt = dt.as_secs_f64();
-    let (_, last_push_y) = hero.last_push;
-    let grounded = last_push_y > 0.0;
+    let (last_push_x, last_push_y) = hero.last_push;
+    let airborne = last_push_y <= 0.0;
+    let x_vel_sign : Sign = hero.dx.sign();
+    let x_input : Sign = hero.controller.x();
 
-    if !grounded {
-        hero.dx += hero.controller.x() as f64 * AIR_ACCEL * dt;
-    }
-    else if hero.dx == 0.0 {
-        hero.dx += hero.controller.x() as f64 * ACCEL * dt;
-    }
-    else if hero.dx > 0.0 {
-        if hero.controller.x() > 0 {
-            hero.dx += ACCEL * dt;
+    if x_input == Sign::ZERO {
+
+        if airborne {
+            hero.dx -= AIR_SLOWDOWN * x_vel_sign.unit_f64() * dt;
+        } else {
+            hero.dx -= REVERSE_ACCEL * x_vel_sign.unit_f64() * dt;
         }
-        else if hero.controller.x() < 0 {
-            hero.dx -= REVERSE_ACCEL * dt;
-        }
-        else if hero.dx.abs() < STOPPING_SPEED {
+
+        if hero.dx.abs() < STOPPING_SPEED {
             hero.dx = 0.0;
         }
-        else {
-            hero.dx -= REVERSE_ACCEL * dt;
+    } else {
+
+        if airborne {
+            hero.dx += AIR_ACCEL * x_input.unit_f64() * dt;
+        } else if x_input == x_vel_sign {
+            hero.dx += ACCEL * x_input.unit_f64() * dt;
+        } else {
+            hero.dx += REVERSE_ACCEL * x_input.unit_f64() * dt;
         }
+
     }
-    else {
-        if hero.controller.x() < 0 {
-            hero.dx -= ACCEL * dt;
-        }
-        else if hero.controller.x() < 0 {
-            hero.dx += REVERSE_ACCEL * dt;
-        }
-        else if hero.dx.abs() < STOPPING_SPEED {
-            hero.dx = 0.0;
-        }
-        else {
-            hero.dx += REVERSE_ACCEL * dt;
-        }
-    }
-    hero.dx += hero.controller.x() as f64 * ACCEL * dt;            
-    hero.dx = cap(hero.dx, VEL_CAP);
-    if hero.controller.x() == 0 {
-        match hero.last_push {
-            (x, _) if x > 0.0 => {
+        
+    hero.dx = hero.dx.clamp(-VEL_CAP, VEL_CAP);
+
+    if hero.controller.x() == Sign::ZERO {
+        match last_push_x.sign() {
+            Sign::POSITIVE => {
                 hero.dx -= WALL_STICK;
             }
-            (x, _) if x < 0.0 => {
+            Sign::NEGATIVE => {
                 hero.dx += WALL_STICK;
             }
-            _ => {}
+            Sign::ZERO => {}
         }
     }
     
@@ -155,14 +148,4 @@ fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     hero.y += hero.dy * dt;
 
     Ok(())
-}
-
-fn cap(val: f64, max: f64) -> f64 {
-    if val > max {
-        max
-    } else if val < -max {
-        -max
-    } else {
-        val
-    }
 }
