@@ -18,7 +18,7 @@ impl <'a> Sprite<'a> {
 
 pub struct SpriteBatch<'a> {
     pub spritesheet: &'a Texture<'a>,
-    pub blits: Vec<(Rect, (i32, i32))>
+    pub blits: Vec<(Rect, (i32, i32), (bool, bool))>
 }
 
 impl <'a> SpriteBatch<'a> {
@@ -26,10 +26,10 @@ impl <'a> SpriteBatch<'a> {
         SpriteBatch { spritesheet, blits: Vec::new() }
     }
 
-    pub fn blit(&mut self, source: Rect, x: f64, y: f64) {
+    pub fn blit(&mut self, source: Rect, x: f64, y: f64, flip_x: bool, flip_y: bool) {
         let x = x.round() as i32;
         let y = y.round() as i32;
-        self.blits.push((source, (x, y)));
+        self.blits.push((source, (x, y), (flip_x, flip_y)));
     }
 }
 

@@ -21,6 +21,12 @@ const GRAVITY: f64 = 70.0;
 const EXTRA_JUMP: f64 = 55.0;
 const EXTRA_JUMP_DURATION: f64 = 0.20;
 
+const UNITS_PER_FRAME: f64 = 1.0;
+const RUN_CYCLE : [(i32, i32); 4] = [(1, 2), (2, 2), (3, 2), (2, 2)];
+const ASCENDING : (i32, i32) = (2, 1);
+const DESCENDING : (i32, i32) = (3, 1);
+
+
 pub struct Hero {
     pub controller: Controller,
     pub x: f64,
@@ -28,6 +34,7 @@ pub struct Hero {
     pub dx: f64,
     pub dy: f64,
     pub last_push: (f64, f64),
+    facing: Sign,
     extrajump: f64,
     mesh: ConvexMesh
 }
@@ -41,6 +48,7 @@ impl Hero {
             dx: 0.0,
             dy: 0.0,
             last_push: (0.0, 0.0),
+            facing: Sign::POSITIVE,
             extrajump: 0.0,
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
@@ -56,7 +64,21 @@ impl Hero {
 impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.draw_tile((0, 2), self.x, self.y);
+        let (_, last_push_y) = self.last_push;
+        let tile = if last_push_y == 0.0 {
+            if self.dy > 0.0 { 
+                ASCENDING
+            } else {
+                DESCENDING
+            }
+        } else if self.dx.abs() < STOPPING_SPEED {
+            (0, 2)
+        } else {
+            let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
+            RUN_CYCLE[frame]
+        };
+        let flip_x = self.facing == Sign::NEGATIVE;
+        renderer.draw_tile_ex(tile, self.x, self.y, flip_x, false);
         Ok(())
     }
 
@@ -101,6 +123,12 @@ fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
     }
         
     hero.dx = hero.dx.clamp(-VEL_CAP, VEL_CAP);
+
+    match hero.dx.sign() {
+        Sign::POSITIVE => hero.facing = Sign::POSITIVE,
+        Sign::NEGATIVE => hero.facing = Sign::NEGATIVE,
+        Sign::ZERO => {}
+    }
 
     if hero.controller.x() == Sign::ZERO {
         match last_push_x.sign() {

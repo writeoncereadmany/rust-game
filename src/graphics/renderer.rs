@@ -70,11 +70,15 @@ impl <'a> Renderer<'a>
     }
 
     pub fn draw_tile(&mut self, tile: (i32, i32), x: f64, y: f64) {
-        self.draw(&self.spritesheet.sprite(tile), x, y);
+        self.draw(&self.spritesheet.sprite(tile), x, y, false, false);
+    }
+
+    pub fn draw_tile_ex(&mut self, tile: (i32, i32), x: f64, y: f64, flip_x: bool, flip_y: bool) {
+        self.draw(&self.spritesheet.sprite(tile), x, y, flip_x, flip_y);
     }
 
     pub fn draw_multitile(&mut self, tile: (i32, i32), size: (u32, u32), x: f64, y: f64) {
-        self.draw(&self.spritesheet.multisprite(tile, size), x, y);
+        self.draw(&self.spritesheet.multisprite(tile, size), x, y, false, false);
     }
 
     pub fn draw_text(&mut self, text: String, x: f64, y: f64, j: u8) {
@@ -106,24 +110,55 @@ impl <'a> Renderer<'a>
             self.batch.blit(
                 source_rect, 
                 (pos.min_x * self.spritesheet.tile_width as i32) as f64, 
-                (pos.min_y * self.spritesheet.tile_height as i32) as f64);
+                (pos.min_y * self.spritesheet.tile_height as i32) as f64,
+                false,
+                false,
+            );
         }
     }
 
-    fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
-        self.batch.blit(sprite.source_rect, x * self.spritesheet.tile_width as f64, y * self.spritesheet.tile_height as f64);
+    fn draw(&mut self, sprite: &Sprite<'a>, x: f64, y: f64, flip_x: bool, flip_y: bool) {
+        self.batch.blit(
+            sprite.source_rect, 
+            x * self.spritesheet.tile_width as f64, 
+            y * self.spritesheet.tile_height as f64,
+            flip_x,
+            flip_y,
+        );
     }
 
     fn draw_char(&mut self, sprite: &Sprite<'a>, x: f64, y: f64) {
-        self.textbatch.blit(sprite.source_rect, x * self.spritesheet.tile_width as f64, y * self.spritesheet.tile_height as f64);
+        self.textbatch.blit(
+            sprite.source_rect, 
+            x * self.spritesheet.tile_width as f64, 
+            y * self.spritesheet.tile_height as f64,
+            false,
+            false,
+        );
     }
 
     fn draw_batch(&mut self, batch: SpriteBatch<'a>) {
         let height = self.source_rect.height() as i32;
         self.canvas.with_texture_canvas(&mut self.surface, |c| { 
-            for (source_rect, (x, y)) in batch.blits {
+            for (source_rect, (x, y), (flip_x, flip_y)) in batch.blits {
                 let corrected_y = (height - y) - source_rect.height() as i32;
-                c.copy(batch.spritesheet, source_rect, Rect::new(x, corrected_y, source_rect.width(), source_rect.height())).unwrap();
+                if (false, false) == (flip_x, flip_y) {
+                    c.copy(
+                        batch.spritesheet, 
+                        source_rect, 
+                        Rect::new(x, corrected_y, source_rect.width(), source_rect.height()),
+                    ).unwrap();
+                } else {
+                    c.copy_ex(
+                        batch.spritesheet, 
+                        source_rect, 
+                        Rect::new(x, corrected_y, source_rect.width(), source_rect.height()),
+                        0.0,
+                        None,
+                        flip_x, 
+                        flip_y
+                    ).unwrap();
+                }
             }
         }).unwrap();
     }
