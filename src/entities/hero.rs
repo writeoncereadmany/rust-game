@@ -7,9 +7,9 @@ use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 
-const ACCEL: f64 = 20.0;
+const ACCEL: f64 = 30.0;
 const REVERSE_ACCEL: f64 = 60.0;
-const AIR_ACCEL: f64 = 10.0;
+const AIR_ACCEL: f64 = 20.0;
 const AIR_SLOWDOWN: f64 = 10.0;
 const STOPPING_SPEED: f64 = 1.0;
 const VEL_CAP: f64 = 15.0;
@@ -17,9 +17,9 @@ const WALLJUMP_DY: f64 = 12.0;
 const WALLJUMP_DX: f64 = 12.0;
 const WALL_STICK: f64 = 0.1;
 const JUMP_SPEED: f64 = 15.0;
-const GRAVITY: f64 = 70.0;
-const EXTRA_JUMP: f64 = 55.0;
-const EXTRA_JUMP_DURATION: f64 = 0.20;
+const GRAVITY: f64 = 100.0;
+const EXTRA_JUMP: f64 = 90.0;
+const EXTRA_JUMP_DURATION: f64 = 0.215;
 
 const UNITS_PER_FRAME: f64 = 1.0;
 const RUN_CYCLE : [(i32, i32); 4] = [(1, 2), (2, 2), (3, 2), (2, 2)];
