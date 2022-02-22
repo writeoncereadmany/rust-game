@@ -52,7 +52,7 @@ impl World {
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
                     Rgb([255, 255, 0]) => { 
-                        coins.push(Coin::new(x as f64, y as f64, id));
+                        coins.push(Coin::new(x as f64, y as f64, id, phase_offset(x, y)));
                         id += 1;
                     },
                     Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64, y as f64))},
@@ -169,6 +169,11 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
     }
 
     Ok(())
+}
+
+fn phase_offset(x: u32, y: u32) -> f64 {
+    // magic numbers which don't mean anything, but feel good
+    x as f64 * -0.3 + y as f64 * -0.5
 }
 
 fn time_units(time: f64) -> String {
