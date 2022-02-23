@@ -11,15 +11,18 @@ mod world;
 mod sign;
 mod timebuffer;
 
+use std::time::Duration;
+
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
 use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
+use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
-use graphics::renderer::{ Renderer };
+use graphics::renderer::{Renderer};
 use graphics::sprite::SpriteSheet;
 use controller::Controller;
 use app::app::App;
@@ -34,6 +37,34 @@ fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let game_controller_subsystem = sdl_context.game_controller()?;
+    let audio_subsystem = sdl_context.audio()?;
+
+    let desired_spec = AudioSpecDesired {
+        freq: Some(44100),
+        channels: Some(1),  // mono
+        samples: None       // default sample size
+    };
+
+    let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
+        // initialize the audio callback
+        TwoChannels {
+            freq: spec.freq as f32,
+            channel1: Sawtooth {
+                pitch: 440.0,
+                phase: 0.0,
+                volume: 0.0
+            },
+            channel2: Sawtooth {
+                pitch: 256.0,
+                phase: 0.0,
+                volume: 0.0               
+            }
+        }
+    }).unwrap();
+
+    // Start playback
+    device.resume();
+
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
     let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
@@ -78,4 +109,35 @@ fn main() -> Result<(), String> {
     run_game_loop(app, &mut renderer, &mut event_pump, 1)?;
 
     Ok(())
+}
+
+struct TwoChannels {
+    freq: f32,
+    channel1: Sawtooth,
+    channel2: Sawtooth
+}
+
+impl AudioCallback for TwoChannels {
+    type Channel = f32;
+
+    fn callback(&mut self, out: &mut [f32]) {
+        // Generate a square wave
+        for x in out.iter_mut() {
+            *x = self.channel1.volume(self.freq) + self.channel2.volume(self.freq);
+        }
+    }
+}
+
+struct Sawtooth {
+    pitch: f32,
+    phase: f32,
+    volume: f32
+}
+
+impl Sawtooth {
+    fn volume(&mut self, freq: f32) -> f32 {
+        // Generate a square wave
+        self.phase = (self.phase + (self.pitch / freq)) % 1.0;
+        self.phase * self.volume
+    }
 }
