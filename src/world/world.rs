@@ -7,6 +7,7 @@ use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::entities::door::Door;
+use crate::entities::particle::Particle;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
@@ -27,9 +28,11 @@ impl Tiled for Tile {
 }
 
 pub struct World {
+    pub next_entity_id: u32,
     pub hero: Hero,
     pub coins: Vec<Coin>,
     pub doors: Vec<Door>,
+    pub particles: Vec<Particle>,
     pub map: Map<Meshed<Tile>>,
     pub time: f64,
 }
@@ -72,9 +75,11 @@ impl World {
         let map = map.add_edges();
 
         World {
+            next_entity_id: id,
             hero: hero.unwrap(),
             map,
             coins,
+            particles: Vec::new(),
             doors,
             time: 10.0,
         }
@@ -90,6 +95,10 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
 
         for coin in &self.coins {
             coin.render(renderer)?;
+        }
+
+        for particle in &self.particles {
+            particle.render(renderer)?;
         }
 
         for door in &self.doors {
@@ -112,10 +121,24 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
         for coin in self.coins.iter_mut() {
             coin.event(event, events)?;
         }
+        for particle in self.particles.iter_mut() {
+            particle.event(event, events)?;
+        }
 
         match event {
-            Event::Time(dt) => { update(self, dt, events)?; },
-            Event::Cleanup => { self.coins.retain(|coin| !coin.collected); }
+            Event::Time(dt) => { 
+                update(self, dt, events)?; 
+            },
+            Event::Cleanup => {
+                for coin in &self.coins { 
+                    if coin.collected {
+                        self.particles.push(Particle::new(coin.x, coin.y, self.next_entity_id));
+                        self.next_entity_id += 1;
+                    }
+                }
+                self.coins.retain(|coin| !coin.collected);
+                self.particles.retain(|particle| !particle.expired)
+            }
             _ => { },
         }
 
