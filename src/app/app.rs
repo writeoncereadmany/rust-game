@@ -1,8 +1,10 @@
 use sdl2::event::Event as SdlEvent;
+use sdl2::audio::AudioDevice;
 use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
+use crate::audio::SquareWave;
 use crate::game_loop::GameLoop;
 use crate::graphics::renderer::{ Renderer, align };
 use crate::game::game::Game;
@@ -12,6 +14,7 @@ use super::events::*;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
+    pub audio_device: AudioDevice<SquareWave>,
     pub active_controller: Option<GameController>,
     pub game: Game<'a>,
     pub fps_counter: FpsCounter

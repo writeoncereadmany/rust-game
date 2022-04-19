@@ -22,9 +22,10 @@ const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.215;
 
 const UNITS_PER_FRAME: f64 = 1.0;
-const RUN_CYCLE : [(i32, i32); 4] = [(1, 2), (2, 2), (3, 2), (2, 2)];
-const ASCENDING : (i32, i32) = (2, 1);
-const DESCENDING : (i32, i32) = (3, 1);
+const RUN_CYCLE : [(i32, i32); 4] = [(1, 5), (2, 5), (3, 5), (2, 5)];
+const ASCENDING : (i32, i32) = (2, 4);
+const DESCENDING : (i32, i32) = (3, 4);
+const STANDING: (i32, i32) = (0, 5);
 
 
 pub struct Hero {
@@ -72,7 +73,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
                 DESCENDING
             }
         } else if self.dx.abs() < STOPPING_SPEED {
-            (0, 2)
+            STANDING
         } else {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
