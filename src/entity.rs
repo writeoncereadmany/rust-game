@@ -28,12 +28,54 @@ impl Entity {
         self.data.remove(&TypeId::of::<T>());
     }
 
-    pub fn apply<T: Any, R>(&self, f: impl FnOnce(&T) -> R) -> Option<R> {
+    pub fn apply<T: Any, R>(&self, f: impl Fn(&T) -> R) -> Option<R> {
         Some(f(self.get()?))
     }
 
-    pub fn apply_2<T1: Any, T2: Any, R>(&self, f: impl FnOnce((&T1, &T2)) -> R) -> Option<R> {
+    pub fn apply_2<T1: Any, T2: Any, R>(&self, f: impl Fn((&T1, &T2)) -> R) -> Option<R> {
         Some(f(self.get_2()?))
+    }
+}
+
+struct Entities {
+    next_id: u64,
+    entities: Vec<Entity>
+}
+
+impl Entities {
+    pub fn new() -> Self {
+        Entities{ next_id: 0, entities: Vec::new() }
+    }
+
+    pub fn spawn(&mut self, initialise: impl Fn(&mut Entity) -> ()) {
+        let mut entity = Entity::new(self.next_id);
+        self.next_id += 1;
+
+        initialise(&mut entity);
+
+        self.entities.push(entity);
+    }
+
+    pub fn collect<T: Any>(&self) -> Vec<&T> {
+        self.entities.iter().map(|e| { e.get() }).filter(|e| { e.is_some() }).map(|e| { e.unwrap() }).collect()
+    }
+
+    pub fn fold<T: Any>(&self, initial: T, f: impl Fn(&T, &T) -> T) -> T {
+        let mut accumulated = initial;
+        for entity in &self.entities {
+            if let Some(next) = entity.get() {
+                accumulated = f(&accumulated, next);
+            }
+        }
+        accumulated
+    }
+
+    pub fn apply<I: Any, O: Any>(&mut self, f: impl Fn(&I) -> O) {
+        for entity in &mut self.entities.iter_mut() {
+            if let Some(val) = entity.get() {
+                entity.with(f(val));
+            }
+        }
     }
 }
 
@@ -98,5 +140,40 @@ mod tests {
         assert_eq!(None, entity.get::<Vec<Name>>());
     }
 
+    #[test]
+    pub fn can_spawn_entities() {
+        let mut entities = Entities::new();
 
+        entities.spawn(|e| { e.with(Count(123)); });
+        entities.spawn(|e| { e.with(Count(456)); e.with(Score(123)); });
+        entities.spawn(|e| { e.with(Score(456)); });
+
+        assert_eq!(vec![&Count(123), &Count(456)], entities.collect());
+        assert_eq!(vec![&Score(123), &Score(456)], entities.collect());
+    }
+
+    #[test]
+    pub fn can_fold_entities() {
+        let mut entities = Entities::new();
+
+        entities.spawn(|e| { e.with(Count(123)); });
+        entities.spawn(|e| { e.with(Count(456)); e.with(Score(123)); });
+        entities.spawn(|e| { e.with(Score(456)); });
+
+        assert_eq!(Score(579), entities.fold(Score(0), |Score(a), Score(b)| Score(a + b)));
+    }
+
+
+    #[test]
+    pub fn can_modify_entities() {
+        let mut entities = Entities::new();
+
+        entities.spawn(|e| { e.with(Count(123)); });
+        entities.spawn(|e| { e.with(Count(456)); e.with(Score(123)); });
+        entities.spawn(|e| { e.with(Score(456)); });
+
+        entities.apply(|Count(c)| Count(c + 1));
+
+        assert_eq!(vec![&Count(124), &Count(457)], entities.collect());
+    }
 }
