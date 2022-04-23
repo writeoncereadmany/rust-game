@@ -72,9 +72,9 @@ impl Entities {
 
     pub fn apply<I: Any, O: Any>(&mut self, f: impl Fn(&I) -> O) {
         for entity in &mut self.entities.iter_mut() {
-            if let Some(val) = entity.get() {
-                entity.with(f(val));
-            }
+            entity.get()
+                .map(&f)
+                .map(|v| entity.with(v));
         }
     }
 }
