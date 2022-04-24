@@ -1,6 +1,19 @@
 use core::any::*;
 use std::collections::HashMap;
 
+trait Foo<'a, T> {
+    fn bar(entity: &'a Entity) -> Option<T>;
+}
+
+impl <'a, A, B> Foo<'a, (A, B)> for (A, B) where 
+    A: Foo<'a, A>, 
+    B: Foo<'a, B>,
+{
+    fn bar(entity: &'a Entity) -> Option<(A, B)> {
+        Some((A::bar(entity)?, B::bar(entity)?))
+    }
+}
+
 struct Entity {
     pub id: u64,
     data: HashMap<TypeId, Box<dyn Any>>,
@@ -14,6 +27,10 @@ impl Entity {
 
     pub fn get<T: Any>(&self) -> Option<&T> {
         self.data.get(&TypeId::of::<T>())?.downcast_ref()
+    }
+
+    pub fn getto<'a, T: Foo<'a, T>>(&'a self) -> Option<T> {
+        T::bar(self)
     }
 
     pub fn get_2<T1: Any, T2: Any>(&self) -> Option<(&T1, &T2)> {
@@ -88,6 +105,24 @@ mod tests {
     #[derive(Debug, PartialEq, Eq)] struct Score(u32);
     #[derive(Debug, PartialEq, Eq)] struct Name(&'static str);
 
+    impl <'a> Foo<'a, &'a Count> for &'a Count {
+        fn bar(entity: &'a Entity) -> Option<&'a Count> {
+            entity.get()
+        }
+    }
+
+    impl <'a> Foo<'a, &'a Score> for &'a Score {
+        fn bar(entity: &'a Entity) -> Option<&'a Score> {
+            entity.get()
+        }
+    }
+
+    impl <'a> Foo<'a, &'a Name> for &'a Name {
+        fn bar(entity: &'a Entity) -> Option<&'a Name> {
+            entity.get()
+        }
+    }
+
     #[test]
     pub fn fetches_value_by_type() {
         let mut entity = Entity::new(1);
@@ -138,6 +173,39 @@ mod tests {
         assert_eq!(Some(&vec!(Score(1), Score(2))), entity.get());
         assert_eq!(Some(&Count(789)), entity.get());
         assert_eq!(None, entity.get::<Vec<Name>>());
+    }
+
+    #[test]
+    pub fn can_get_tuples() {
+        let mut entity = Entity::new(1);
+        entity.with(Count(123));
+        entity.with(Score(456));
+
+        assert_eq!(Some(&Count(123)), entity.getto());
+        assert_eq!(Some(&Score(456)), entity.getto());
+
+        assert_eq!(Some(&Count(123)), entity.getto::<&Count>());
+        assert_eq!(None, entity.getto::<&Name>());
+
+        assert_eq!(Some((&Count(123), &Score(456))), entity.getto());
+        assert_eq!(Some((&Count(123), &Score(456))), entity.getto::<(&Count, &Score)>());
+        assert_eq!(None, entity.getto::<(&Count, &Name)>());
+    }
+
+    #[test]
+    pub fn handles_option_in_tuples() {
+        let mut entity = Entity::new(1);
+        entity.with(Count(123));
+        entity.with(Score(456));
+
+        assert_eq!(Some(&Count(123)), entity.getto());
+        assert_eq!(Some(&Score(456)), entity.getto());
+
+        assert_eq!(Some(&Count(123)), entity.getto::<&Count>());
+        assert_eq!(None, entity.getto::<&Name>());
+
+        assert_eq!(Some((&Count(123), &Score(456))), entity.getto());
+        assert_eq!(Some((&Count(123), &Score(456))), entity.getto::<(&Count, &Score)>());
     }
 
     #[test]
