@@ -14,6 +14,13 @@ impl <'a, A, B> Foo<'a, (A, B)> for (A, B) where
     }
 }
 
+impl <'a, A> Foo<'a, Option<A>> for Option<A> where 
+    A: Foo<'a, A> {
+    fn bar(entity: &'a Entity) -> Option<Option<A>> {
+        Some(A::bar(entity))
+    }
+}
+
 struct Entity {
     pub id: u64,
     data: HashMap<TypeId, Box<dyn Any>>,
@@ -206,6 +213,7 @@ mod tests {
 
         assert_eq!(Some((&Count(123), &Score(456))), entity.getto());
         assert_eq!(Some((&Count(123), &Score(456))), entity.getto::<(&Count, &Score)>());
+        assert_eq!(Some((&Count(123), None)), entity.getto::<(&Count, Option<&Name>)>());
     }
 
     #[test]
