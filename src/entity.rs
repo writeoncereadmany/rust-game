@@ -52,10 +52,13 @@ impl Entity {
         self.data.remove(&TypeId::of::<T>());
     }
 
-    pub fn apply<'a, T: 'a, R>(&'a self, f: impl Fn(&T) -> R) -> Option<R> 
-        where &'a T: GetComponent<'a, &'a T>
+    pub fn update<T, R: Any>(&mut self, f: impl Fn(&T) -> R) 
+        where for <'a> &'a T: GetComponent<'a, &'a T>
     {
-        Some(f(self.get()?))
+        let maybe : Option<R> = self.get().map(f);
+        if let Some(val) = maybe {
+            self.set_atom(val);
+        }
     }
 }
 
@@ -96,10 +99,12 @@ impl Entities {
         accumulated
     }
 
-    pub fn apply<'a, I: 'a, O: Any>(&'a mut self, f: impl Fn(&'a I) -> O) 
-        where &'a I: GetComponent<'a, &'a I>
+    pub fn apply<I, O: Any>(&mut self, f: impl Fn(&I) -> O) 
+        where for <'a> &'a I: GetComponent<'a, &'a I>
     {
-
+        for entity in self.entities.iter_mut() {
+            entity.update(&f);
+        }
     }
 }
 
@@ -146,15 +151,6 @@ mod tests {
         entity.set_atom(Score(123));
         let count : Option<&Count> = entity.get();
         assert_eq!(None, count)
-    }
-
-    #[test]
-    pub fn applies_updater_to_entity() {
-        let mut entity = Entity::new(1);
-        entity.set_atom(Count(123));
-        entity.set_atom(Score(456));
-        let count : Option<u32> = entity.apply(|Count(x)| { *x });
-        assert_eq!(Some(123), count);
     }
 
     #[test]
@@ -217,16 +213,34 @@ mod tests {
     }
 
 
+    #[test]
+    pub fn can_modify_entities() {
+        let mut entities = Entities::new();
+
+        entities.spawn(|e| { e.set_atom(Count(123)); });
+        entities.spawn(|e| { e.set_atom(Count(456)); e.set_atom(Score(123)); });
+        entities.spawn(|e| { e.set_atom(Score(456)); });
+
+        fn f(Count(c): &Count) -> Count {
+            Count(c + 1)
+        }
+
+        entities.apply(f);
+
+        assert_eq!(vec![&Count(124), &Count(457)], entities.collect());
+    }
+
+
     // #[test]
-    // pub fn can_modify_entities() {
+    // pub fn can_modify_entities_based_on_tuples() {
     //     let mut entities = Entities::new();
 
     //     entities.spawn(|e| { e.set_atom(Count(123)); });
     //     entities.spawn(|e| { e.set_atom(Count(456)); e.set_atom(Score(123)); });
     //     entities.spawn(|e| { e.set_atom(Score(456)); });
 
-    //     entities.apply(|Count(c)| Count(c + 1));
+    //     entities.apply(f);
 
-    //     assert_eq!(vec![&Count(124), &Count(457)], entities.collect());
+    //     assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
     // }
 }
