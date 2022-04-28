@@ -8,6 +8,7 @@ use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::entities::door::Door;
 use crate::entities::particle::Particle;
+use crate::entity::Entities;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
@@ -34,6 +35,7 @@ pub struct World {
     pub doors: Vec<Door>,
     pub particles: Vec<Particle>,
     pub map: Map<Meshed<Tile>>,
+    pub entities: Entities,
     pub time: f64,
 }
 
@@ -46,6 +48,7 @@ impl World {
         let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
+        let mut entities = Entities::new();
 
         let mut id = 0;
 
@@ -81,6 +84,7 @@ impl World {
             coins,
             particles: Vec::new(),
             doors,
+            entities,
             time: 10.0,
         }
     }
