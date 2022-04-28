@@ -103,12 +103,12 @@ impl Entities {
         }
     }
 
-    // pub fn apply_entity(&mut self, f: impl Fn(&mut Updater)) 
-    // {
-    //     for entity in self.entities.iter_mut() {
-    //         f(entity);
-    //     }
-    // }
+    pub fn apply_entity(&mut self, f: impl Fn(&mut Entity)) 
+    {
+        for entity in self.entities.iter_mut() {
+            f(entity);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -220,24 +220,24 @@ mod tests {
         assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
     }
 
-    // #[test]
-    // pub fn can_modify_entities_with_arbitrary_complexity() {
-    //     let mut entities = Entities::new();
+    #[test]
+    pub fn can_modify_entities_with_arbitrary_complexity() {
+        let mut entities = Entities::new();
 
-    //     entities.spawn(entity().with(Count(123)); });
-    //     entities.spawn(entity().with(Count(456)); e.set(Score(123)); });
-    //     entities.spawn(entity().with(Score(456)); });
+        entities.spawn(entity().with(Count(123)));
+        entities.spawn(entity().with(Count(456)).with(Score(123)));
+        entities.spawn(entity().with(Score(456)));
 
-    //     entities.apply_entity(|entity| {
-    //         if let (Some(Count(c)), Some(Score(s))) = (entity.get(), entity.get()) { 
-    //             let new_count = Count(c + s); 
-    //             let new_score = Score(c - s);
-    //             entity.set(new_count);
-    //             entity.set(new_score);
-    //         }
-    //     });
+        entities.apply_entity(|entity| {
+            if let (Some(Count(c)), Some(Score(s))) = (entity.get(), entity.get()) { 
+                let new_count = Count(c + s); 
+                let new_score = Score(c - s);
+                entity.set(new_count);
+                entity.set(new_score);
+            }
+        });
 
-    //     assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
-    //     assert_eq!(vec![&Score(333), &Score(456)], entities.collect());
-    // }
+        assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
+        assert_eq!(vec![&Score(333), &Score(456)], entities.collect());
+    }
 }
