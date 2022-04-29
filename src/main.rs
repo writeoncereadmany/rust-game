@@ -11,7 +11,6 @@ mod game;
 mod world;
 mod sign;
 mod timebuffer;
-mod entity;
 
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};

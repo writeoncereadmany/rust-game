@@ -1,8 +1,8 @@
 use core::any::*;
 use std::collections::HashMap;
 
-trait Component: Any { }
-trait Variable: Component { }
+pub trait Component: Any { }
+pub trait Variable: Component { }
 
 pub struct Id(u64);
 
@@ -115,18 +115,11 @@ impl Entities {
 mod tests {
 
     use super::*;
+    use component_derive::{Component, Variable};
 
-    #[derive(Debug, PartialEq, Eq)] struct Count(u64);
-    #[derive(Debug, PartialEq, Eq)] struct Score(u64);
-    #[derive(Debug, PartialEq, Eq)] struct Name(&'static str);
-
-    impl Component for Count {}
-    impl Variable for Count {}
-    impl Component for Score {}
-    impl Variable for Score {}
-    impl Component for Name {}
-    impl Variable for Name {}
-
+    #[derive(Debug, PartialEq, Eq, Variable)] struct Count(u64);
+    #[derive(Debug, PartialEq, Eq, Variable)] struct Score(u64);
+    #[derive(Debug, PartialEq, Eq, Variable)] struct Name(&'static str);
 
     #[test]
     pub fn fetches_value_by_type() {

@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use image::{ Rgb, RgbImage };
 
+use entity::Entities;
+
 use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
 use crate::entities::door::Door;
 use crate::entities::particle::Particle;
-use crate::entity::Entities;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
