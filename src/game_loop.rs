@@ -51,6 +51,10 @@ impl Events {
     pub fn fire_wrapped(&mut self, event: Event) {
         self.events.push_back(event);
     }
+
+    pub fn pop(&mut self) -> Option<Event> {
+        self.events.pop_front()
+    }
 }
 
 pub trait GameLoop<'a, R>
@@ -80,7 +84,7 @@ where G: GameLoop<'a, R>
             events.fire(this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64));
 
             loop {
-                if let Some(event) = events.events.pop_front() {
+                if let Some(event) = events.pop() {
                     game.event(&event, &mut events)?;
                 }
                 else {
