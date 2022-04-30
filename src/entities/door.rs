@@ -24,7 +24,7 @@ impl Door {
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, f64> for Door {
+impl <'a> GameLoop<'a, Renderer<'a>> for Door {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.draw_tile((1, 0), self.x, self.y);

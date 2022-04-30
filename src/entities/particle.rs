@@ -1,8 +1,7 @@
 use std::time::Duration;
 
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
-use crate::app::events::*;
 
 const FRAMES : [(i32, i32);3] = [(0, 4), (1, 4), (0, 4)];
 const FRAME_DURATION : f64 = 0.15;
@@ -29,7 +28,7 @@ impl Particle {
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Particle {
+impl <'a> GameLoop<'a, Renderer<'a>> for Particle {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         if !self.expired {
@@ -38,14 +37,11 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Particle {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        match event {
-            Event::Time(dt) => { 
-                self.existed_for = self.existed_for + *dt;
-                self.frame = (self.existed_for.as_secs_f64() / FRAME_DURATION) as usize;
-                self.expired = self.frame >= FRAMES.len();
-            },
-            _ => { }
+    fn event(&mut self, event: &Eventy, _events: &mut Events) -> Result<(), String> {
+        if let Some(dt) = event.unwrap() {
+            self.existed_for = self.existed_for + *dt;
+            self.frame = (self.existed_for.as_secs_f64() / FRAME_DURATION) as usize;
+            self.expired = self.frame >= FRAMES.len();
         }
         Ok(())
     }

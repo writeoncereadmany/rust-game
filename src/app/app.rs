@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use sdl2::event::Event as SdlEvent;
 use sdl2::audio::AudioDevice;
 use sdl2::GameControllerSubsystem;
@@ -5,12 +7,10 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::audio::SquareWave;
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::{ Renderer, align };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
-
-use super::events::*;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
@@ -20,7 +20,7 @@ pub struct App<'a> {
     pub fps_counter: FpsCounter
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for App<'a> {
+impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.clear().unwrap();
@@ -34,20 +34,19 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for App<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
-        match event {
-            Event::Sdl(e) => { 
-                match e {
-                    SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
-                    SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
-                    SdlEvent::ControllerDeviceAdded{ which, .. } => { 
-                        self.active_controller = self.game_controller_subsystem.open(*which).ok();
-                    },
-                    _ => {}
-                }
-            },
-            Event::Time(_) => { self.fps_counter.on_frame(); },
-            _ => { }
+    fn event(&mut self, event: &Eventy, events: &mut Events) -> Result<(), String> {
+        if let Some(e) = event.unwrap() {
+            match e {
+                SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
+                SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
+                SdlEvent::ControllerDeviceAdded{ which, .. } => { 
+                    self.active_controller = self.game_controller_subsystem.open(*which).ok();
+                },
+                _ => {}
+            }
+        }
+        if let Some(_) = event.unwrap::<Duration>() {
+            self.fps_counter.on_frame();
         }
         self.game.event(event, events)
     }

@@ -2,7 +2,7 @@ use image::RgbImage;
 
 use crate::graphics::renderer::{ Renderer, align };
 use crate::world::world::World;
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::app::events::*;
 
 pub struct Game<'a> {
@@ -12,7 +12,7 @@ pub struct Game<'a> {
     pub score: u32,
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
+impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
@@ -24,17 +24,20 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Game<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
-        match event {
-            Event::Game(GEvent::CoinCollected(_)) => self.score += 10,
-            Event::Game(GEvent::TimeLimitExpired) => {
-                self.world = World::new(&self.levels[self.level], self.world.hero.controller)
-            },
-            Event::Game(GEvent::ReachedDoor) => {
-                self.level = (self.level + 1) % self.levels.len();
-                self.world = World::new(&self.levels[self.level], self.world.hero.controller);
+    fn event(&mut self, event: &Eventy, events: &mut Events) -> Result<(), String> {
+        if let Some(eventu) = event.unwrap()
+        {
+            match eventu {
+                GEvent::CoinCollected(_) => self.score += 10,
+                GEvent::TimeLimitExpired => {
+                    self.world = World::new(&self.levels[self.level], self.world.hero.controller)
+                },
+                GEvent::ReachedDoor => {
+                    self.level = (self.level + 1) % self.levels.len();
+                    self.world = World::new(&self.levels[self.level], self.world.hero.controller);
+                }
+                _ => { }
             }
-            _ => { }
         }
         self.world.event(event, events)
     }

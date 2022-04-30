@@ -14,7 +14,7 @@ use crate::entities::particle::Particle;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::{ Renderer, align, Tiled };
 
 #[derive(Clone)]
@@ -100,7 +100,7 @@ impl World {
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
+impl <'a> GameLoop<'a, Renderer<'a>> for World {
     
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         renderer.draw_map(&self.map);
@@ -137,7 +137,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Eventy, events: &mut Events) -> Result<(), String> {
         self.hero.event(event, events)?;
         for coin in self.coins.iter_mut() {
             coin.event(event, events)?;
@@ -146,21 +146,19 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
             particle.event(event, events)?;
         }
 
-        match event {
-            Event::Time(dt) => { 
-                update(self, dt, events)?; 
-            },
-            Event::Cleanup => {
-                for coin in &self.coins { 
-                    if coin.collected {
-                        self.particles.push(Particle::new(coin.x, coin.y, self.next_entity_id));
-                        self.next_entity_id += 1;
-                    }
+        if let Some(dt) = event.unwrap() {
+            update(self, dt, events)?
+        }
+
+        if let Some(Cleanup) = event.unwrap() {
+            for coin in &self.coins { 
+                if coin.collected {
+                    self.particles.push(Particle::new(coin.x, coin.y, self.next_entity_id));
+                    self.next_entity_id += 1;
                 }
-                self.coins.retain(|coin| !coin.collected);
-                self.particles.retain(|particle| !particle.expired)
             }
-            _ => { },
+            self.coins.retain(|coin| !coin.collected);
+            self.particles.retain(|particle| !particle.expired)
         }
 
         Ok(())
@@ -200,20 +198,20 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
     let hero_mesh = world.hero.mesh();
     for coin in &world.coins {
         if hero_mesh.bbox().touches(&coin.mesh().bbox()) {
-            events.fire(Event::Game(GEvent::CoinCollected(coin.id)));
+            events.fire(GEvent::CoinCollected(coin.id));
         }
     }
 
     for door in &world.doors {
         if hero_mesh.bbox().touches(&door.mesh().bbox()) {
-            events.fire(Event::Game(GEvent::ReachedDoor));
+            events.fire(GEvent::ReachedDoor);
         }
     }
 
     world.time -= dt.as_secs_f64();
 
     if world.time < 0.0 {
-        events.fire(Event::Game(GEvent::TimeLimitExpired))
+        events.fire(GEvent::TimeLimitExpired)
     }
 
     Ok(())

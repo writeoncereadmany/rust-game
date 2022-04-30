@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::controller::Controller;
-use crate::game_loop::GameLoop;
+use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
 use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
@@ -66,7 +66,7 @@ impl Hero {
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
+impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         let (_, last_push_y) = self.last_push;
@@ -88,11 +88,12 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        match event {
-            Event::Sdl(e) => self.controller.on_event(e),
-            Event::Time(dt) => { update(self, dt)?; },
-            _ => { }
+    fn event(&mut self, event: &Eventy, _events: &mut Events) -> Result<(), String> {
+        if let Some(e) = event.unwrap() {
+            self.controller.on_event(e);
+        }
+        if let Some(dt) = event.unwrap() {
+            update(self, dt)?;
         }
         Ok(())
     }
