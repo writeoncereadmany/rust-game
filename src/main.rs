@@ -18,6 +18,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
+use entities::hero::PandaType;
 use audio::initialise_audio;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
@@ -67,7 +68,7 @@ fn main() -> Result<(), String> {
         ROWS as u32,
     ).unwrap(); 
 
-    let world: World = World::new(&assets.levels[0], Controller::new(Keycode::Z, Keycode::X, Keycode::RShift));
+    let world: World = World::new(&assets.levels[0], Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), PandaType::GiantPanda);
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let app = App {

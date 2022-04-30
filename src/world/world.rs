@@ -7,7 +7,7 @@ use entity::{entity, Entities};
 use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
-use crate::entities::hero::Hero;
+use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::door::Door;
 use crate::entities::particle::Particle;
@@ -43,7 +43,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, controller: Controller) -> Self {
+    pub fn new(image: &RgbImage, controller: Controller, panda_type: PandaType) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
@@ -68,7 +68,8 @@ impl World {
                         None => { hero = Some(Hero::new(
                             x as f64, 
                             y as f64, 
-                            controller)); }
+                            controller,
+                            panda_type)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},
                     _ => { }

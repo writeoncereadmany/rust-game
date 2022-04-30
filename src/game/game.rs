@@ -4,6 +4,7 @@ use crate::graphics::renderer::{ Renderer, align };
 use crate::world::world::World;
 use crate::game_loop::*;
 use crate::app::events::*;
+use crate::entities::hero::other_type;
 
 pub struct Game<'a> {
     pub levels: &'a Vec<RgbImage>,
@@ -30,11 +31,11 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             match eventu {
                 GEvent::CoinCollected(_) => self.score += 10,
                 GEvent::TimeLimitExpired => {
-                    self.world = World::new(&self.levels[self.level], self.world.hero.controller)
+                    self.world = World::new(&self.levels[self.level], self.world.hero.controller, other_type(&self.world.hero.panda_type))
                 },
                 GEvent::ReachedDoor => {
                     self.level = (self.level + 1) % self.levels.len();
-                    self.world = World::new(&self.levels[self.level], self.world.hero.controller);
+                    self.world = World::new(&self.levels[self.level], self.world.hero.controller, other_type(&self.world.hero.panda_type));
                 }
                 _ => { }
             }

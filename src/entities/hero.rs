@@ -3,7 +3,6 @@ use std::time::Duration;
 use crate::controller::Controller;
 use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
-use crate::app::events::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 
@@ -23,7 +22,6 @@ const EXTRA_JUMP_DURATION: f64 = 0.215;
 
 const PANDA_OFFSET: i32 = 1;
 const RED_PANDA_OFFSET: i32 = 4;
-const HERO_OFFSET: i32 = RED_PANDA_OFFSET;
 
 const UNITS_PER_FRAME: f64 = 1.0;
 const RUN_CYCLE : [(i32, i32); 4] = [(1, 1), (2, 1), (3, 1), (2, 1)];
@@ -31,6 +29,25 @@ const ASCENDING : (i32, i32) = (2, 0);
 const DESCENDING : (i32, i32) = (3, 0);
 const STANDING: (i32, i32) = (0, 1);
 
+#[derive(Clone, Copy)]
+pub enum PandaType {
+    GiantPanda,
+    RedPanda
+}
+
+fn sprite_offset(panda_type: &PandaType) -> i32 {
+    match panda_type {
+        PandaType::GiantPanda => PANDA_OFFSET,
+        PandaType::RedPanda => RED_PANDA_OFFSET
+    }
+}
+
+pub fn other_type(panda_type: &PandaType) -> PandaType {
+    match panda_type {
+        PandaType::GiantPanda => PandaType::RedPanda,
+        PandaType::RedPanda => PandaType::GiantPanda
+    }
+}
 
 pub struct Hero {
     pub controller: Controller,
@@ -39,13 +56,14 @@ pub struct Hero {
     pub dx: f64,
     pub dy: f64,
     pub last_push: (f64, f64),
+    pub panda_type: PandaType,
     facing: Sign,
     extrajump: f64,
     mesh: ConvexMesh
 }
 
 impl Hero {  
-    pub fn new(x: f64, y: f64, controller: Controller) -> Self {
+    pub fn new(x: f64, y: f64, controller: Controller, panda_type: PandaType) -> Self {
         Hero {
             controller,
             x,
@@ -55,6 +73,7 @@ impl Hero {
             last_push: (0.0, 0.0),
             facing: Sign::POSITIVE,
             extrajump: 0.0,
+            panda_type,
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
                 vec![])
@@ -82,7 +101,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let tile = (hx, hy + HERO_OFFSET);
+        let tile = (hx, hy + sprite_offset(&self.panda_type));
         let flip_x = self.facing == Sign::NEGATIVE;
         renderer.draw_tile_ex(tile, self.x, self.y, flip_x, false);
         Ok(())
