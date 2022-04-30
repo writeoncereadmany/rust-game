@@ -2,12 +2,13 @@ use std::time::Duration;
 
 use image::{ Rgb, RgbImage };
 
-use entity::Entities;
+use entity::{entity, Entities};
 
 use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::coin::Coin;
 use crate::entities::hero::Hero;
+use crate::entities::components::*;
 use crate::entities::door::Door;
 use crate::entities::particle::Particle;
 use crate::map::Map;
@@ -76,6 +77,14 @@ impl World {
             }
         }
 
+        entities.spawn(entity()
+            .with(Position(3.0, 4.0))
+            .with(Tile((0, 0)))
+            .with(Period(0.5))
+            .with(Phase(0.0))
+            .with(AnimationCycle(vec![(0.25, (0,4)), (0.5, (1, 4)), (0.75, (0,4)), (1.0, (99,99))]))
+        );
+
         let map = map.add_edges();
 
         World {
@@ -111,6 +120,13 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
         }
 
         self.hero.render(renderer)?;
+
+        self.entities.for_each(|e| {
+            if let (Some(Position(x, y)), Some(Tile(tile))) = (e.get(), e.get())
+            {
+                renderer.draw_tile(*tile, *x, *y);
+            }
+        });
 
         renderer.draw_text(
             time_units(self.time), 
@@ -153,6 +169,10 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for World {
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(), String> {
         
+    world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
+    world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
+    world.entities.apply_2(|Phase(phase), AnimationCycle(frames)| Tile(next_frame(phase, frames)));
+
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     let mut hero_mesh = world.hero.mesh().clone();
     for (_pos, t) in world.map.overlapping(&hero_mesh.bbox()) {

@@ -21,11 +21,15 @@ const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.215;
 
+const PANDA_OFFSET: i32 = 1;
+const RED_PANDA_OFFSET: i32 = 4;
+const HERO_OFFSET: i32 = RED_PANDA_OFFSET;
+
 const UNITS_PER_FRAME: f64 = 1.0;
-const RUN_CYCLE : [(i32, i32); 4] = [(1, 5), (2, 5), (3, 5), (2, 5)];
-const ASCENDING : (i32, i32) = (2, 4);
-const DESCENDING : (i32, i32) = (3, 4);
-const STANDING: (i32, i32) = (0, 5);
+const RUN_CYCLE : [(i32, i32); 4] = [(1, 1), (2, 1), (3, 1), (2, 1)];
+const ASCENDING : (i32, i32) = (2, 0);
+const DESCENDING : (i32, i32) = (3, 0);
+const STANDING: (i32, i32) = (0, 1);
 
 
 pub struct Hero {
@@ -66,7 +70,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         let (_, last_push_y) = self.last_push;
-        let tile = if last_push_y == 0.0 {
+        let (hx, hy) = if last_push_y == 0.0 {
             if self.dy > 0.0 { 
                 ASCENDING
             } else {
@@ -78,6 +82,7 @@ impl <'a> GameLoop<'a, Renderer<'a>, GEvent> for Hero {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
+        let tile = (hx, hy + HERO_OFFSET);
         let flip_x = self.facing == Sign::NEGATIVE;
         renderer.draw_tile_ex(tile, self.x, self.y, flip_x, false);
         Ok(())

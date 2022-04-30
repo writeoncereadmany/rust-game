@@ -1,12 +1,15 @@
 use core::any::*;
 use std::collections::HashMap;
+use component_derive::*;
 
 pub trait Component: Any { }
 pub trait Variable: Component { }
 
+#[derive(Constant)]
 pub struct Id(u64);
 
-impl Component for Id { }
+impl Component for () {}
+impl Variable for () {}
 
 pub struct EntityBuilder {
     data: HashMap<TypeId, Box<dyn Any>>
@@ -33,15 +36,15 @@ impl Entity {
         Entity { id, data: HashMap::new() }
     }
 
-    fn get<T: Component>(&self) -> Option<&T> {
+    pub fn get<T: Component>(&self) -> Option<&T> {
         self.data.get(&TypeId::of::<T>())?.downcast_ref()
     }
 
-    fn set<T: Variable>(&mut self, value: T) {
+    pub fn set<T: Variable>(&mut self, value: T) {
         self.data.insert(TypeId::of::<T>(), Box::new(value));
     }
 
-    fn remove<T: Variable>(&mut self) {
+    pub fn remove<T: Variable>(&mut self) {
         self.data.remove(&TypeId::of::<T>());
     }
 }
@@ -56,11 +59,14 @@ impl Entities {
         Entities{ next_id: 0, entities: Vec::new() }
     }
 
-    pub fn spawn(&mut self, builder: EntityBuilder) {
-        let mut entity = Entity { id: self.next_id, data: builder.data };
-        self.next_id += 1;
-
+    pub fn spawn(&mut self, builder: EntityBuilder) -> u64 {
+        let id = self.next_id;
+        let entity = Entity { id, data: builder.with(Id(id)).data };
         self.entities.push(entity);
+
+        self.next_id += 1;
+    
+        id
     }
 
     pub fn delete(&mut self, id: u64) {
@@ -84,6 +90,13 @@ impl Entities {
             }
         }
         accumulated
+    }
+
+    pub fn for_each(&self, mut f: impl FnMut(&Entity)) 
+    {
+        for entity in &self.entities {
+            f(entity);
+        }
     }
 
     pub fn apply<I: Component, O: Variable>(&mut self, f: impl Fn(&I) -> O) 
