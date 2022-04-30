@@ -34,7 +34,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Eventy, events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         if let Some(e) = event.unwrap() {
             match e {
                 SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),

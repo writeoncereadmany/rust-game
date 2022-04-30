@@ -107,7 +107,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
         Ok(())
     }
 
-    fn event(&mut self, event: &Eventy, _events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
         if let Some(e) = event.unwrap() {
             self.controller.on_event(e);
         }

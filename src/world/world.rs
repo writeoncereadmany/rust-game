@@ -138,7 +138,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         Ok(())
     }
 
-    fn event(&mut self, event: &Eventy, events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         self.hero.event(event, events)?;
         for coin in self.coins.iter_mut() {
             coin.event(event, events)?;

@@ -14,28 +14,21 @@ impl Evento for SdlEvent {}
 impl Evento for Duration {}
 impl Evento for Cleanup {}
 
-pub struct Eventy(Box<dyn Any>);
+pub struct Event(Box<dyn Any>);
 
-impl Eventy {
+impl Event {
     fn new<E: Evento>(event: E) -> Self {
-        Eventy(Box::new(event))
+        Event(Box::new(event))
     }
 
     pub fn unwrap<'a, E: Evento>(&'a self) -> Option<&'a E> {
-        let Eventy(event) = self;
+        let Event(event) = self;
         event.downcast_ref()
     }
 }
 
-pub enum Event<E> {
-    Sdl(SdlEvent),
-    Time(Duration),
-    Game(E),
-    Cleanup,
-}
-
 pub struct Events {
-    events: VecDeque<Eventy>
+    events: VecDeque<Event>
 }
 
 impl Events {
@@ -45,7 +38,7 @@ impl Events {
     }
 
     pub fn fire<E: Evento>(&mut self, event: E) {
-        self.events.push_back(Eventy::new(event));
+        self.events.push_back(Event::new(event));
     }
 }
 
@@ -55,7 +48,7 @@ pub trait GameLoop<'a, R>
         Ok(())
     }
  
-    fn event(&mut self, _event: &Eventy, _events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, _event: &Event, _events: &mut Events) -> Result<(), String> {
         Ok(())
     }
 }
@@ -65,7 +58,7 @@ where G: GameLoop<'a, R>
 {
     let mut last_frame = Instant::now();
     let mut events: Events = Events::new();
-    let cleanup = Eventy::new(Cleanup);
+    let cleanup = Event::new(Cleanup);
     loop {
         let this_frame = Instant::now();
         for event in sdl_events.poll_iter() {

@@ -37,7 +37,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Particle {
         Ok(())
     }
 
-    fn event(&mut self, event: &Eventy, _events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
         if let Some(dt) = event.unwrap() {
             self.existed_for = self.existed_for + *dt;
             self.frame = (self.existed_for.as_secs_f64() / FRAME_DURATION) as usize;

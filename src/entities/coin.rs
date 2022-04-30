@@ -46,7 +46,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Coin {
         Ok(())
     }
 
-    fn event(&mut self, event: &Eventy, _events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
         if let Some(GEvent::CoinCollected(id)) = event.unwrap() {
             if id == &self.id { self.collected = true; }
         }
