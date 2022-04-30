@@ -16,10 +16,11 @@ pub trait EventTrait: Any {}
 impl EventTrait for SdlEvent {}
 impl EventTrait for Duration {}
 
+#[derive(Debug)]
 pub struct Event(Box<dyn Any>);
 
 impl Event {
-    fn new<E: EventTrait>(event: E) -> Self {
+    pub fn new<E: EventTrait>(event: E) -> Self {
         Event(Box::new(event))
     }
 
@@ -39,12 +40,16 @@ pub struct Events {
 
 impl Events {
 
-    fn new() -> Self {
+    pub fn new() -> Self {
         Events{ events: VecDeque::new() }
     }
 
     pub fn fire<E: EventTrait>(&mut self, event: E) {
         self.events.push_back(Event::new(event));
+    }
+
+    pub fn fire_wrapped(&mut self, event: Event) {
+        self.events.push_back(event);
     }
 }
 
@@ -74,14 +79,12 @@ where G: GameLoop<'a, R>
         for _ in 0..updates_per_frame {
             events.fire(this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64));
 
-            let mut event = events.events.pop_front();
             loop {
-                match event {
-                    None => { break; }
-                    Some(e) => { 
-                        game.event(&e, &mut events)?;
-                        event = events.events.pop_front();
-                    }
+                if let Some(event) = events.events.pop_front() {
+                    game.event(&event, &mut events)?;
+                }
+                else {
+                    break;
                 }
             }
         }
