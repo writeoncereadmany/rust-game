@@ -142,7 +142,7 @@ mod tests {
                 break;
             }
         }
-        let actual : Vec<&TestEvent> = popped.iter().flat_map(|e| e.unwrap::<TestEvent>()).collect();
+        let actual : Vec<&TestEvent> = popped.iter().flat_map(|e| e.unwrap()).collect();
         assert_eq!(expected, actual);
     }
 }
