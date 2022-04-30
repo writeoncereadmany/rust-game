@@ -147,11 +147,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
             particle.event(event, events)?;
         }
 
-        if let Some(dt) = event.unwrap() {
-            update(self, dt, events)?
-        }
-
-        if let Some(Cleanup) = event.unwrap() {
+        event.apply(|dt| update(self, dt, events));
+        event.apply(|_:&Cleanup| {
             for coin in &self.coins { 
                 if coin.collected {
                     self.particles.push(Particle::new(coin.x, coin.y, self.next_entity_id));
@@ -160,13 +157,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
             }
             self.coins.retain(|coin| !coin.collected);
             self.particles.retain(|particle| !particle.expired)
-        }
+        });
 
         Ok(())
     }
 }
 
-fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(), String> {
+fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
         
     world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
     world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
@@ -199,23 +196,21 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) -> Result<(
     let hero_mesh = world.hero.mesh();
     for coin in &world.coins {
         if hero_mesh.bbox().touches(&coin.mesh().bbox()) {
-            events.fire(GEvent::CoinCollected(coin.id));
+            events.fire(CoinCollected(coin.id));
         }
     }
 
     for door in &world.doors {
         if hero_mesh.bbox().touches(&door.mesh().bbox()) {
-            events.fire(GEvent::ReachedDoor);
+            events.fire(ReachedDoor);
         }
     }
 
     world.time -= dt.as_secs_f64();
 
     if world.time < 0.0 {
-        events.fire(GEvent::TimeLimitExpired)
+        events.fire(TimeLimitExpired)
     }
-
-    Ok(())
 }
 
 fn phase_offset(x: u32, y: u32) -> f64 {

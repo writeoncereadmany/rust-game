@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::game_loop::*;
 use crate::graphics::renderer::Renderer;
-use crate::app::events::*;
+use crate::app::events::CoinCollected;
 use crate::shapes::convex_mesh::ConvexMesh;
 
 const ROTATION_FPS : f64 = 5.0;
@@ -47,12 +47,10 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Coin {
     }
 
     fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        if let Some(GEvent::CoinCollected(id)) = event.unwrap() {
+        event.apply(|CoinCollected(id)| {
             if id == &self.id { self.collected = true; }
-        }
-        if let Some(dt) = event.unwrap() {
-            self.existed_for += *dt;
-        }
+        });
+        event.apply(|dt| self.existed_for += *dt);
         Ok(())
     }
 }

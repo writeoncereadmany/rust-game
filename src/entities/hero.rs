@@ -108,17 +108,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
     }
 
     fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        if let Some(e) = event.unwrap() {
-            self.controller.on_event(e);
-        }
-        if let Some(dt) = event.unwrap() {
-            update(self, dt)?;
-        }
+        event.apply(|e| self.controller.on_event(e));
+        event.apply(|dt| update(self, dt));
         Ok(())
     }
 }
 
-fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
+fn update(hero: &mut Hero, dt: &Duration) {
     let dt = dt.as_secs_f64();
     let (last_push_x, last_push_y) = hero.last_push;
     let airborne = last_push_y <= 0.0;
@@ -200,6 +196,4 @@ fn update(hero: &mut Hero, dt: &Duration) -> Result<(), String> {
 
     hero.x += hero.dx * dt;
     hero.y += hero.dy * dt;
-
-    Ok(())
 }

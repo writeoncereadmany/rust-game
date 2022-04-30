@@ -1,9 +1,12 @@
-use crate::game_loop::Evento;
+use component_derive::Event;
 
-pub enum GEvent {
-    CoinCollected(u32),
-    TimeLimitExpired,
-    ReachedDoor,
-}
+use crate::game_loop::EventTrait;
 
-impl Evento for GEvent {}
+#[derive(Event)]
+pub struct CoinCollected(pub u32);
+
+#[derive(Event)]
+pub struct TimeLimitExpired;
+
+#[derive(Event)]
+pub struct ReachedDoor;
