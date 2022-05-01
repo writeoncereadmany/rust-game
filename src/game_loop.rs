@@ -1,61 +1,14 @@
-use core::any::*;
-
-use std::collections::VecDeque;
-use std::time::{Instant, Duration};
+use std::time::Instant;
 
 use sdl2::EventPump;
-use sdl2::event::Event as SdlEvent;
 
 use component_derive::Event;
+
+use crate::events::*;
 
 #[derive(Event)]
 pub struct Cleanup;
 
-pub trait EventTrait: Any {}
-
-impl EventTrait for SdlEvent {}
-impl EventTrait for Duration {}
-
-#[derive(Debug)]
-pub struct Event(Box<dyn Any>);
-
-impl Event {
-    pub fn new<E: EventTrait>(event: E) -> Self {
-        Event(Box::new(event))
-    }
-
-    pub fn unwrap<E: EventTrait>(&self) -> Option<&E> {
-        let Event(event) = self;
-        event.downcast_ref()
-    }
-
-    pub fn apply<E: EventTrait, O>(&self, f: impl FnMut(&E) -> O) -> Option<O> {
-        self.unwrap().map(f)
-    }
-}
-
-pub struct Events {
-    events: VecDeque<Event>
-}
-
-impl Events {
-
-    pub fn new() -> Self {
-        Events{ events: VecDeque::new() }
-    }
-
-    pub fn fire<E: EventTrait>(&mut self, event: E) {
-        self.events.push_back(Event::new(event));
-    }
-
-    pub fn fire_wrapped(&mut self, event: Event) {
-        self.events.push_back(event);
-    }
-
-    pub fn pop(&mut self) -> Option<Event> {
-        self.events.pop_front()
-    }
-}
 
 pub trait GameLoop<'a, R>
 {

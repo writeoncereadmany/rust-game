@@ -8,6 +8,7 @@ use sdl2::controller::GameController;
 
 use crate::audio::SquareWave;
 use crate::game_loop::*;
+use crate::events::*;
 use crate::graphics::renderer::{ Renderer, align };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;

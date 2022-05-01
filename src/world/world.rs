@@ -14,6 +14,7 @@ use crate::entities::particle::Particle;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
+use crate::events::*;
 use crate::game_loop::*;
 use crate::graphics::renderer::{ Renderer, align, Tiled };
 

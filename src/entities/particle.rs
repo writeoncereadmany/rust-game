@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use crate::game_loop::*;
+use crate::events::*;
 use crate::graphics::renderer::Renderer;
 
 const FRAMES : [(i32, i32);3] = [(0, 4), (1, 4), (0, 4)];

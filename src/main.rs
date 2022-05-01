@@ -10,6 +10,7 @@ mod map;
 mod game;
 mod world;
 mod sign;
+mod events;
 mod timer_events;
 
 use sdl2::EventPump;

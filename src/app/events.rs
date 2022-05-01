@@ -1,6 +1,6 @@
 use component_derive::Event;
 
-use crate::game_loop::EventTrait;
+use crate::events::EventTrait;
 
 #[derive(Event)]
 pub struct CoinCollected(pub u32);

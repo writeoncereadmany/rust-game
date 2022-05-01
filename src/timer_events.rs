@@ -4,7 +4,7 @@ use std::time::{Instant, Duration};
 
 use component_derive::Event;
 
-use crate::game_loop::{ Event, EventTrait, Events };
+use crate::events::{ Event, EventTrait, Events };
 
 #[derive(Event)]
 pub struct FutureEvent {
@@ -88,7 +88,7 @@ impl TimerEvents {
 mod tests {
 
     use super::*;
-    use crate::game_loop::EventTrait;
+    use crate::events::EventTrait;
     use component_derive::Event;
 
 

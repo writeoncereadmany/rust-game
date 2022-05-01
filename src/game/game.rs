@@ -3,6 +3,7 @@ use image::RgbImage;
 use crate::graphics::renderer::{ Renderer, align };
 use crate::world::world::World;
 use crate::game_loop::*;
+use crate::events::*;
 use crate::app::events::*;
 use crate::entities::hero::other_type;
 

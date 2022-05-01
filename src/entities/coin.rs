@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use crate::game_loop::*;
+use crate::events::*;
 use crate::graphics::renderer::Renderer;
 use crate::app::events::CoinCollected;
 use crate::shapes::convex_mesh::ConvexMesh;
