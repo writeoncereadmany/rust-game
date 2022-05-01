@@ -83,13 +83,8 @@ where G: GameLoop<'a, R>
         for _ in 0..updates_per_frame {
             events.fire(this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64));
 
-            loop {
-                if let Some(event) = events.pop() {
-                    game.event(&event, &mut events)?;
-                }
-                else {
-                    break;
-                }
+            while let Some(event) = events.pop() {
+                game.event(&event, &mut events)?;
             }
         }
 

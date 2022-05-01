@@ -46,13 +46,8 @@ impl TimerEvents {
 
     fn elapse(&mut self, dt: Duration, events: &mut Events) {
         self.current_time += dt;
-        loop {
-            if let Some(event) = self.pop() {
-                events.fire_wrapped(event);
-            } 
-            else {
-                break;
-            }
+        while let Some(event) = self.pop() {
+            events.fire_wrapped(event);
         }
     }
 
