@@ -25,7 +25,7 @@ pub fn run_game_loop<'a, R, G>(mut game: G, renderer: &mut R, sdl_events: &mut E
 where G: GameLoop<'a, R>
 {
     let mut last_frame = Instant::now();
-    let mut events: Events = Events::new();
+    let mut events = Events::new();
     let cleanup = Event::new(Cleanup);
     loop {
         let this_frame = Instant::now();
@@ -34,7 +34,9 @@ where G: GameLoop<'a, R>
         }
 
         for _ in 0..updates_per_frame {
-            events.fire(this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64));
+            let update_duration = this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64);
+            events.elapse(update_duration);
+            events.fire(update_duration);
 
             while let Some(event) = events.pop() {
                 game.event(&event, &mut events)?;
