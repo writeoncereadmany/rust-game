@@ -26,20 +26,22 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         event.apply(|CoinCollected(_)| self.score += 10 );
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
                 &self.levels[self.level], 
                 self.world.hero.controller, 
-                other_type(&self.world.hero.panda_type))
+                other_type(&self.world.hero.panda_type),
+                &mut events)
         });
         event.apply(|ReachedDoor| {
             self.level = (self.level + 1) % self.levels.len();
             self.world = World::new(
                 &self.levels[self.level], 
                 self.world.hero.controller, 
-                other_type(&self.world.hero.panda_type));
+                other_type(&self.world.hero.panda_type),
+                &mut events);
         });
         self.world.event(event, events)
     }

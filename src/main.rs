@@ -28,6 +28,7 @@ use controller::Controller;
 use app::app::App;
 use app::assets::Assets;
 use world::world::World;
+use events::Events;
 use game::game::Game;
 
 const COLUMNS: usize = 32;
@@ -68,7 +69,13 @@ fn main() -> Result<(), String> {
         ROWS as u32,
     ).unwrap(); 
 
-    let world: World = World::new(&assets.levels[0], Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), PandaType::GiantPanda);
+    let mut events = Events::new();
+
+    let world: World = World::new(
+        &assets.levels[0], 
+        Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
+        PandaType::GiantPanda,
+        &mut events);
     let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
 
     let app = App {
@@ -80,8 +87,7 @@ fn main() -> Result<(), String> {
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
-
-    run_game_loop(app, &mut renderer, &mut event_pump, 1)?;
+    run_game_loop(app, &mut renderer, &mut event_pump, 1, events)?;
 
     Ok(())
 }

@@ -2,7 +2,8 @@ use std::time::Duration;
 
 use image::{ Rgb, RgbImage };
 
-use entity::{entity, Entities};
+use component_derive::Event;
+use entity::{ entity, Entities, EntityBuilder };
 
 use crate::app::events::*;
 use crate::shapes::push::Push;
@@ -22,6 +23,12 @@ use crate::graphics::renderer::{ Renderer, align, Tiled };
 pub enum Tile {
     STONE((i32, i32))
 }
+
+#[derive(Event)]
+pub struct Spawn(EntityBuilder);
+
+#[derive(Event)]
+pub struct Destroy(u64);
 
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
@@ -44,7 +51,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, controller: Controller, panda_type: PandaType) -> Self {
+    pub fn new(image: &RgbImage, controller: Controller, panda_type: PandaType, events: &mut Events) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
@@ -79,13 +86,15 @@ impl World {
             }
         }
 
-        entities.spawn(entity()
+        let spangle_id = entities.spawn(entity()
             .with(Position(3.0, 4.0))
             .with(Tile((0, 0)))
             .with(Period(0.5))
             .with(Phase(0.0))
             .with(AnimationCycle(vec![(0.25, (0,4)), (0.5, (1, 4)), (0.75, (0,4)), (1.0, (99,99))]))
         );
+
+        events.schedule(Duration::from_millis(2_000), Destroy(spangle_id));
 
         let map = map.add_edges();
 
@@ -149,6 +158,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         }
 
         event.apply(|dt| update(self, dt, events));
+        event.apply(|Destroy(id)| self.entities.delete(id));
         event.apply(|_:&Cleanup| {
             for coin in &self.coins { 
                 if coin.collected {

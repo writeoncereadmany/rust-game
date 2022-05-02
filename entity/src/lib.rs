@@ -69,8 +69,8 @@ impl Entities {
         id
     }
 
-    pub fn delete(&mut self, id: u64) {
-        self.entities.retain(|entity| entity.id != id)
+    pub fn delete(&mut self, id: &u64) {
+        self.entities.retain(|entity| &entity.id != id)
     }
 
     pub fn collect<T: Component>(&self) -> Vec<&T> {
