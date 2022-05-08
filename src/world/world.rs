@@ -11,7 +11,7 @@ use crate::entities::coin::Coin;
 use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::door::Door;
-use crate::entities::particle::Particle;
+use crate::entities::particle::spawn_particle;
 use crate::map::Map;
 use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
@@ -24,12 +24,6 @@ pub enum Tile {
     STONE((i32, i32))
 }
 
-#[derive(Event)]
-pub struct Spawn(EntityBuilder);
-
-#[derive(Event)]
-pub struct Destroy(u64);
-
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
         match self {
@@ -39,11 +33,10 @@ impl Tiled for Tile {
 }
 
 pub struct World {
-    pub next_entity_id: u32,
+    pub next_entity_id: u64,
     pub hero: Hero,
     pub coins: Vec<Coin>,
     pub doors: Vec<Door>,
-    pub particles: Vec<Particle>,
     pub map: Map<Meshed<Tile>>,
     pub entities: Entities,
     pub time: f64,
@@ -86,16 +79,6 @@ impl World {
             }
         }
 
-        let spangle_id = entities.spawn(entity()
-            .with(Position(3.0, 4.0))
-            .with(Tile((0, 0)))
-            .with(Period(0.5))
-            .with(Phase(0.0))
-            .with(AnimationCycle(vec![(0.25, (0,4)), (0.5, (1, 4)), (0.75, (0,4)), (1.0, (99,99))]))
-        );
-
-        events.schedule(Duration::from_millis(2_000), Destroy(spangle_id));
-
         let map = map.add_edges();
 
         World {
@@ -103,7 +86,6 @@ impl World {
             hero: hero.unwrap(),
             map,
             coins,
-            particles: Vec::new(),
             doors,
             entities,
             time: 10.0,
@@ -120,10 +102,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
         for coin in &self.coins {
             coin.render(renderer)?;
-        }
-
-        for particle in &self.particles {
-            particle.render(renderer)?;
         }
 
         for door in &self.doors {
@@ -153,22 +131,14 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         for coin in self.coins.iter_mut() {
             coin.event(event, events)?;
         }
-        for particle in self.particles.iter_mut() {
-            particle.event(event, events)?;
-        }
 
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete(id));
-        event.apply(|_:&Cleanup| {
-            for coin in &self.coins { 
-                if coin.collected {
-                    self.particles.push(Particle::new(coin.x, coin.y, self.next_entity_id));
-                    self.next_entity_id += 1;
-                }
-            }
-            self.coins.retain(|coin| !coin.collected);
-            self.particles.retain(|particle| !particle.expired)
+        event.apply(|CoinCollected{ x, y, id }| {
+            spawn_particle(*x, *y, &mut self.entities, events);
+            // self.entities.delete(id);
         });
+        event.apply(|_:&Cleanup| self.coins.retain(|coin| !coin.collected));
 
         Ok(())
     }
@@ -207,7 +177,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     let hero_mesh = world.hero.mesh();
     for coin in &world.coins {
         if hero_mesh.bbox().touches(&coin.mesh().bbox()) {
-            events.fire(CoinCollected(coin.id));
+            events.fire(CoinCollected{ id: coin.id, x: coin.x, y: coin.y });
         }
     }
 

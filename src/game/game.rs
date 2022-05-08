@@ -27,7 +27,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     }
 
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
-        event.apply(|CoinCollected(_)| self.score += 10 );
+        event.apply(|CoinCollected { .. }| self.score += 10 );
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
                 &self.levels[self.level], 

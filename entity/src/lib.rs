@@ -51,18 +51,18 @@ impl Entity {
 
 pub struct Entities {
     next_id: u64,
-    entities: Vec<Entity>
+    entities: HashMap<u64, Entity>
 }
 
 impl Entities {
     pub fn new() -> Self {
-        Entities{ next_id: 0, entities: Vec::new() }
+        Entities{ next_id: 0, entities: HashMap::new() }
     }
 
     pub fn spawn(&mut self, builder: EntityBuilder) -> u64 {
         let id = self.next_id;
         let entity = Entity { id, data: builder.with(Id(id)).data };
-        self.entities.push(entity);
+        self.entities.insert(id, entity);
 
         self.next_id += 1;
     
@@ -70,21 +70,43 @@ impl Entities {
     }
 
     pub fn delete(&mut self, id: &u64) {
-        self.entities.retain(|entity| &entity.id != id)
+        self.entities.remove(id);
+    }
+
+    pub fn for_each(&self, mut f: impl FnMut(&Entity)) 
+    {
+        for entity in self.entities.values() {
+            f(entity);
+        }
+    }
+
+    pub fn for_each_mut(&mut self, mut f: impl FnMut(&mut Entity)) 
+    {
+        for entity in self.entities.values_mut() {
+            f(entity);
+        }
     }
 
     pub fn collect<T: Component>(&self) -> Vec<&T> {
-        self.entities.iter().flat_map(|e| e.get() ).collect()
+        self.entities.values().flat_map(|e| e.get() ).collect()
     }
 
-    pub fn map<T>(&self, f: impl Fn(&Entity) -> Option<T>) -> Vec<T> {
-        self.entities.iter().flat_map(f).collect()
+    pub fn collect_2<T1: Component, T2: Component>(&self) -> Vec<(&T1, &T2)> {
+        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?)) ).collect()
+    }
+
+    pub fn collect_3<T1: Component, T2: Component, T3: Component>(&self) -> Vec<(&T1, &T2, &T3)> {
+        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?, e.get()?)) ).collect()
+    }
+
+    pub fn collect_4<T1: Component, T2: Component, T3: Component, T4: Component>(&self) -> Vec<(&T1, &T2, &T3, &T4)> {
+        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?, e.get()?, e.get()?)) ).collect()
     }
 
     pub fn fold<T: Component, R>(&self, initial: R, f: impl Fn(&R, &T) -> R) -> R 
     {
         let mut accumulated = initial;
-        for entity in &self.entities {
+        for entity in self.entities.values() {
             if let Some(next) = entity.get() {
                 accumulated = f(&accumulated, next);
             }
@@ -92,23 +114,16 @@ impl Entities {
         accumulated
     }
 
-    pub fn for_each(&self, mut f: impl FnMut(&Entity)) 
-    {
-        for entity in &self.entities {
-            f(entity);
-        }
-    }
-
     pub fn apply<I: Component, O: Variable>(&mut self, f: impl Fn(&I) -> O) 
     {
-        for entity in self.entities.iter_mut() {
+        for entity in self.entities.values_mut() {
             entity.get().map(&f).map(|val| entity.set(val));
         }
     }
 
     pub fn apply_2<I1: Component, I2: Component, O: Variable>(&mut self, f: impl Fn(&I1, &I2) -> O)
     {
-        for entity in self.entities.iter_mut() {
+        for entity in self.entities.values_mut() {
             if let (Some(i1), Some(i2)) = (entity.get(), entity.get()) {
                 let val = f(i1, i2);
                 entity.set(val)
@@ -116,10 +131,23 @@ impl Entities {
         }
     }
 
-    pub fn apply_entity(&mut self, f: impl Fn(&mut Entity)) 
+    pub fn apply_3<I1: Component, I2: Component, I3: Component, O: Variable>(&mut self, f: impl Fn(&I1, &I2, &I3) -> O)
     {
-        for entity in self.entities.iter_mut() {
-            f(entity);
+        for entity in self.entities.values_mut() {
+            if let (Some(i1), Some(i2), Some(i3)) = (entity.get(), entity.get(), entity.get()) {
+                let val = f(i1, i2, i3);
+                entity.set(val)
+            }
+        }
+    }
+
+    pub fn apply_4<I1: Component, I2: Component, I3: Component, I4: Component, O: Variable>(&mut self, f: impl Fn(&I1, &I2, &I3, &I4) -> O)
+    {
+        for entity in self.entities.values_mut() {
+            if let (Some(i1), Some(i2), Some(i3), Some(i4)) = (entity.get(), entity.get(), entity.get(), entity.get()) {
+                let val = f(i1, i2, i3, i4);
+                entity.set(val)
+            }
         }
     }
 }
@@ -128,7 +156,7 @@ impl Entities {
 mod tests {
 
     use super::*;
-    use component_derive::{Component, Variable};
+    use component_derive::{Variable};
 
     #[derive(Debug, PartialEq, Eq, Variable)] struct Count(u64);
     #[derive(Debug, PartialEq, Eq, Variable)] struct Score(u64);
@@ -184,21 +212,6 @@ mod tests {
         assert_eq!(Score(579), entities.fold(Score(0), |Score(a), Score(b)| Score(a + b)));
     }
 
-
-    #[test]
-    pub fn can_map_entities() {
-        let mut entities = Entities::new();
-
-        entities.spawn(entity().with(Count(123)));
-        entities.spawn(entity().with(Count(456)).with(Score(123)));
-        entities.spawn(entity().with(Score(456)));
-
-        assert_eq!(vec![(123 + 1), (456 + 2)], entities.map(|entity| {
-            let Score(s) = entity.get()?;
-            Some(s + entity.id)
-        }));
-    }
-
     #[test]
     pub fn can_modify_entities() {
         let mut entities = Entities::new();
@@ -234,7 +247,7 @@ mod tests {
         entities.spawn(entity().with(Count(456)).with(Score(123)));
         entities.spawn(entity().with(Score(456)));
 
-        entities.apply_entity(|entity| {
+        entities.for_each_mut(|entity| {
             if let (Some(Count(c)), Some(Score(s))) = (entity.get(), entity.get()) { 
                 let new_count = Count(c + s); 
                 let new_score = Score(c - s);

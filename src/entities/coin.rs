@@ -11,7 +11,7 @@ const ROTATION_FPS : f64 = 5.0;
 pub struct Coin {
     pub x: f64,
     pub y: f64,
-    pub id: u32,
+    pub id: u64,
     pub collected: bool,
     pub existed_for: Duration,
     pub phase_offset: f64,
@@ -19,7 +19,7 @@ pub struct Coin {
 }
 
 impl Coin {  
-    pub fn new(x: f64, y: f64, id: u32, phase_offset: f64) -> Self {
+    pub fn new(x: f64, y: f64, id: u64, phase_offset: f64) -> Self {
         Coin {
             x,
             y,
@@ -48,7 +48,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Coin {
     }
 
     fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        event.apply(|CoinCollected(id)| {
+        event.apply(|CoinCollected{id, .. }| {
             if id == &self.id { self.collected = true; }
         });
         event.apply(|dt| self.existed_for += *dt);
