@@ -1,33 +1,19 @@
-use crate::game_loop::GameLoop;
-use crate::graphics::renderer::Renderer;
+use entity::{ entity, Component, Entities };
+
+use component_derive::Constant;
+
 use crate::shapes::convex_mesh::ConvexMesh;
 
-pub struct Door {
-    pub x: f64,
-    pub y: f64,
-    mesh: ConvexMesh
-}
+use super::components::*;
 
-impl Door {  
-    pub fn new(x: f64, y: f64) -> Self {
-        Door {
-            x,
-            y,
-            mesh: ConvexMesh::new(
-                vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
-                vec![])
-        }
-    }
+#[derive(Constant)]
+pub struct Door;
 
-    pub fn mesh(&self) -> ConvexMesh {
-        self.mesh.translate(self.x, self.y)
-    }
-}
-
-impl <'a> GameLoop<'a, Renderer<'a>> for Door {
-
-    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        renderer.draw_tile((1, 0), self.x, self.y);
-        Ok(())
-    }
+pub fn spawn_door(x: f64, y: f64, entities: &mut Entities) {
+    entities.spawn(entity()
+        .with(Door)
+        .with(FixedPosition(x, y))
+        .with(Tile((1, 0)))
+        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+    );
 }
