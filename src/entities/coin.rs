@@ -1,57 +1,24 @@
-use std::time::Duration;
+use entity::{ entity, Entities };
 
-use crate::game_loop::*;
-use crate::events::*;
-use crate::graphics::renderer::Renderer;
-use crate::app::events::CoinCollected;
 use crate::shapes::convex_mesh::ConvexMesh;
 
-const ROTATION_FPS : f64 = 5.0;
+use super::components::*;
 
-pub struct Coin {
-    pub x: f64,
-    pub y: f64,
-    pub id: u64,
-    pub collected: bool,
-    pub existed_for: Duration,
-    pub phase_offset: f64,
-    mesh: ConvexMesh
+const ANIMATION_CYCLE: [(f64, (i32, i32));4] = [(0.25, (0,3)), (0.5, (1, 3)), (0.75, (2, 3)), (1.0, (3,3))];
+
+pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
+    let phase = phase_offset(x, y);
+    entities.spawn(entity()
+        .with(Position(x, y))
+        .with(Tile(next_frame(&phase, &ANIMATION_CYCLE.to_vec())))
+        .with(Period(0.7))
+        .with(ReferenceMesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![])))
+        .with(Phase(phase_offset(x, y)))
+        .with(AnimationCycle(ANIMATION_CYCLE.to_vec()))
+    );
 }
 
-impl Coin {  
-    pub fn new(x: f64, y: f64, id: u64, phase_offset: f64) -> Self {
-        Coin {
-            x,
-            y,
-            id,
-            collected: false,
-            existed_for: Duration::ZERO,
-            phase_offset,
-            mesh: ConvexMesh::new(
-                vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
-                vec![])
-        }
-    }
-
-    pub fn mesh(&self) -> ConvexMesh {
-        self.mesh.translate(self.x, self.y)
-    }
-}
-
-impl <'a> GameLoop<'a, Renderer<'a>> for Coin {
-
-    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        let phase = (self.existed_for.as_secs_f64() * ROTATION_FPS) + self.phase_offset;
-        let frame = (phase.round() as i32).rem_euclid(4);
-        renderer.draw_tile((frame, 3), self.x, self.y);
-        Ok(())
-    }
-
-    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        event.apply(|CoinCollected{id, .. }| {
-            if id == &self.id { self.collected = true; }
-        });
-        event.apply(|dt| self.existed_for += *dt);
-        Ok(())
-    }
+fn phase_offset(x: f64, y: f64) -> f64 {
+    // magic numbers which don't mean anything, but feel good
+    x * 0.8 + y * 0.4
 }

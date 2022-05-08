@@ -1,4 +1,5 @@
 use component_derive::{Constant, Variable};
+use crate::shapes::convex_mesh::ConvexMesh;
 use entity::*;
 
 #[derive(Variable)]
@@ -13,9 +14,16 @@ pub struct Phase(pub f64);
 #[derive(Constant)]
 pub struct AnimationCycle(pub Vec<(f64, (i32, i32))>);
 
+#[derive(Constant)]
+pub struct ReferenceMesh(pub ConvexMesh);
+
+#[derive(Variable)]
+pub struct Mesh(pub ConvexMesh);
+
 pub fn next_frame(phase: &f64, frames: &Vec<(f64, (i32, i32))>) -> (i32, i32) {
+    let phase = phase % 1.0;
     for (frame_limit, (x, y)) in frames {
-        if phase < frame_limit {
+        if &phase < frame_limit {
             return (*x, *y)
         }
     }

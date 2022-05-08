@@ -6,7 +6,7 @@ pub trait Component: Any { }
 pub trait Variable: Component { }
 
 #[derive(Constant)]
-pub struct Id(u64);
+pub struct Id(pub u64);
 
 impl Component for () {}
 impl Variable for () {}

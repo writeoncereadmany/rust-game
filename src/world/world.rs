@@ -2,12 +2,11 @@ use std::time::Duration;
 
 use image::{ Rgb, RgbImage };
 
-use component_derive::Event;
-use entity::{ entity, Entities, EntityBuilder };
+use entity::{ Id, Entities };
 
 use crate::app::events::*;
 use crate::shapes::push::Push;
-use crate::entities::coin::Coin;
+use crate::entities::coin::spawn_coin;
 use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::door::Door;
@@ -33,9 +32,7 @@ impl Tiled for Tile {
 }
 
 pub struct World {
-    pub next_entity_id: u64,
     pub hero: Hero,
-    pub coins: Vec<Coin>,
     pub doors: Vec<Door>,
     pub map: Map<Meshed<Tile>>,
     pub entities: Entities,
@@ -48,12 +45,9 @@ impl World {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
-        let mut coins: Vec<Coin> = Vec::new();
         let mut hero: Option<Hero> = None;
         let mut doors: Vec<Door> = Vec::new();
         let mut entities = Entities::new();
-
-        let mut id = 0;
 
         for x in 0..image.width() {
             for y in 0..height {
@@ -61,9 +55,9 @@ impl World {
                 match pixel {
                     Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
                     Rgb([255, 255, 0]) => { 
-                        coins.push(Coin::new(x as f64, y as f64, id, phase_offset(x, y)));
-                        id += 1;
+                        spawn_coin(x as f64, y as f64, &mut entities);
                     },
+
                     Rgb([255, 0, 0]) => { doors.push(Door::new(x as f64, y as f64))},
                     Rgb([0, 255, 0]) => { match hero {
                         None => { hero = Some(Hero::new(
@@ -82,10 +76,8 @@ impl World {
         let map = map.add_edges();
 
         World {
-            next_entity_id: id,
             hero: hero.unwrap(),
             map,
-            coins,
             doors,
             entities,
             time: 10.0,
@@ -99,10 +91,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         renderer.draw_map(&self.map);
 
         renderer.draw_multitile((2, 0), (2, 1), 15.0, 17.0);
-
-        for coin in &self.coins {
-            coin.render(renderer)?;
-        }
 
         for door in &self.doors {
             door.render(renderer)?;
@@ -128,17 +116,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         self.hero.event(event, events)?;
-        for coin in self.coins.iter_mut() {
-            coin.event(event, events)?;
-        }
 
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete(id));
         event.apply(|CoinCollected{ x, y, id }| {
             spawn_particle(*x, *y, &mut self.entities, events);
-            // self.entities.delete(id);
+            self.entities.delete(id);
         });
-        event.apply(|_:&Cleanup| self.coins.retain(|coin| !coin.collected));
 
         Ok(())
     }
@@ -149,6 +133,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
     world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
     world.entities.apply_2(|Phase(phase), AnimationCycle(frames)| Tile(next_frame(phase, frames)));
+    world.entities.apply_2(|Position(x, y), ReferenceMesh(mesh)| Mesh(mesh.translate(*x, *y)));
 
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     let mut hero_mesh = world.hero.mesh().clone();
@@ -175,9 +160,9 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     world.hero.last_push = (tot_x_push, tot_y_push);
 
     let hero_mesh = world.hero.mesh();
-    for coin in &world.coins {
-        if hero_mesh.bbox().touches(&coin.mesh().bbox()) {
-            events.fire(CoinCollected{ id: coin.id, x: coin.x, y: coin.y });
+    for (Id(id), Position(x, y), Mesh(mesh)) in &world.entities.collect_3() {
+        if hero_mesh.bbox().touches(&mesh.bbox()) {
+            events.fire(CoinCollected{ id: *id, x: *x, y: *y });
         }
     }
 
@@ -192,11 +177,6 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     if world.time < 0.0 {
         events.fire(TimeLimitExpired)
     }
-}
-
-fn phase_offset(x: u32, y: u32) -> f64 {
-    // magic numbers which don't mean anything, but feel good
-    x as f64 * -0.3 + y as f64 * -0.5
 }
 
 fn time_units(time: f64) -> String {
