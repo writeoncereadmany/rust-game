@@ -73,10 +73,14 @@ fn main() -> Result<(), String> {
 
     let world: World = World::new(
         &assets.levels[0], 
-        Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
         PandaType::GiantPanda,
         &mut events);
-    let game: Game = Game{ world, levels: &assets.levels, level: 0, score: 0 };
+    let game: Game = Game{ 
+        world, 
+        controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
+        levels: &assets.levels, 
+        level: 0, 
+        score: 0 };
 
     let app = App {
         game_controller_subsystem, 

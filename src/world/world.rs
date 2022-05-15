@@ -40,7 +40,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, controller: Controller, panda_type: PandaType, events: &mut Events) -> Self {
+    pub fn new(image: &RgbImage, panda_type: PandaType, events: &mut Events) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
@@ -63,7 +63,6 @@ impl World {
                         None => { hero = Some(Hero::new(
                             x as f64, 
                             y as f64, 
-                            controller,
                             panda_type)); }
                         Some(_) => { panic!("Multiple hero start positions defined"); }
                     }},

@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::controller::Controller;
+use component_derive::Variable;
+use entity::{Component, Variable};
+
+use crate::controller::ControllerState;
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::Renderer;
@@ -36,6 +39,12 @@ pub enum PandaType {
     RedPanda
 }
 
+#[derive(Variable)]
+pub struct MovingX(pub Sign);
+
+#[derive(Variable)]
+pub struct Ascending(pub bool);
+
 fn sprite_offset(panda_type: &PandaType) -> i32 {
     match panda_type {
         PandaType::GiantPanda => PANDA_OFFSET,
@@ -51,7 +60,8 @@ pub fn other_type(panda_type: &PandaType) -> PandaType {
 }
 
 pub struct Hero {
-    pub controller: Controller,
+    pub moving_x: MovingX,
+    pub ascending: Ascending,
     pub x: f64,
     pub y: f64,
     pub dx: f64,
@@ -64,9 +74,10 @@ pub struct Hero {
 }
 
 impl Hero {  
-    pub fn new(x: f64, y: f64, controller: Controller, panda_type: PandaType) -> Self {
+    pub fn new(x: f64, y: f64, panda_type: PandaType) -> Self {
         Hero {
-            controller,
+            moving_x: MovingX(Sign::ZERO),
+            ascending: Ascending(false),
             x,
             y,
             dx: 0.0,
@@ -109,7 +120,10 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
     }
 
     fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        event.apply(|e| self.controller.on_event(e));
+        event.apply(|ControllerState { x, jump_held, .. }| {
+            self.ascending = Ascending(*jump_held);
+            self.moving_x = MovingX(*x);
+        });
         event.apply(|dt| update(self, dt));
         Ok(())
     }
@@ -120,7 +134,8 @@ fn update(hero: &mut Hero, dt: &Duration) {
     let (last_push_x, last_push_y) = hero.last_push;
     let airborne = last_push_y <= 0.0;
     let x_vel_sign : Sign = hero.dx.sign();
-    let x_input : Sign = hero.controller.x();
+    let MovingX(x_input) = hero.moving_x;
+    let Ascending(ascending) = hero.ascending;
 
     if x_input == Sign::ZERO {
 
@@ -153,7 +168,7 @@ fn update(hero: &mut Hero, dt: &Duration) {
         Sign::ZERO => {}
     }
 
-    if hero.controller.x() == Sign::ZERO {
+    if x_input == Sign::ZERO {
         match last_push_x.sign() {
             Sign::POSITIVE => {
                 hero.dx -= WALL_STICK;
@@ -165,7 +180,7 @@ fn update(hero: &mut Hero, dt: &Duration) {
         }
     }
     
-    if hero.controller.jump_pressed() {
+    if ascending {
         match hero.last_push {
             (_, y) if y > 0.0 => { 
                 hero.dy = JUMP_SPEED; 
@@ -186,7 +201,7 @@ fn update(hero: &mut Hero, dt: &Duration) {
             _ => {} 
         }
     }
-    else if hero.extrajump > 0.0 && hero.controller.jump_held() {
+    else if hero.extrajump > 0.0 && ascending {
         hero.dy += EXTRA_JUMP * dt;
         hero.extrajump -= dt;
     }

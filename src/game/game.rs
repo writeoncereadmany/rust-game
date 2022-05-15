@@ -6,9 +6,11 @@ use crate::game_loop::*;
 use crate::events::*;
 use crate::app::events::*;
 use crate::entities::hero::other_type;
+use crate::controller::Controller;
 
 pub struct Game<'a> {
     pub levels: &'a Vec<RgbImage>,
+    pub controller: Controller,
     pub world: World,
     pub level: usize,
     pub score: u32,
@@ -27,11 +29,11 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     }
 
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
+        self.controller.on_event(event, &mut events);
         event.apply(|CoinCollected { .. }| self.score += 10 );
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
                 &self.levels[self.level], 
-                self.world.hero.controller, 
                 other_type(&self.world.hero.panda_type),
                 &mut events)
         });
@@ -39,7 +41,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             self.level = (self.level + 1) % self.levels.len();
             self.world = World::new(
                 &self.levels[self.level], 
-                self.world.hero.controller, 
                 other_type(&self.world.hero.panda_type),
                 &mut events);
         });

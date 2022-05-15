@@ -9,6 +9,8 @@ use crate::events::*;
 #[derive(Event)]
 pub struct Cleanup;
 
+#[derive(Event)]
+pub struct CascadeInputs;
 
 pub trait GameLoop<'a, R>
 {
@@ -30,6 +32,11 @@ where G: GameLoop<'a, R>
         let this_frame = Instant::now();
         for event in sdl_events.poll_iter() {
             events.fire(event);
+        }
+        events.fire(CascadeInputs);
+
+        while let Some(event) = events.pop() {
+            game.event(&event, &mut events)?;
         }
 
         for _ in 0..updates_per_frame {

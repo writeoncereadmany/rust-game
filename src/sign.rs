@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum Sign {
     POSITIVE,
     ZERO,
