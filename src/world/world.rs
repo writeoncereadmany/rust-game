@@ -40,7 +40,7 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, panda_type: PandaType, events: &mut Events) -> Self {
+    pub fn new(image: &RgbImage, panda_type: PandaType, _events: &mut Events) -> Self {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
@@ -49,9 +49,8 @@ impl World {
 
         for x in 0..image.width() {
             for y in 0..height {
-                let pixel: &Rgb<u8> = image.get_pixel(x, height - 1 - y);
-                match pixel {
-                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE((0, 1))); },
+                match pixel(image, x, y) {
+                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE(tile_from_neighbours(image, x, y))); },
                     Rgb([255, 255, 0]) => { 
                         spawn_coin(x as f64, y as f64, &mut entities);
                     },
@@ -80,6 +79,39 @@ impl World {
             entities,
             time: 10.0,
         }
+    }
+}
+
+fn pixel(image: &RgbImage, x: u32, y: u32) -> &Rgb<u8> {
+    image.get_pixel(x, image.height() - 1 - y)
+}
+
+fn tile_from_neighbours(image: &RgbImage, x: u32, y: u32) -> (i32, i32) {
+    let left = x > 0 && pixel(image, x - 1, y) == &Rgb([255, 255, 255]);
+    let right = x < (image.width() - 1) && pixel(image, x + 1, y) == &Rgb([255, 255, 255]);
+    let bottom = y > 0 && pixel(image, x, y - 1) == &Rgb([255, 255, 255]);
+    let top = y < (image.height() - 1) && pixel(image, x, y + 1) == &Rgb([255, 255, 255]);
+
+    match (left, right, bottom, top) {
+        (false, false, false, false) => (7, 3),
+
+        (true, false, false, false) => (6, 3),
+        (true, true, false, false) => (5, 3),
+        (false, true, false, false) => (4, 3),
+
+        (false, false, true, false) => (7, 0),
+        (false, false, true, true) => (7, 1),
+        (false, false, false, true) => (7, 2),
+
+        (false, true, true, false) => (4, 0),
+        (true, true, true, false) => (5, 0),
+        (true, false, true, false) => (6, 0),
+        (false, true, true, true) => (4, 1),
+        (true, true, true, true) => (5, 1),
+        (true, false, true, true) => (6, 1),
+        (false, true, false, true) => (4, 2),
+        (true, true, false, true) => (5, 2),
+        (true, false, false, true) => (6, 2)
     }
 }
 
