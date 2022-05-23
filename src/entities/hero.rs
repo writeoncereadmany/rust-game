@@ -3,7 +3,7 @@ use std::time::Duration;
 use component_derive::Variable;
 use entity::{Component, Variable};
 
-use crate::controller::ControllerState;
+use crate::controller::{ ButtonPress, ControllerState };
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::Renderer;
@@ -124,6 +124,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
             self.ascending = Ascending(*jump_held);
             self.moving_x = MovingX(*x);
         });
+        event.apply(|button| jump(self, button));
         event.apply(|dt| update(self, dt));
         Ok(())
     }
@@ -180,28 +181,7 @@ fn update(hero: &mut Hero, dt: &Duration) {
         }
     }
     
-    if ascending {
-        match hero.last_push {
-            (_, y) if y > 0.0 => { 
-                hero.dy = JUMP_SPEED; 
-                hero.extrajump = EXTRA_JUMP_DURATION;
-            },
-            (x, _) if x > 0.0 => { 
-                hero.dy = WALLJUMP_DY;
-                hero.dx = WALLJUMP_DX;
-                hero.extrajump = EXTRA_JUMP_DURATION;
-
-            },
-            (x, _) if x < 0.0 => {
-                hero.dy = WALLJUMP_DY;
-                hero.dx = -WALLJUMP_DX;
-                hero.extrajump = EXTRA_JUMP_DURATION;
-
-            }
-            _ => {} 
-        }
-    }
-    else if hero.extrajump > 0.0 && ascending {
+    if hero.extrajump > 0.0 && ascending {
         hero.dy += EXTRA_JUMP * dt;
         hero.extrajump -= dt;
     }
@@ -212,4 +192,26 @@ fn update(hero: &mut Hero, dt: &Duration) {
 
     hero.x += hero.dx * dt;
     hero.y += hero.dy * dt;
+}
+
+fn jump(hero: &mut Hero, _event: &ButtonPress) {
+    match hero.last_push {
+        (_, y) if y > 0.0 => { 
+            hero.dy = JUMP_SPEED; 
+            hero.extrajump = EXTRA_JUMP_DURATION;
+        },
+        (x, _) if x > 0.0 => { 
+            hero.dy = WALLJUMP_DY;
+            hero.dx = WALLJUMP_DX;
+            hero.extrajump = EXTRA_JUMP_DURATION;
+
+        },
+        (x, _) if x < 0.0 => {
+            hero.dy = WALLJUMP_DY;
+            hero.dx = -WALLJUMP_DX;
+            hero.extrajump = EXTRA_JUMP_DURATION;
+
+        }
+        _ => {} 
+    }
 }

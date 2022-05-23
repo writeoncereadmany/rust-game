@@ -15,21 +15,26 @@ pub struct ControllerState {
     pub jump_held: bool,
 }
 
+#[derive(Clone, Copy, Event)]
+pub struct ButtonPress(u64);
+
 #[derive(Clone, Copy)]
 pub struct ControllerItem {
     key: Keycode,
     pad: Button,
     pressed: bool,
-    fired: bool
+    on_press: Option<ButtonPress>
 }
 
 impl ControllerItem {
-    fn on_event(&mut self, event: &SdlEvent) {
+    fn on_event(&mut self, event: &SdlEvent, events: &mut Events) {
         match event {
             SdlEvent::KeyDown { keycode: Some(key_pressed), repeat: false, .. } => {
                 if key_pressed == &self.key {
                     self.pressed = true;
-                    self.fired = true;
+                    if let Some(x) = self.on_press {
+                        events.fire(x);
+                    }
                 }
             },
             SdlEvent::KeyUp { keycode: Some(key_released), repeat: false, .. } => {
@@ -40,7 +45,9 @@ impl ControllerItem {
             SdlEvent::ControllerButtonDown { button, .. } => {
                 if button == &self.pad {
                     self.pressed = true;
-                    self.fired = true;
+                    if let Some(x) = self.on_press {
+                        events.fire(x);
+                    }
                 }
             }
             SdlEvent::ControllerButtonUp { button, .. } => {
@@ -49,15 +56,6 @@ impl ControllerItem {
                 }
             }
             _ => ()
-        }
-    }
-
-    fn fired(&mut self) -> bool {
-        if self.fired {
-            self.fired = false;
-            true
-        } else {
-            false
         }
     }
 }
@@ -74,17 +72,17 @@ impl Controller {
     pub fn new(left: Keycode, right: Keycode, jump: Keycode) -> Self {
         Controller {
             id: 1,
-            left: ControllerItem{ key: left, pad: Button::DPadLeft, pressed: false, fired: false },
-            right: ControllerItem{ key: right, pad: Button::DPadRight, pressed: false, fired: false },
-            jump: ControllerItem{ key: jump, pad: Button::A, pressed: false, fired: false }
+            left: ControllerItem{ key: left, pad: Button::DPadLeft, pressed: false, on_press: None },
+            right: ControllerItem{ key: right, pad: Button::DPadRight, pressed: false, on_press: None },
+            jump: ControllerItem{ key: jump, pad: Button::A, pressed: false, on_press: Some(ButtonPress(1)) }
         }
     }
 
-    pub fn on_event(&mut self, event: &Event, mut events: &mut Events) {
-        event.apply(|e| self.left.on_event(e));
-        event.apply(|e| self.right.on_event(e));
-        event.apply(|e| self.jump.on_event(e));
-        event.apply(|e| self.fire_new_state(e, &mut events));
+    pub fn on_event(&mut self, event: &Event, events: &mut Events) {
+        event.apply(|e| self.left.on_event(e, events));
+        event.apply(|e| self.right.on_event(e, events));
+        event.apply(|e| self.jump.on_event(e, events));
+        event.apply(|e| self.fire_new_state(e, events));
     }
 
     pub fn x(&self) -> Sign {
@@ -93,10 +91,6 @@ impl Controller {
             (false, true) => Sign::POSITIVE,
             _ => Sign::ZERO
         }
-    }
-
-    pub fn jump_pressed(&mut self) -> bool {
-        self.jump.fired()
     }
 
     pub fn jump_held(&self) -> bool {
