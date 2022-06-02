@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use component_derive::Variable;
-use entity::{Component, Variable};
+use component_derive::{ Constant, Variable };
+use entity::{ entity, Entities, Component, Variable };
 
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::game_loop::*;
@@ -9,6 +9,7 @@ use crate::events::*;
 use crate::graphics::renderer::Renderer;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
+use super::components::*;
 
 const ACCEL: f64 = 30.0;
 const REVERSE_ACCEL: f64 = 60.0;
@@ -33,30 +34,48 @@ const ASCENDING : (i32, i32) = (2, 0);
 const DESCENDING : (i32, i32) = (3, 0);
 const STANDING: (i32, i32) = (0, 1);
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Constant)]
 pub enum PandaType {
     GiantPanda,
     RedPanda
 }
 
+#[derive(Constant)]
+pub struct Heroo;
+
 #[derive(Variable)]
 pub struct MovingX(pub Sign);
 
 #[derive(Variable)]
-pub struct Ascending(pub bool);
+pub struct Ascending(pub f64);
 
-fn sprite_offset(panda_type: &PandaType) -> i32 {
-    match panda_type {
-        PandaType::GiantPanda => PANDA_OFFSET,
-        PandaType::RedPanda => RED_PANDA_OFFSET
-    }
-}
+#[derive(Variable)]
+pub struct LastPush(pub f64, pub f64);
+
+#[derive(Variable)]
+pub struct Facing(Sign);
 
 pub fn other_type(panda_type: &PandaType) -> PandaType {
     match panda_type {
         PandaType::GiantPanda => PandaType::RedPanda,
         PandaType::RedPanda => PandaType::GiantPanda
     }
+}
+
+pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities) {
+    entities.spawn(entity()
+        .with(Heroo)
+        .with(Position(x, y))
+        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+        .with(Tile(offset_tile(STANDING, &panda_type)))
+        .with(MovingX(Sign::ZERO))
+        .with(Velocity(0.0, 0.0))
+        .with(LastPush(0.0,0.0))
+        .with(Facing(Sign::POSITIVE))
+        .with(panda_type)
+        .with(Ascending(0.0))
+    );
+
 }
 
 pub struct Hero {
@@ -69,7 +88,6 @@ pub struct Hero {
     pub last_push: (f64, f64),
     pub panda_type: PandaType,
     facing: Sign,
-    extrajump: f64,
     mesh: ConvexMesh
 }
 
@@ -77,14 +95,13 @@ impl Hero {
     pub fn new(x: f64, y: f64, panda_type: PandaType) -> Self {
         Hero {
             moving_x: MovingX(Sign::ZERO),
-            ascending: Ascending(false),
+            ascending: Ascending(0.0),
             x,
             y,
             dx: 0.0,
             dy: 0.0,
             last_push: (0.0, 0.0),
             facing: Sign::POSITIVE,
-            extrajump: 0.0,
             panda_type,
             mesh: ConvexMesh::new(
                 vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
@@ -101,7 +118,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         let (_, last_push_y) = self.last_push;
-        let (hx, hy) = if last_push_y == 0.0 {
+        let tile = if last_push_y == 0.0 {
             if self.dy > 0.0 { 
                 ASCENDING
             } else {
@@ -113,7 +130,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let tile = (hx, hy + sprite_offset(&self.panda_type));
+        let tile = offset_tile(tile, &self.panda_type);
         let flip_x = self.facing == Sign::NEGATIVE;
         renderer.draw_tile_ex(tile, self.x, self.y, flip_x, false);
         Ok(())
@@ -121,7 +138,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
 
     fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
         event.apply(|ControllerState { x, jump_held, .. }| {
-            self.ascending = Ascending(*jump_held);
+            if !jump_held {
+                self.ascending = Ascending(0.0);
+            }
             self.moving_x = MovingX(*x);
         });
         event.apply(|button| jump(self, button));
@@ -130,13 +149,20 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
     }
 }
 
+fn offset_tile((x, y): (i32, i32), panda_type: &PandaType) -> (i32, i32) {
+    (x, y + match panda_type {
+        PandaType::GiantPanda => PANDA_OFFSET,
+        PandaType::RedPanda => RED_PANDA_OFFSET
+    })
+}
+
 fn update(hero: &mut Hero, dt: &Duration) {
     let dt = dt.as_secs_f64();
     let (last_push_x, last_push_y) = hero.last_push;
     let airborne = last_push_y <= 0.0;
     let x_vel_sign : Sign = hero.dx.sign();
     let MovingX(x_input) = hero.moving_x;
-    let Ascending(ascending) = hero.ascending;
+    let Ascending(extrajump) = hero.ascending;
 
     if x_input == Sign::ZERO {
 
@@ -181,12 +207,9 @@ fn update(hero: &mut Hero, dt: &Duration) {
         }
     }
     
-    if hero.extrajump > 0.0 && ascending {
+    if extrajump > 0.0 {
         hero.dy += EXTRA_JUMP * dt;
-        hero.extrajump -= dt;
-    }
-    else {
-        hero.extrajump = 0.0;
+        hero.ascending = Ascending(extrajump - dt);
     }
     hero.dy -= GRAVITY * dt;
 
@@ -198,18 +221,18 @@ fn jump(hero: &mut Hero, _event: &ButtonPress) {
     match hero.last_push {
         (_, y) if y > 0.0 => { 
             hero.dy = JUMP_SPEED; 
-            hero.extrajump = EXTRA_JUMP_DURATION;
+            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
         },
         (x, _) if x > 0.0 => { 
             hero.dy = WALLJUMP_DY;
             hero.dx = WALLJUMP_DX;
-            hero.extrajump = EXTRA_JUMP_DURATION;
+            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
 
         },
         (x, _) if x < 0.0 => {
             hero.dy = WALLJUMP_DY;
             hero.dx = -WALLJUMP_DX;
-            hero.extrajump = EXTRA_JUMP_DURATION;
+            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
 
         }
         _ => {} 

@@ -36,6 +36,14 @@ pub struct Tile(pub (i32, i32));
 #[derive(Variable)]
 pub struct Position(pub f64, pub f64);
 
+#[derive(Variable)]
+pub struct Velocity(pub f64, pub f64);
+
+#[derive(Variable)]
+pub struct Acceleration(pub f64, pub f64);
+
+
+
 #[derive(Constant)]
 pub struct FixedPosition(pub f64, pub f64);
 
