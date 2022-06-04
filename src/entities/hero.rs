@@ -7,6 +7,7 @@ use crate::controller::{ ButtonPress, ControllerState };
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::Renderer;
+use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 use super::components::*;
@@ -75,7 +76,6 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(panda_type)
         .with(Ascending(0.0))
     );
-
 }
 
 pub struct Hero {
@@ -130,9 +130,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let tile = offset_tile(tile, &self.panda_type);
+        let (hx, hy) = offset_tile(tile, &self.panda_type);
         let flip_x = self.facing == Sign::NEGATIVE;
-        renderer.draw_tile_ex(tile, self.x, self.y, flip_x, false);
+        renderer.draw_tile_ex(Sprite { x: hx, y: hy, flip_x, flip_y: false, width: 1, height: 1 }, self.x, self.y);
         Ok(())
     }
 
