@@ -68,7 +68,7 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(Heroo)
         .with(Position(x, y))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
-        .with(Tile(offset_tile(STANDING, &panda_type)))
+        .with(offset_sprite(STANDING, &panda_type, false))
         .with(MovingX(Sign::ZERO))
         .with(Velocity(0.0, 0.0))
         .with(LastPush(0.0,0.0))
@@ -130,9 +130,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
             let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let (hx, hy) = offset_tile(tile, &self.panda_type);
         let flip_x = self.facing == Sign::NEGATIVE;
-        renderer.draw_tile_ex(Sprite { x: hx, y: hy, flip_x, flip_y: false, width: 1, height: 1 }, self.x, self.y);
+        let sprite = offset_sprite(tile, &self.panda_type, flip_x);
+        renderer.draw_sprite(&sprite, self.x, self.y);
         Ok(())
     }
 
@@ -149,11 +149,11 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
     }
 }
 
-fn offset_tile((x, y): (i32, i32), panda_type: &PandaType) -> (i32, i32) {
-    (x, y + match panda_type {
+fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sprite {
+    Sprite::sprite(x, y + match panda_type {
         PandaType::GiantPanda => PANDA_OFFSET,
         PandaType::RedPanda => RED_PANDA_OFFSET
-    })
+    }, flip_x, false)
 }
 
 fn update(hero: &mut Hero, dt: &Duration) {

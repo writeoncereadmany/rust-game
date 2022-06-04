@@ -16,6 +16,7 @@ use crate::shapes::convex_mesh::Meshed;
 use crate::events::*;
 use crate::game_loop::*;
 use crate::graphics::renderer::{ Renderer, align, Tiled };
+use crate::graphics::sprite::Sprite;
 
 #[derive(Clone)]
 pub enum Tile {
@@ -119,19 +120,19 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         renderer.draw_map(&self.map);
 
-        renderer.draw_multitile((2, 0), (2, 1), 15.0, 17.0);
+        renderer.draw_sprite(&Sprite::multi(2, 0, 2, 1), 15.0, 17.0);
 
         self.hero.render(renderer)?;
 
         self.entities.for_each(|e| {
-            if let (Some(FixedPosition(x, y)), Some(Tile(tile))) = (e.get(), e.get())
+            if let (Some(FixedPosition(x, y)), Some(sprite)) = (e.get(), e.get())
             {
-                renderer.draw_tile(*tile, *x, *y);
+                renderer.draw_sprite(sprite, *x, *y);
             }
 
-            if let (Some(Position(x, y)), Some(Tile(tile))) = (e.get(), e.get())
+            if let (Some(Position(x, y)), Some(sprite)) = (e.get(), e.get())
             {
-                renderer.draw_tile(*tile, *x, *y);
+                renderer.draw_sprite(sprite, *x, *y);
             }
         });
 
@@ -162,7 +163,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
         
     world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
     world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
-    world.entities.apply_2(|Phase(phase), AnimationCycle(frames)| Tile(next_frame(phase, frames)));
+    world.entities.apply_2(|Phase(phase), AnimationCycle(frames)| next_frame(phase, frames));
 
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     let mut hero_mesh = world.hero.mesh().clone();

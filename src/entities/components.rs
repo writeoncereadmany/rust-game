@@ -1,5 +1,6 @@
 use component_derive::{Constant, Variable};
 use crate::shapes::convex_mesh::ConvexMesh;
+use crate::graphics::sprite::Sprite;
 use entity::*;
 
 #[derive(Variable)]
@@ -12,7 +13,7 @@ pub struct Period(pub f64);
 pub struct Phase(pub f64);
 
 #[derive(Constant)]
-pub struct AnimationCycle(pub Vec<(f64, (i32, i32))>);
+pub struct AnimationCycle(pub Vec<(f64, Sprite)>);
 
 #[derive(Constant)]
 pub struct ReferenceMesh(pub ConvexMesh);
@@ -20,18 +21,15 @@ pub struct ReferenceMesh(pub ConvexMesh);
 #[derive(Variable)]
 pub struct Mesh(pub ConvexMesh);
 
-pub fn next_frame(phase: &f64, frames: &Vec<(f64, (i32, i32))>) -> (i32, i32) {
+pub fn next_frame(phase: &f64, frames: &Vec<(f64, Sprite)>) -> Sprite {
     let phase = phase % 1.0;
-    for (frame_limit, (x, y)) in frames {
+    for (frame_limit, sprite) in frames {
         if &phase < frame_limit {
-            return (*x, *y)
+            return *sprite
         }
     }
-    (0,0)
+    Sprite::new(0, 0)
 }
-
-#[derive(Variable)]
-pub struct Tile(pub (i32, i32));
 
 #[derive(Variable)]
 pub struct Position(pub f64, pub f64);
@@ -41,8 +39,6 @@ pub struct Velocity(pub f64, pub f64);
 
 #[derive(Variable)]
 pub struct Acceleration(pub f64, pub f64);
-
-
 
 #[derive(Constant)]
 pub struct FixedPosition(pub f64, pub f64);

@@ -69,16 +69,8 @@ impl <'a> Renderer<'a>
         })
     }
 
-    pub fn draw_tile(&mut self, (tx, ty): (i32, i32), x: f64, y: f64) {
-        self.draw(Sprite::new(tx, ty), x, y);
-    }
-
-    pub fn draw_tile_ex(&mut self, sprite: Sprite, x: f64, y: f64) {
-        self.draw(sprite, x, y);
-    }
-
-    pub fn draw_multitile(&mut self, (tx, ty): (i32, i32), (width, height): (u32, u32), x: f64, y: f64) {
-        self.draw(Sprite::multi(tx, ty, width, height), x, y);
+    pub fn draw_sprite(&mut self, sprite: &Sprite, x: f64, y: f64) {
+        self.draw(*sprite, x, y);
     }
 
     pub fn draw_text(&mut self, text: String, x: f64, y: f64, j: u8) {
