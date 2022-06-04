@@ -8,7 +8,7 @@ use entity::{ Entities, entity };
 
 pub fn spawn_particle(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
     let spangle_id = entities.spawn(entity()
-        .with(FixedPosition(x, y))
+        .with(Position(x, y))
         .with(Sprite::new(0, 4))
         .with(Period(0.45))
         .with(Phase(0.0))

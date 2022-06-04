@@ -41,7 +41,4 @@ pub struct Velocity(pub f64, pub f64);
 pub struct Acceleration(pub f64, pub f64);
 
 #[derive(Constant)]
-pub struct FixedPosition(pub f64, pub f64);
-
-#[derive(Constant)]
 pub struct Door;

@@ -17,7 +17,7 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
         (1.0, Sprite::new(3,3))));
     entities.spawn(entity()
         .with(Coin)
-        .with(FixedPosition(x, y))
+        .with(Position(x, y))
         .with(next_frame(&phase, &animation_cycle))
         .with(Period(0.7))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))

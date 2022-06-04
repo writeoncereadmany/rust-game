@@ -125,11 +125,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         self.hero.render(renderer)?;
 
         self.entities.for_each(|e| {
-            if let (Some(FixedPosition(x, y)), Some(sprite)) = (e.get(), e.get())
-            {
-                renderer.draw_sprite(sprite, *x, *y);
-            }
-
             if let (Some(Position(x, y)), Some(sprite)) = (e.get(), e.get())
             {
                 renderer.draw_sprite(sprite, *x, *y);
@@ -190,7 +185,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     world.hero.last_push = (tot_x_push, tot_y_push);
 
     let hero_mesh = world.hero.mesh();
-    for (Coin, Id(id), FixedPosition(x, y), Mesh(mesh)) in &world.entities.collect_4() {
+    for (Coin, Id(id), Position(x, y), Mesh(mesh)) in &world.entities.collect_4() {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(CoinCollected{ id: *id, x: *x, y: *y });
         }

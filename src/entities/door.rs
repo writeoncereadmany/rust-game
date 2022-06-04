@@ -13,7 +13,7 @@ pub struct Door;
 pub fn spawn_door(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Door)
-        .with(FixedPosition(x, y))
+        .with(Position(x, y))
         .with(Sprite::new(1, 0))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
     );
