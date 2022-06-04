@@ -21,7 +21,7 @@ pub struct ReferenceMesh(pub ConvexMesh);
 #[derive(Variable)]
 pub struct Mesh(pub ConvexMesh);
 
-pub fn next_frame(phase: &f64, frames: &Vec<(f64, Sprite)>) -> Sprite {
+pub fn next_frame(phase: &f64, AnimationCycle(frames): &AnimationCycle) -> Sprite {
     let phase = phase % 1.0;
     for (frame_limit, sprite) in frames {
         if &phase < frame_limit {

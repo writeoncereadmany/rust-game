@@ -70,7 +70,11 @@ impl <'a> Renderer<'a>
     }
 
     pub fn draw_sprite(&mut self, sprite: &Sprite, x: f64, y: f64) {
-        self.draw(*sprite, x, y);
+        self.batch.blit(
+            *sprite, 
+            x * self.spritesheet.tile_width as f64, 
+            y * self.spritesheet.tile_height as f64,
+        );
     }
 
     pub fn draw_text(&mut self, text: String, x: f64, y: f64, j: u8) {
@@ -89,7 +93,11 @@ impl <'a> Renderer<'a>
 
         for ch in text.chars() {
             let (tx, ty) = char_tile(ch);
-            self.draw_char(Sprite::new(tx, ty), current_x, y);
+            self.textbatch.blit(
+                Sprite::new(tx, ty), 
+                current_x * self.spritesheet.tile_width as f64, 
+                y * self.spritesheet.tile_height as f64,
+            );
             current_x += self.text_width as f64;
         }
     }
@@ -99,28 +107,8 @@ impl <'a> Renderer<'a>
     {
         for (pos, t) in map {
             let (x, y) = t.tile();
-            self.batch.blit(
-                Sprite::new(x, y), 
-                (pos.min_x * self.spritesheet.tile_width as i32) as f64, 
-                (pos.min_y * self.spritesheet.tile_height as i32) as f64
-            );
+            self.draw_sprite(&Sprite::new(x, y), pos.min_x as f64, pos.min_y as f64);
         }
-    }
-
-    fn draw(&mut self, sprite: Sprite, x: f64, y: f64) {
-        self.batch.blit(
-            sprite, 
-            x * self.spritesheet.tile_width as f64, 
-            y * self.spritesheet.tile_height as f64,
-        );
-    }
-
-    fn draw_char(&mut self, sprite: Sprite, x: f64, y: f64) {
-        self.textbatch.blit(
-            sprite, 
-            x * self.spritesheet.tile_width as f64, 
-            y * self.spritesheet.tile_height as f64,
-        );
     }
 
     fn draw_batch(&mut self, batch: SpriteBatch<'a>) {

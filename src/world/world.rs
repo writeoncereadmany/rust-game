@@ -163,7 +163,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
         
     world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
     world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
-    world.entities.apply_2(|Phase(phase), AnimationCycle(frames)| next_frame(phase, frames));
+    world.entities.apply_2(|Phase(phase), cycle| next_frame(phase, cycle));
 
     let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
     let mut hero_mesh = world.hero.mesh().clone();
