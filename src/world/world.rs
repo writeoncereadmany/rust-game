@@ -12,7 +12,6 @@ use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::particle::spawn_particle;
 use crate::map::Map;
-use crate::controller::Controller;
 use crate::shapes::convex_mesh::Meshed;
 use crate::events::*;
 use crate::game_loop::*;
