@@ -5,7 +5,7 @@ use crate::world::world::World;
 use crate::game_loop::*;
 use crate::events::*;
 use crate::app::events::*;
-use crate::entities::hero::other_type;
+use crate::entities::hero::PandaType;
 use crate::controller::Controller;
 
 pub struct Game<'a> {
@@ -34,14 +34,14 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
                 &self.levels[self.level], 
-                other_type(&self.world.hero.panda_type),
+                PandaType::RedPanda,
                 &mut events)
         });
         event.apply(|ReachedDoor| {
             self.level = (self.level + 1) % self.levels.len();
             self.world = World::new(
                 &self.levels[self.level], 
-                other_type(&self.world.hero.panda_type),
+                PandaType::GiantPanda,
                 &mut events);
         });
         self.world.event(event, events)

@@ -32,7 +32,6 @@ impl Tiled for Tile {
 }
 
 pub struct World {
-    pub hero: Hero,
     pub map: Map<Meshed<Tile>>,
     pub entities: Entities,
     pub time: f64,
@@ -44,7 +43,6 @@ impl World {
         let width = image.width();
         let height = image.height();
         let mut map : Map<Tile> = Map::new(width as usize, height as usize);
-        let mut hero: Option<Hero> = None;
         let mut entities = Entities::new();
 
         for x in 0..image.width() {
@@ -58,13 +56,9 @@ impl World {
                     Rgb([255, 0, 0]) => {
                         spawn_door(x as f64, y as f64, &mut entities);
                     },
-                    Rgb([0, 255, 0]) => { match hero {
-                        None => { hero = Some(Hero::new(
-                            x as f64, 
-                            y as f64, 
-                            panda_type)); }
-                        Some(_) => { panic!("Multiple hero start positions defined"); }
-                    }},
+                    Rgb([0, 255, 0]) => {
+                        spawn_hero(x as f64, y as f64, panda_type, &mut entities);
+                    },
                     _ => { }
                 }
                 
@@ -74,7 +68,6 @@ impl World {
         let map = map.add_edges();
 
         World {
-            hero: hero.unwrap(),
             map,
             entities,
             time: 10.0,
@@ -122,8 +115,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
         renderer.draw_sprite(&Sprite::multi(2, 0, 2, 1), 15.0, 17.0);
 
-        self.hero.render(renderer)?;
-
         self.entities.for_each(|e| {
             if let (Some(Position(x, y)), Some(sprite)) = (e.get(), e.get())
             {
@@ -141,8 +132,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     }
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
-        self.hero.event(event, events)?;
-
+        hero_events(&mut self.entities, event, events);
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete(id));
         event.apply(|CoinCollected{ x, y, id }| {
@@ -156,51 +146,68 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
         
-    world.entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
-    world.entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
-    world.entities.apply_2(|Phase(phase), cycle| next_frame(phase, cycle));
-
-    let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
-    let mut hero_mesh = world.hero.mesh().clone();
-    for (_pos, t) in world.map.overlapping(&hero_mesh.bbox()) {
-        let push = t.mesh.push(&hero_mesh);
-        match push {
-            None => {},
-            Some((x, y)) => {
-                if x != 0.0 && world.hero.dx != 0.0 && x.signum() == -world.hero.dx.signum() {
-                    hero_mesh = hero_mesh.translate(x, 0.0);
-                    tot_x_push += x;
-                }
-                if y != 0.0 && world.hero.dy != 0.0 && y.signum() == -world.hero.dy.signum() {
-                    hero_mesh = hero_mesh.translate(0.0, y);
-                    tot_y_push += y;
-                }
-            }
-        }
-    }
-    world.hero.x += tot_x_push;
-    world.hero.y += tot_y_push;
-    if tot_x_push != 0.0 { world.hero.dx = 0.0; }
-    if tot_y_push != 0.0 { world.hero.dy = 0.0; }
-    world.hero.last_push = (tot_x_push, tot_y_push);
-
-    let hero_mesh = world.hero.mesh();
-    for (Coin, Id(id), Position(x, y), Mesh(mesh)) in &world.entities.collect_4() {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(CoinCollected{ id: *id, x: *x, y: *y });
-        }
-    }
-
-    for (Door, Mesh(mesh)) in &world.entities.collect_2() {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(ReachedDoor);
-        }
-    }
+    age(&mut world.entities, dt);
+    phase(&mut world.entities, dt);
+    animation_cycle(&mut world.entities);
+    map_collisions(&mut world.entities, &world.map);
+    item_collisions(&world.entities, events);
 
     world.time -= dt.as_secs_f64();
 
     if world.time < 0.0 {
         events.fire(TimeLimitExpired)
+    }
+}
+
+fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
+    entities.apply_3(|Hero, Mesh(original_mesh), &Velocity(dx, dy)| {
+        let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
+        let mut updated_mesh = original_mesh.clone();
+        for (_pos, t) in map.overlapping(&updated_mesh.bbox()) {
+            let push = t.mesh.push(&updated_mesh);
+            match push {
+                None => {},
+                Some((x, y)) => {
+                    if x != 0.0 && dx != 0.0 && x.signum() == -dx.signum() {
+                        updated_mesh = updated_mesh.translate(x, 0.0);
+                        tot_x_push += x;
+                    }
+                    if y != 0.0 && dy != 0.0 && y.signum() == -dy.signum() {
+                        updated_mesh = updated_mesh.translate(0.0, y);
+                        tot_y_push += y;
+                    }
+                }
+            }
+        }
+        LastPush(tot_x_push, tot_y_push)
+    });
+
+    entities.apply_3(|Hero, &Position(x, y), &LastPush(px, py)| {
+        Position(x + px, y + py)
+    });
+    entities.apply_3(|Hero, &Velocity(dx, dy), &LastPush(px, py)| 
+        Velocity(
+            if px != 0.0 { 0.0 } else { dx }, 
+            if py != 0.0 { 0.0 } else { dy },
+        )
+    );
+    entities.apply_3(|Hero, &Position(x, y), ReferenceMesh(mesh)| Mesh(mesh.translate(x, y)));
+}
+
+fn item_collisions(entities: &Entities, events: &mut Events) {
+    for (Hero, Mesh(hero_mesh)) in entities.collect_2() {
+
+        for (Coin, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
+            if hero_mesh.bbox().touches(&mesh.bbox()) {
+                events.fire(CoinCollected{ id, x, y });
+            }        
+        }
+
+        for (Door, Mesh(mesh)) in entities.collect_2() {
+            if hero_mesh.bbox().touches(&mesh.bbox()) {
+                events.fire(ReachedDoor);
+            }
+        }
     }
 }
 

@@ -1,12 +1,10 @@
 use std::time::Duration;
 
-use component_derive::{ Constant, Variable };
+use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities, Component, Variable };
 
 use crate::controller::{ ButtonPress, ControllerState };
-use crate::game_loop::*;
 use crate::events::*;
-use crate::graphics::renderer::Renderer;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
@@ -42,7 +40,7 @@ pub enum PandaType {
 }
 
 #[derive(Constant)]
-pub struct Heroo;
+pub struct Hero;
 
 #[derive(Variable)]
 pub struct MovingX(pub Sign);
@@ -56,17 +54,14 @@ pub struct LastPush(pub f64, pub f64);
 #[derive(Variable)]
 pub struct Facing(Sign);
 
-pub fn other_type(panda_type: &PandaType) -> PandaType {
-    match panda_type {
-        PandaType::GiantPanda => PandaType::RedPanda,
-        PandaType::RedPanda => PandaType::GiantPanda
-    }
-}
+#[derive(Event)]
+pub struct Jumped;
 
 pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities) {
     entities.spawn(entity()
-        .with(Heroo)
+        .with(Hero)
         .with(Position(x, y))
+        .with(ReferenceMesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![])))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
         .with(offset_sprite(STANDING, &panda_type, false))
         .with(MovingX(Sign::ZERO))
@@ -78,76 +73,126 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
     );
 }
 
-pub struct Hero {
-    pub moving_x: MovingX,
-    pub ascending: Ascending,
-    pub x: f64,
-    pub y: f64,
-    pub dx: f64,
-    pub dy: f64,
-    pub last_push: (f64, f64),
-    pub panda_type: PandaType,
-    facing: Sign,
-    mesh: ConvexMesh
+pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) {
+    event.apply(|controller| control(entities, controller));
+    event.apply(|buttonpress| jump(entities, events, buttonpress));
+    event.apply(|jump| on_jump(entities, jump));
+    event.apply(|dt| update_hero(entities, dt));
 }
 
-impl Hero {  
-    pub fn new(x: f64, y: f64, panda_type: PandaType) -> Self {
-        Hero {
-            moving_x: MovingX(Sign::ZERO),
-            ascending: Ascending(0.0),
-            x,
-            y,
-            dx: 0.0,
-            dy: 0.0,
-            last_push: (0.0, 0.0),
-            facing: Sign::POSITIVE,
-            panda_type,
-            mesh: ConvexMesh::new(
-                vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
-                vec![])
-        }
-    }
-
-    pub fn mesh(&self) -> ConvexMesh {
-        self.mesh.translate(self.x, self.y)
-    }
+fn update_hero(entities: &mut Entities, dt: &Duration) {
+    do_move(entities, dt);
+    wall_stick(entities, dt);
+    gravity(entities, dt);
+    uplift(entities, dt);
+    clamp(entities, dt);
+    integrate(entities, dt);
+    update_box(entities, dt);
+    facing(entities, dt);
+    animate(entities, dt);
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>> for Hero {
-
-    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        let (_, last_push_y) = self.last_push;
-        let tile = if last_push_y == 0.0 {
-            if self.dy > 0.0 { 
+fn animate(entities: &mut Entities, _dt: &Duration) {
+    entities.apply_6(| &Hero, &Position(x, _y), &Velocity(dx, dy), &Facing(facing), &LastPush(_px, py), panda_type : &PandaType | {
+        let tile = if py == 0.0 {
+            if dy > 0.0 { 
                 ASCENDING
             } else {
                 DESCENDING
             }
-        } else if self.dx.abs() < STOPPING_SPEED {
+        } else if dx.abs() < STOPPING_SPEED {
             STANDING
         } else {
-            let frame: usize = (self.x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
+            let frame: usize = (x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let flip_x = self.facing == Sign::NEGATIVE;
-        let sprite = offset_sprite(tile, &self.panda_type, flip_x);
-        renderer.draw_sprite(&sprite, self.x, self.y);
-        Ok(())
-    }
-
-    fn event(&mut self, event: &Event, _events: &mut Events) -> Result<(), String> {
-        event.apply(|ControllerState { x, jump_held, .. }| {
-            if !jump_held {
-                self.ascending = Ascending(0.0);
-            }
-            self.moving_x = MovingX(*x);
-        });
-        event.apply(|button| jump(self, button));
-        event.apply(|dt| update(self, dt));
-        Ok(())
-    }
+        let flip_x = facing == Sign::NEGATIVE;
+        offset_sprite(tile, panda_type, flip_x)
+    });
 }
+
+fn control(entities: &mut Entities, &ControllerState { x, jump_held, .. }: &ControllerState ) {
+    entities.apply(|&Ascending(y)| if !jump_held { Ascending(0.0) } else { Ascending(y) });
+    entities.apply(|&MovingX(_)| MovingX(x) );
+}
+
+fn do_move(entities: &mut Entities, dt: &Duration) {
+    entities.apply_3(|&Velocity(dx, dy), &MovingX(x_input), &LastPush(_px, py)| {
+        let dt = dt.as_secs_f64();
+        let airborne = py <= 0.0;
+        if x_input == Sign::ZERO {
+            if airborne {
+                Velocity(dx - AIR_SLOWDOWN * dt * dx.sign().unit_f64(), dy)
+            }
+            else {
+                Velocity(dx - REVERSE_ACCEL * dt * dx.sign().unit_f64(), dy)
+            }
+        } else {
+            if airborne {
+                Velocity(dx + AIR_ACCEL * dt * x_input.unit_f64(), dy)
+            }
+            else if x_input == dx.sign() {
+                Velocity(dx + ACCEL * dt * x_input.unit_f64(), dy)
+            } else {
+                Velocity(dx + REVERSE_ACCEL * dt * x_input.unit_f64(), dy)
+            }
+        }
+    })
+}
+
+fn gravity(entities: &mut Entities, dt: &Duration) {
+    entities.apply(|&Velocity(dx, dy)| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
+}
+
+fn integrate(entities: &mut Entities, dt: &Duration) {
+    entities.apply_2(|&Velocity(dx, dy), &Position(x, y)| Position(x + dx * dt.as_secs_f64(), y + dy * dt.as_secs_f64()));
+}
+
+fn wall_stick(entities: &mut Entities, _dt: &Duration) {
+    entities.apply_2(|&Velocity(dx, dy), &LastPush(px, _py)| {
+        match px.sign() {
+            Sign::POSITIVE => Velocity(-WALL_STICK, dy),
+            Sign::NEGATIVE => Velocity(WALL_STICK, dy),
+            Sign::ZERO => Velocity(dx, dy)
+        }
+    })
+}
+
+fn uplift(entities: &mut Entities, dt: &Duration) {
+    entities.apply_2(|&Velocity(dx, dy), &Ascending(gas)| {
+        if gas > 0.0 {
+            Velocity(dx, dy + (EXTRA_JUMP * dt.as_secs_f64()))
+        } else {
+            Velocity(dx, dy)
+        }
+    });
+    entities.apply(|&Ascending(gas)| Ascending(f64::max(gas - dt.as_secs_f64(), 0.0)))
+}
+
+fn facing(entities: &mut Entities, _dt: &Duration) {
+    entities.apply_2(|&Velocity(dx, _dy), &Facing(old_facing)| {
+        match dx.sign() {
+            Sign::POSITIVE => Facing(Sign::POSITIVE),
+            Sign::NEGATIVE => Facing(Sign::NEGATIVE),
+            Sign::ZERO => Facing(old_facing)
+        }
+    })
+}
+
+fn clamp(entities: &mut Entities, _dt: &Duration) {
+    entities.apply_2(|&Velocity(dx, dy), &MovingX(x_input)| {
+        if x_input == Sign::ZERO && dx.abs() < STOPPING_SPEED {
+            Velocity(0.0, dy)
+        } else {
+            Velocity(dx.clamp(-VEL_CAP, VEL_CAP), dy)
+        }
+    })
+}
+
+fn update_box(entities: &mut Entities, _dt: &Duration) {
+    entities.apply_2(|&Position(x, y), ReferenceMesh(mesh)| Mesh(mesh.translate(x, y)))
+}
+
 
 fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sprite {
     Sprite::sprite(x, y + match panda_type {
@@ -156,85 +201,23 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
     }, flip_x, false)
 }
 
-fn update(hero: &mut Hero, dt: &Duration) {
-    let dt = dt.as_secs_f64();
-    let (last_push_x, last_push_y) = hero.last_push;
-    let airborne = last_push_y <= 0.0;
-    let x_vel_sign : Sign = hero.dx.sign();
-    let MovingX(x_input) = hero.moving_x;
-    let Ascending(extrajump) = hero.ascending;
-
-    if x_input == Sign::ZERO {
-
-        if airborne {
-            hero.dx -= AIR_SLOWDOWN * x_vel_sign.unit_f64() * dt;
+fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
+    entities.apply_2(|&Velocity(dx, dy), &LastPush(px, py)| {
+        if py > 0.0 {
+            events.fire(Jumped);
+            Velocity(dx, JUMP_SPEED)
+        } else if px > 0.0 {
+            events.fire(Jumped);
+            Velocity(WALLJUMP_DX, WALLJUMP_DY)
+        } else if px < 0.0 {
+            events.fire(Jumped);
+            Velocity(-WALLJUMP_DX, WALLJUMP_DY)
         } else {
-            hero.dx -= REVERSE_ACCEL * x_vel_sign.unit_f64() * dt;
+            Velocity(dx, dy)
         }
-
-        if hero.dx.abs() < STOPPING_SPEED {
-            hero.dx = 0.0;
-        }
-    } else {
-
-        if airborne {
-            hero.dx += AIR_ACCEL * x_input.unit_f64() * dt;
-        } else if x_input == x_vel_sign {
-            hero.dx += ACCEL * x_input.unit_f64() * dt;
-        } else {
-            hero.dx += REVERSE_ACCEL * x_input.unit_f64() * dt;
-        }
-
-    }
-        
-    hero.dx = hero.dx.clamp(-VEL_CAP, VEL_CAP);
-
-    match hero.dx.sign() {
-        Sign::POSITIVE => hero.facing = Sign::POSITIVE,
-        Sign::NEGATIVE => hero.facing = Sign::NEGATIVE,
-        Sign::ZERO => {}
-    }
-
-    if x_input == Sign::ZERO {
-        match last_push_x.sign() {
-            Sign::POSITIVE => {
-                hero.dx -= WALL_STICK;
-            }
-            Sign::NEGATIVE => {
-                hero.dx += WALL_STICK;
-            }
-            Sign::ZERO => {}
-        }
-    }
-    
-    if extrajump > 0.0 {
-        hero.dy += EXTRA_JUMP * dt;
-        hero.ascending = Ascending(extrajump - dt);
-    }
-    hero.dy -= GRAVITY * dt;
-
-    hero.x += hero.dx * dt;
-    hero.y += hero.dy * dt;
+    })
 }
 
-fn jump(hero: &mut Hero, _event: &ButtonPress) {
-    match hero.last_push {
-        (_, y) if y > 0.0 => { 
-            hero.dy = JUMP_SPEED; 
-            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
-        },
-        (x, _) if x > 0.0 => { 
-            hero.dy = WALLJUMP_DY;
-            hero.dx = WALLJUMP_DX;
-            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
-
-        },
-        (x, _) if x < 0.0 => {
-            hero.dy = WALLJUMP_DY;
-            hero.dx = -WALLJUMP_DX;
-            hero.ascending = Ascending(EXTRA_JUMP_DURATION);
-
-        }
-        _ => {} 
-    }
+fn on_jump(entities: &mut Entities, _jump: &Jumped) {
+    entities.apply(|&Ascending(_)| Ascending(EXTRA_JUMP_DURATION))
 }
