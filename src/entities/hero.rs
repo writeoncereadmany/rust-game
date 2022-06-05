@@ -151,8 +151,8 @@ fn integrate(entities: &mut Entities, dt: &Duration) {
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
     entities.apply_2(|&Velocity(dx, dy), &LastPush(px, _py)| {
         match px.sign() {
-            Sign::POSITIVE => Velocity(-WALL_STICK, dy),
-            Sign::NEGATIVE => Velocity(WALL_STICK, dy),
+            Sign::POSITIVE => Velocity(dx -WALL_STICK, dy),
+            Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy),
             Sign::ZERO => Velocity(dx, dy)
         }
     })

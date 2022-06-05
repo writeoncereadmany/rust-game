@@ -145,7 +145,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 }
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
-        
     age(&mut world.entities, dt);
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
