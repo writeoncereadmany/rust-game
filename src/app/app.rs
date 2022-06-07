@@ -9,7 +9,7 @@ use sdl2::controller::GameController;
 use crate::audio::SquareWave;
 use crate::game_loop::*;
 use crate::events::*;
-use crate::graphics::renderer::{ Renderer, align };
+use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::game::game::Game;
 use crate::fps_counter::FpsCounter;
 
@@ -28,7 +28,10 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
 
         self.game.render(renderer)?;
 
-        renderer.draw_text(&(self.fps_counter.fps().to_string() + " fps"), 2.25, 0.5, align::LEFT & align::MIDDLE);      
+        renderer.draw_text(&Text{ 
+            text: self.fps_counter.fps().to_string() + " fps", 
+            justification: align::LEFT & align::MIDDLE
+        }, 2.25, 0.5);      
 
         renderer.present()?;
 

@@ -20,10 +20,8 @@ pub mod align {
 
 #[derive(Variable)]
 pub struct Text {
-    text: String,
-    x: f64,
-    y: f64,
-    justification: u8
+    pub text: String,
+    pub justification: u8
 }
 
 pub struct Renderer<'a> 
@@ -88,19 +86,15 @@ impl <'a> Renderer<'a>
         );
     }
 
-    pub fn draw_text_2(&mut self, Text { text, x, y, justification }: &Text) {
-        self.draw_text(text, *x, *y, *justification);
-    }
-
-    pub fn draw_text(&mut self, text: &String, x: f64, y: f64, j: u8) {
+    pub fn draw_text(&mut self, Text { text, justification }: &Text, x: f64, y: f64) {
         let text_width = text.len() as f64 * self.text_width as f64;
-        let mut current_x = match (j & align::LEFT > 0, j & align::RIGHT > 0) {
+        let mut current_x = match (justification & align::LEFT > 0, justification & align::RIGHT > 0) {
             (true, false) => x,
             (false, true) => x - text_width,
             _ => x - (text_width / 2.0),
         };
 
-        let y = match (j & align::BOTTOM > 0, j & align::TOP > 0) {
+        let y = match (justification & align::BOTTOM > 0, justification & align::TOP > 0) {
             (true, false) => y,
             (false, true) => y - self.text_height,
             _ => y - (self.text_height / 2.0),

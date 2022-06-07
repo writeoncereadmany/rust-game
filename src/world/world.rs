@@ -15,7 +15,7 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::events::*;
 use crate::game_loop::*;
-use crate::graphics::renderer::{ Renderer, align, Tiled };
+use crate::graphics::renderer::{ Renderer, align, Tiled, Text };
 use crate::graphics::sprite::Sprite;
 
 #[derive(Clone)]
@@ -122,12 +122,16 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
             }
         });
 
-        renderer.draw_text(
-            &time_units(self.time), 
-            16.0, 
-            17.5, 
-            align::CENTER & align::MIDDLE);
+        self.entities.for_each(|e| {
+            if let (Some(Position(x, y)), Some(text)) = (e.get(), e.get())
+            {
+                renderer.draw_text(text, *x, *y)
+            }
+        });
 
+        renderer.draw_text(&Text { text: time_units(self.time), 
+            justification: align::CENTER & align::MIDDLE
+        }, 16.0, 17.5);
         Ok(())
     }
 
