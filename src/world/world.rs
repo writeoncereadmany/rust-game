@@ -6,8 +6,9 @@ use entity::{ Id, Entities };
 
 use crate::app::events::*;
 use crate::shapes::push::Push;
-use crate::entities::door::{Door, spawn_door};
-use crate::entities::coin::{Coin, spawn_coin};
+use crate::entities::door::*;
+use crate::entities::coin::*;
+use crate::entities::timer::*;
 use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::particle::spawn_particle;
@@ -15,7 +16,7 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::Meshed;
 use crate::events::*;
 use crate::game_loop::*;
-use crate::graphics::renderer::{ Renderer, align, Tiled, Text };
+use crate::graphics::renderer::{ Renderer, Tiled };
 use crate::graphics::sprite::Sprite;
 
 #[derive(Clone)]
@@ -34,7 +35,6 @@ impl Tiled for Tile {
 pub struct World {
     pub map: Map<Meshed<Tile>>,
     pub entities: Entities,
-    pub time: f64,
 }
 
 impl World {
@@ -52,7 +52,6 @@ impl World {
                     Rgb([255, 255, 0]) => { 
                         spawn_coin(x as f64, y as f64, &mut entities);
                     },
-
                     Rgb([255, 0, 0]) => {
                         spawn_door(x as f64, y as f64, &mut entities);
                     },
@@ -64,13 +63,13 @@ impl World {
                 
             }
         }
+        spawn_timer(16.0, 17.5, &mut entities);
 
         let map = map.add_edges();
 
         World {
             map,
             entities,
-            time: 10.0,
         }
     }
 }
@@ -129,14 +128,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
             }
         });
 
-        renderer.draw_text(&Text { text: time_units(self.time), 
-            justification: align::CENTER & align::MIDDLE
-        }, 16.0, 17.5);
         Ok(())
     }
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         hero_events(&mut self.entities, event, events);
+        event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete(id));
         event.apply(|CoinCollected{ x, y, id }| {
@@ -154,12 +151,6 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     animation_cycle(&mut world.entities);
     map_collisions(&mut world.entities, &world.map);
     item_collisions(&world.entities, events);
-
-    world.time -= dt.as_secs_f64();
-
-    if world.time < 0.0 {
-        events.fire(TimeLimitExpired)
-    }
 }
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
@@ -212,8 +203,4 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
             }
         }
     }
-}
-
-fn time_units(time: f64) -> String {
-    format!("{:01}", (time * 10.0) as u32)
 }

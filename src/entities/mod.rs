@@ -3,3 +3,4 @@ pub mod components;
 pub mod door;
 pub mod hero;
 pub mod particle;
+pub mod timer;
