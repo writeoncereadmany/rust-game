@@ -123,7 +123,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         });
 
         renderer.draw_text(
-            time_units(self.time), 
+            &time_units(self.time), 
             16.0, 
             17.5, 
             align::CENTER & align::MIDDLE);

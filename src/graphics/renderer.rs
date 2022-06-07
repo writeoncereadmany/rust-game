@@ -3,6 +3,9 @@ use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
 use sdl2::video::{WindowContext};
 
+use component_derive::{ Variable };
+use entity::{ Component, Variable };
+
 use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
@@ -13,6 +16,14 @@ pub mod align {
     pub const MIDDLE: u8 = 0b_0000_0000;
     pub const BOTTOM: u8 = 0b_0000_0100;
     pub const TOP: u8 = 0b_0000_1000;
+}
+
+#[derive(Variable)]
+pub struct Text {
+    text: String,
+    x: f64,
+    y: f64,
+    justification: u8
 }
 
 pub struct Renderer<'a> 
@@ -77,7 +88,11 @@ impl <'a> Renderer<'a>
         );
     }
 
-    pub fn draw_text(&mut self, text: String, x: f64, y: f64, j: u8) {
+    pub fn draw_text_2(&mut self, Text { text, x, y, justification }: &Text) {
+        self.draw_text(text, *x, *y, *justification);
+    }
+
+    pub fn draw_text(&mut self, text: &String, x: f64, y: f64, j: u8) {
         let text_width = text.len() as f64 * self.text_width as f64;
         let mut current_x = match (j & align::LEFT > 0, j & align::RIGHT > 0) {
             (true, false) => x,

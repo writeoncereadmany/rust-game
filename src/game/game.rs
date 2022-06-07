@@ -21,7 +21,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
         renderer.draw_text(
-            self.score.to_string(), 
+            &self.score.to_string(), 
             3.0, 
             17.5, 
             align::RIGHT & align::MIDDLE);
