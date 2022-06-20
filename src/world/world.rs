@@ -13,7 +13,7 @@ use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::particle::spawn_particle;
 use crate::map::Map;
-use crate::shapes::convex_mesh::Meshed;
+use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
 use crate::game_loop::*;
 use crate::graphics::renderer::{ Renderer, Tiled };
@@ -21,13 +21,15 @@ use crate::graphics::sprite::Sprite;
 
 #[derive(Clone)]
 pub enum Tile {
-    STONE((i32, i32))
+    STONE((i32, i32)),
+    LEDGE((i32, i32))
 }
 
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
         match self {
-            Tile::STONE(tile) => *tile
+            Tile::STONE(tile) => *tile,
+            Tile::LEDGE(tile) => *tile
         }
     }
 }
@@ -42,13 +44,18 @@ impl World {
     pub fn new(image: &RgbImage, panda_type: PandaType, _events: &mut Events) -> Self {
         let width = image.width();
         let height = image.height();
-        let mut map : Map<Tile> = Map::new(width as usize, height as usize);
+        let mut map : Map<Meshed<Tile>> = Map::new(width as usize, height as usize);
         let mut entities = Entities::new();
 
         for x in 0..image.width() {
             for y in 0..height {
                 match pixel(image, x, y) {
-                    Rgb([255, 255, 255]) => { map.put(x as i32, y as i32, Tile::STONE(tile_from_neighbours(image, x, y))); },
+                    Rgb([255, 255, 255]) => { 
+                        let neighbours = neighbours(image, x, y);
+                        let item = Tile::STONE(tile_from_neighbours(&neighbours));
+                        let mesh = mesh_from_neighbours(x as f64, y as f64, &neighbours);
+                        map.put(x as i32, y as i32, Meshed{ item, mesh }); 
+                    },
                     Rgb([255, 255, 0]) => { 
                         spawn_coin(x as f64, y as f64, &mut entities);
                     },
@@ -58,14 +65,15 @@ impl World {
                     Rgb([0, 255, 0]) => {
                         spawn_hero(x as f64, y as f64, panda_type, &mut entities);
                     },
+                    Rgb([128, 128, 128]) => {
+                         map.put(x as i32, y as i32, Meshed { item : Tile::LEDGE((6, 4)), mesh: ledge_mesh(x as f64, y as f64) });
+                    }
                     _ => { }
                 }
                 
             }
         }
         spawn_timer(16.0, 17.5, &mut entities);
-
-        let map = map.add_edges();
 
         World {
             map,
@@ -78,33 +86,56 @@ fn pixel(image: &RgbImage, x: u32, y: u32) -> &Rgb<u8> {
     image.get_pixel(x, image.height() - 1 - y)
 }
 
-fn tile_from_neighbours(image: &RgbImage, x: u32, y: u32) -> (i32, i32) {
-    let left = x > 0 && pixel(image, x - 1, y) == &Rgb([255, 255, 255]);
-    let right = x < (image.width() - 1) && pixel(image, x + 1, y) == &Rgb([255, 255, 255]);
-    let bottom = y > 0 && pixel(image, x, y - 1) == &Rgb([255, 255, 255]);
-    let top = y < (image.height() - 1) && pixel(image, x, y + 1) == &Rgb([255, 255, 255]);
+struct Neighbours {
+    above: bool,
+    below: bool,
+    left: bool,
+    right: bool
+}
 
-    match (left, right, bottom, top) {
-        (false, false, false, false) => (7, 3),
-
-        (true, false, false, false) => (6, 3),
-        (true, true, false, false) => (5, 3),
-        (false, true, false, false) => (4, 3),
-
-        (false, false, true, false) => (7, 0),
-        (false, false, true, true) => (7, 1),
-        (false, false, false, true) => (7, 2),
-
-        (false, true, true, false) => (4, 0),
-        (true, true, true, false) => (5, 0),
-        (true, false, true, false) => (6, 0),
-        (false, true, true, true) => (4, 1),
-        (true, true, true, true) => (5, 1),
-        (true, false, true, true) => (6, 1),
-        (false, true, false, true) => (4, 2),
-        (true, true, false, true) => (5, 2),
-        (true, false, false, true) => (6, 2)
+fn neighbours(image: &RgbImage, x: u32, y: u32) -> Neighbours {
+    Neighbours {
+        left: x > 0 && pixel(image, x - 1, y) == &Rgb([255, 255, 255]),
+        right: x < (image.width() - 1) && pixel(image, x + 1, y) == &Rgb([255, 255, 255]),
+        below: y > 0 && pixel(image, x, y - 1) == &Rgb([255, 255, 255]),
+        above: y < (image.height() - 1) && pixel(image, x, y + 1) == &Rgb([255, 255, 255]),
     }
+}
+ 
+fn tile_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
+    let tx = match (neighbours.left, neighbours.right) {
+        (false, true) => 4,
+        (true, true) => 5,
+        (true, false) => 6,
+        (false, false) => 7 
+    };
+
+    let ty = match (neighbours.above, neighbours.below) {
+        (false, true) => 0,
+        (true, true) => 1,
+        (true, false) => 2,
+        (false, false) => 3
+    };
+
+    (tx, ty)
+}
+
+fn mesh_from_neighbours(x: f64, y: f64, neighbours: &Neighbours) -> ConvexMesh {
+    let points = vec![(x, y), (x + 1.0, y), (x + 1.0, y + 1.0), (x, y + 1.0)];
+    let mut normals : Vec<(f64, f64)> = Vec::new();
+    if !neighbours.left { normals.push((-1.0, 0.0));}
+    if !neighbours.right { normals.push((1.0, 0.0));}
+    if !neighbours.above { normals.push((0.0, 1.0));}
+    if !neighbours.below { normals.push((0.0, -1.0));}
+
+    ConvexMesh::new(points, normals)
+}
+
+fn ledge_mesh(x: f64, y: f64) -> ConvexMesh {
+    let points = vec![(x, y), (x + 1.0, y), (x + 1.0, y + 1.0), (x, y + 1.0)];
+    let normals = vec![(0.0, 1.0)];
+
+    ConvexMesh::new(points, normals)
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
