@@ -53,3 +53,6 @@ pub struct Velocity(pub f64, pub f64);
 
 #[derive(Variable)]
 pub struct Acceleration(pub f64, pub f64);
+
+#[derive(Variable)]
+pub struct Translation(pub f64, pub f64);

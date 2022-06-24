@@ -87,6 +87,7 @@ fn update_hero(entities: &mut Entities, dt: &Duration) {
     uplift(entities, dt);
     clamp(entities, dt);
     integrate(entities, dt);
+    translate(entities, dt);
     update_box(entities, dt);
     facing(entities, dt);
     animate(entities, dt);
@@ -145,7 +146,11 @@ fn gravity(entities: &mut Entities, dt: &Duration) {
 }
 
 fn integrate(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|&Velocity(dx, dy), &Position(x, y)| Position(x + dx * dt.as_secs_f64(), y + dy * dt.as_secs_f64()));
+    entities.apply(|&Velocity(dx, dy)| Translation(dx * dt.as_secs_f64(), dy * dt.as_secs_f64()));
+}
+
+fn translate(entities: &mut Entities, dt: &Duration) {
+    entities.apply_2(|&Translation(tx, ty), &Position(x, y)| Position(x + tx, y + ty));
 }
 
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
