@@ -1,5 +1,3 @@
-use image::RgbImage;
-
 use crate::app::assets::Assets;
 use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
