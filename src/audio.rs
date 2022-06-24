@@ -1,5 +1,23 @@
 use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 
+pub const A: f64 = 440.0;
+pub const A_SHARP: f64 = (2.0: f64).powf(1.0/12.0) * A;
+pub const B_FLAT: f64 = A_SHARP;
+pub const B: f64 = (2.0: f64).powf(2.0/12.0) * A;
+pub const C: f64 = (2.0: f64).powf(3.0/12.0) * A;
+pub const C_SHARP: f64 = (2.0: f64).powf(4.0/12.0) * A;
+pub const D_FLAT: f64 = C_SHARP;
+pub const D: f64 = (2.0: f64).powf(5.0/12.0) * A;
+pub const D_SHARP: f64 = (2.0: f64).powf(6.0/12.0) * A;
+pub const E_FLAT: f64 = D_SHARP;
+pub const E: f64 = (2.0: f64).powf(7.0/12.0) * A;
+pub const F: f64 = (2.0: f64).powf(8.0/12.0) * A;
+pub const F_SHARP: f64 = (2.0: f64).powf(9.0/12.0) * A;
+pub const G_FLAT: f64 = F_SHARP;
+pub const G: f64 = (2.0: f64).powf(10.0/12.0) * A;
+pub const G_SHARP: f64 = (2.0: f64).powf(11.0/12.0) * A;
+pub const A_FLAT: f64 = G_SHARP;
+
 pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>, String> {
     let audio_subsystem = sdl_context.audio()?;
 
