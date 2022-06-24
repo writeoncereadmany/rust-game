@@ -14,7 +14,7 @@ use crate::entities::coin::*;
 use crate::entities::timer::*;
 use crate::entities::hero::*;
 use crate::entities::components::*;
-use crate::entities::particle::{ spawn_particle, spawn_bulb, spawn_flashbulb };
+use crate::entities::particle::*;
 use crate::map::Map;
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
@@ -78,16 +78,19 @@ impl World {
 
         for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([0, 255, 0])) { events.schedule(Duration::from_secs(3), SpawnHero(x as f64, y as f64, panda_type)); }
+        for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
+            spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
+            events.schedule(Duration::from_millis(1800), SpawnHero(x as f64, y as f64, panda_type)); 
+        }
         for (x, y) in pixels(image, &Rgb([128, 128, 128])) { map.put(x as i32, y as i32, Meshed { item : Tile::LEDGE((6, 4)), mesh: ledge_mesh(x as f64, y as f64) }); }
        
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.fire(SpawnBulb(x as f64, y as f64)); }
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_secs(1), SpawnBulb(x as f64, y as f64))}
-        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_secs(2), SpawnBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64))}
  
-        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_secs(3), SpawnFlashBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(1800), SpawnFlashBulb(x as f64, y as f64))}
 
-        events.schedule(Duration::from_secs(3), SpawnTimer(16.0, 17.5));
+        events.schedule(Duration::from_millis(1800), SpawnTimer(16.0, 17.5));
 
         World {
             map,
