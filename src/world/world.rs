@@ -1,9 +1,12 @@
 use std::time::Duration;
+use std::collections::HashSet;
 
 use image::{ Rgb, RgbImage };
 
+use component_derive::Event;
 use entity::{ Id, Entities };
 
+use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::shapes::push::Push;
 use crate::entities::door::*;
@@ -11,7 +14,7 @@ use crate::entities::coin::*;
 use crate::entities::timer::*;
 use crate::entities::hero::*;
 use crate::entities::components::*;
-use crate::entities::particle::spawn_particle;
+use crate::entities::particle::{ spawn_particle, spawn_bulb, spawn_flashbulb };
 use crate::map::Map;
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
@@ -24,6 +27,22 @@ pub enum Tile {
     STONE((i32, i32)),
     LEDGE((i32, i32))
 }
+
+#[derive(Event)]
+struct SpawnHero(f64, f64, PandaType);
+
+#[derive(Event)]
+struct SpawnTimer(f64, f64);
+
+#[derive(Event)]
+struct SpawnParticle(f64, f64);
+
+#[derive(Event)]
+struct SpawnBulb(f64, f64);
+
+#[derive(Event)]
+struct SpawnFlashBulb(f64, f64);
+
 
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
@@ -41,39 +60,34 @@ pub struct World {
 
 impl World {
 
-    pub fn new(image: &RgbImage, panda_type: PandaType, _events: &mut Events) -> Self {
+    pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
+        let image = &assets.levels[level];
         let width = image.width();
         let height = image.height();
         let mut map : Map<Meshed<Tile>> = Map::new(width as usize, height as usize);
         let mut entities = Entities::new();
 
-        for x in 0..image.width() {
-            for y in 0..height {
-                match pixel(image, x, y) {
-                    Rgb([255, 255, 255]) => { 
-                        let neighbours = neighbours(image, x, y);
-                        let item = Tile::STONE(tile_from_neighbours(&neighbours));
-                        let mesh = mesh_from_neighbours(x as f64, y as f64, &neighbours);
-                        map.put(x as i32, y as i32, Meshed{ item, mesh }); 
-                    },
-                    Rgb([255, 255, 0]) => { 
-                        spawn_coin(x as f64, y as f64, &mut entities);
-                    },
-                    Rgb([255, 0, 0]) => {
-                        spawn_door(x as f64, y as f64, &mut entities);
-                    },
-                    Rgb([0, 255, 0]) => {
-                        spawn_hero(x as f64, y as f64, panda_type, &mut entities);
-                    },
-                    Rgb([128, 128, 128]) => {
-                         map.put(x as i32, y as i32, Meshed { item : Tile::LEDGE((6, 4)), mesh: ledge_mesh(x as f64, y as f64) });
-                    }
-                    _ => { }
-                }
-                
-            }
+        let tiles = pixels(image, &Rgb([255, 255, 255]));
+        
+        for &(x, y) in &tiles {
+            let neighbours = neighbours(&tiles, x as i32, y as i32);
+            let item = Tile::STONE(tile_from_neighbours(&neighbours));
+            let mesh = mesh_from_neighbours(x as f64, y as f64, &neighbours);
+            map.put(x as i32, y as i32, Meshed{ item, mesh }); 
         }
-        spawn_timer(16.0, 17.5, &mut entities);
+
+        for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([0, 255, 0])) { events.schedule(Duration::from_secs(3), SpawnHero(x as f64, y as f64, panda_type)); }
+        for (x, y) in pixels(image, &Rgb([128, 128, 128])) { map.put(x as i32, y as i32, Meshed { item : Tile::LEDGE((6, 4)), mesh: ledge_mesh(x as f64, y as f64) }); }
+       
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.fire(SpawnBulb(x as f64, y as f64)); }
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_secs(1), SpawnBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_secs(2), SpawnBulb(x as f64, y as f64))}
+ 
+        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_secs(3), SpawnFlashBulb(x as f64, y as f64))}
+
+        events.schedule(Duration::from_secs(3), SpawnTimer(16.0, 17.5));
 
         World {
             map,
@@ -82,8 +96,19 @@ impl World {
     }
 }
 
-fn pixel(image: &RgbImage, x: u32, y: u32) -> &Rgb<u8> {
-    image.get_pixel(x, image.height() - 1 - y)
+fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {
+    let mut pixels = HashSet::new();
+    
+    let height = image.height() as i32;
+
+    for x in 0..image.width() {
+        for y in 0..image.height() {
+            if image.get_pixel(x, y) == color {
+                pixels.insert((x as i32, height - 1 - y as i32));
+            }
+        }
+    }
+    pixels
 }
 
 struct Neighbours {
@@ -93,12 +118,12 @@ struct Neighbours {
     right: bool
 }
 
-fn neighbours(image: &RgbImage, x: u32, y: u32) -> Neighbours {
+fn neighbours(pixels: &HashSet<(i32, i32)>, x: i32, y: i32) -> Neighbours {
     Neighbours {
-        left: x > 0 && pixel(image, x - 1, y) == &Rgb([255, 255, 255]),
-        right: x < (image.width() - 1) && pixel(image, x + 1, y) == &Rgb([255, 255, 255]),
-        below: y > 0 && pixel(image, x, y - 1) == &Rgb([255, 255, 255]),
-        above: y < (image.height() - 1) && pixel(image, x, y + 1) == &Rgb([255, 255, 255]),
+        left: pixels.contains(&(x - 1, y)),
+        right: pixels.contains(&(x + 1, y)),
+        below: pixels.contains(&(x, y - 1)),
+        above: pixels.contains(&(x, y + 1)),
     }
 }
  
@@ -167,14 +192,23 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete(id));
-        event.apply(|CoinCollected{ x, y, id }| {
-            spawn_particle(*x, *y, &mut self.entities, events);
-            self.entities.delete(id);
+        event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, &mut self.entities));
+        event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, &mut self.entities));
+        event.apply(|&SpawnParticle(x, y)| spawn_particle(x, y, &mut self.entities, events));
+        event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
+        event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
+
+
+        event.apply(|&CoinCollected{ x, y, id }| {
+            events.fire(SpawnParticle(x, y));
+            self.entities.delete(&id);
         });
 
         Ok(())
     }
 }
+
+
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     age(&mut world.entities, dt);

@@ -11,6 +11,9 @@ pub struct Assets<'a> {
     pub spritesheet15 : Texture<'a>,
     pub spritefont: Texture<'a>,
     pub levels: Vec<RgbImage>,
+    pub countdown: RgbImage,
+    pub go: RgbImage,
+
 }
 
 impl <'a> Assets<'a> {
@@ -22,6 +25,9 @@ impl <'a> Assets<'a> {
         let spritesheet = texture_creator.load_texture(graphics.join("spritesheet.png"))?;
         let spritesheet15 = texture_creator.load_texture(graphics.join("spritesheet-15.png"))?;
         let spritefont = texture_creator.load_texture(graphics.join("spritefont.png"))?;
+        let countdown = image::open(graphics.join("countdown.png")).unwrap().to_rgb8();
+        let go = image::open(graphics.join("go.png")).unwrap().to_rgb8();
+
 
         let mut levels: Vec<PathBuf> = assets.join("levels").read_dir()
             .map_err(|_e| "Failed")?
@@ -32,12 +38,15 @@ impl <'a> Assets<'a> {
         let levels: Vec<RgbImage> = levels.iter()    
             .map(|file| { image::open(file).unwrap().to_rgb8() })
             .collect();
+        
 
         Ok(Assets {
             spritesheet,
             spritesheet15,
             spritefont,
             levels,
+            countdown,
+            go
         })
     }
 }

@@ -1,5 +1,6 @@
 use image::RgbImage;
 
+use crate::app::assets::Assets;
 use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
 use crate::game_loop::*;
@@ -9,7 +10,7 @@ use crate::entities::hero::PandaType;
 use crate::controller::Controller;
 
 pub struct Game<'a> {
-    pub levels: &'a Vec<RgbImage>,
+    pub assets: &'a Assets<'a>,
     pub controller: Controller,
     pub world: World,
     pub level: usize,
@@ -32,14 +33,16 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         event.apply(|CoinCollected { .. }| self.score += 10 );
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
-                &self.levels[self.level], 
+                &self.assets,
+                self.level, 
                 PandaType::RedPanda,
                 &mut events)
         });
         event.apply(|ReachedDoor| {
-            self.level = (self.level + 1) % self.levels.len();
+            self.level = (self.level + 1) % self.assets.levels.len();
             self.world = World::new(
-                &self.levels[self.level], 
+                &self.assets,
+                self.level, 
                 PandaType::GiantPanda,
                 &mut events);
         });

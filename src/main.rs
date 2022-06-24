@@ -72,13 +72,14 @@ fn main() -> Result<(), String> {
     let mut events = Events::new();
 
     let world: World = World::new(
-        &assets.levels[0], 
+        &assets, 
+        0,
         PandaType::GiantPanda,
         &mut events);
     let game: Game = Game{ 
+        assets: &assets,
         world, 
         controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
-        levels: &assets.levels, 
         level: 0, 
         score: 0 };
 
