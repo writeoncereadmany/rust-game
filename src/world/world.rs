@@ -184,8 +184,15 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     item_collisions(&world.entities, events);
 }
 
+// When considering pushouts, we don't want to push more than an entity has moved that frame, because that can
+// lead to a jump from being on one side of an edge to another. This should never happen with solid objects, but
+// with one-way edges like ledges, we should only push if they started off on the outside of the ledge. However,
+// float math is imprecise here, so this caters for slight math errors. This does mean we can force a jump from inside
+// an edge to outside it, but only by this many units.
+const TRANSLATE_EPSILON: f64 = 0.01;
+
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
-    entities.apply_3(|Hero, Mesh(original_mesh), &Velocity(dx, dy)| {
+    entities.apply_4(|Hero, Mesh(original_mesh), &Velocity(dx, dy), &Translation(tx, ty)| {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
         for (_pos, t) in map.overlapping(&updated_mesh.bbox()) {
@@ -193,11 +200,11 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
             match push {
                 None => {},
                 Some((x, y)) => {
-                    if x != 0.0 && dx != 0.0 && x.signum() == -dx.signum() {
+                    if x != 0.0 && dx != 0.0 && x.signum() == -dx.signum() && x.abs() <= (tx.abs() + TRANSLATE_EPSILON) {
                         updated_mesh = updated_mesh.translate(x, 0.0);
                         tot_x_push += x;
                     }
-                    if y != 0.0 && dy != 0.0 && y.signum() == -dy.signum() {
+                    if y != 0.0 && dy != 0.0 && y.signum() == -dy.signum() && y.abs() <= (ty.abs() + TRANSLATE_EPSILON) {
                         updated_mesh = updated_mesh.translate(0.0, y);
                         tot_y_push += y;
                     }

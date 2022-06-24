@@ -149,7 +149,7 @@ fn integrate(entities: &mut Entities, dt: &Duration) {
     entities.apply(|&Velocity(dx, dy)| Translation(dx * dt.as_secs_f64(), dy * dt.as_secs_f64()));
 }
 
-fn translate(entities: &mut Entities, dt: &Duration) {
+fn translate(entities: &mut Entities, _dt: &Duration) {
     entities.apply_2(|&Translation(tx, ty), &Position(x, y)| Position(x + tx, y + ty));
 }
 
