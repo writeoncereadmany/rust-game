@@ -11,10 +11,10 @@ pub struct Coin;
 pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
     let phase = phase_offset(x, y);
     let animation_cycle = AnimationCycle(vec!(
-        (0.25, Sprite::new(0,3)), 
-        (0.5, Sprite::new(1, 3)), 
-        (0.75, Sprite::new(2, 3)), 
-        (1.0, Sprite::new(3,3))));
+        (0.25, Sprite::new(0, 3, 0.5)), 
+        (0.5, Sprite::new(1, 3, 0.5)), 
+        (0.75, Sprite::new(2, 3, 0.5)), 
+        (1.0, Sprite::new(3, 3, 0.5))));
     entities.spawn(entity()
         .with(Coin)
         .with(Position(x, y))

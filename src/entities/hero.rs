@@ -203,7 +203,7 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
     Sprite::sprite(x, y + match panda_type {
         PandaType::GiantPanda => PANDA_OFFSET,
         PandaType::RedPanda => RED_PANDA_OFFSET
-    }, flip_x, false)
+    }, 1.0, flip_x, false)
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {

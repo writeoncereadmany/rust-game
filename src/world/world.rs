@@ -168,7 +168,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         renderer.draw_map(&self.map);
 
-        renderer.draw_sprite(&Sprite::multi(2, 0, 2, 1), 15.0, 17.0);
+        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 15.0, 17.0);
 
         self.entities.for_each(|e| {
             if let (Some(Position(x, y)), Some(sprite)) = (e.get(), e.get())

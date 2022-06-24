@@ -16,16 +16,16 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub const fn new(x: i32, y: i32) -> Sprite {
-        Sprite { x, y, z: 0.0, flip_x: false, flip_y: false, width: 1, height: 1 }
+    pub const fn new(x: i32, y: i32, z: f64) -> Sprite {
+        Sprite { x, y, z, flip_x: false, flip_y: false, width: 1, height: 1 }
     }
 
-    pub const fn multi(x: i32, y: i32, width: u32, height: u32) -> Sprite {
-        Sprite { x, y, z: 0.0, width, height, flip_x: false, flip_y: false }
+    pub const fn multi(x: i32, y: i32, z: f64, width: u32, height: u32) -> Sprite {
+        Sprite { x, y, z, width, height, flip_x: false, flip_y: false }
     }
 
-    pub const fn sprite(x: i32, y: i32, flip_x: bool, flip_y: bool) -> Sprite {
-        Sprite { x, y, z: 0.0, flip_x, flip_y, width: 1, height: 1 }
+    pub const fn sprite(x: i32, y: i32, z: f64, flip_x: bool, flip_y: bool) -> Sprite {
+        Sprite { x, y, z, flip_x, flip_y, width: 1, height: 1 }
     }
 }
 

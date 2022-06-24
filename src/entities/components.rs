@@ -42,7 +42,7 @@ pub fn next_frame(phase: &f64, AnimationCycle(frames): &AnimationCycle) -> Sprit
             return *sprite
         }
     }
-    Sprite::new(0, 0)
+    Sprite::new(0, 0, 0.0)
 }
 
 #[derive(Debug, Variable)]

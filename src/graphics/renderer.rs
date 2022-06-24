@@ -105,7 +105,7 @@ impl <'a> Renderer<'a>
         for ch in text.chars() {
             let (tx, ty) = char_tile(ch);
             self.textbatch.blit(
-                Sprite::new(tx, ty), 
+                Sprite::new(tx, ty, 2.0), 
                 current_x * self.spritesheet.tile_width as f64, 
                 y * self.spritesheet.tile_height as f64,
             );
@@ -118,7 +118,7 @@ impl <'a> Renderer<'a>
     {
         for (pos, t) in map {
             let (x, y) = t.tile();
-            self.draw_sprite(&Sprite::new(x, y), pos.min_x as f64, pos.min_y as f64);
+            self.draw_sprite(&Sprite::new(x, y, 0.0), pos.min_x as f64, pos.min_y as f64);
         }
     }
 
