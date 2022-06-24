@@ -8,6 +8,7 @@ use entity::{ Component, Variable };
 pub struct Sprite {
     pub x: i32,
     pub y: i32,
+    pub z: f64,
     pub width: u32,
     pub height: u32,
     pub flip_x: bool,
@@ -16,15 +17,15 @@ pub struct Sprite {
 
 impl Sprite {
     pub const fn new(x: i32, y: i32) -> Sprite {
-        Sprite { x, y, flip_x: false, flip_y: false, width: 1, height: 1 }
+        Sprite { x, y, z: 0.0, flip_x: false, flip_y: false, width: 1, height: 1 }
     }
 
     pub const fn multi(x: i32, y: i32, width: u32, height: u32) -> Sprite {
-        Sprite { x, y, width, height, flip_x: false, flip_y: false }
+        Sprite { x, y, z: 0.0, width, height, flip_x: false, flip_y: false }
     }
 
     pub const fn sprite(x: i32, y: i32, flip_x: bool, flip_y: bool) -> Sprite {
-        Sprite { x, y, flip_x, flip_y, width: 1, height: 1 }
+        Sprite { x, y, z: 0.0, flip_x, flip_y, width: 1, height: 1 }
     }
 }
 

@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use sdl2::pixels::{Color};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
@@ -120,8 +122,9 @@ impl <'a> Renderer<'a>
         }
     }
 
-    fn draw_batch(&mut self, batch: SpriteBatch<'a>) {
+    fn draw_batch(&mut self, mut batch: SpriteBatch<'a>) {
         let height = self.source_rect.height() as i32;
+        batch.blits.sort_by(|(sprite1, _), (sprite2, _)| compare(&sprite1.z, &sprite2.z));
         self.canvas.with_texture_canvas(&mut self.surface, |c| { 
             for &(sprite, (x, y)) in &batch.blits {
                 let Sprite { flip_x, flip_y, .. } = sprite;
@@ -170,6 +173,13 @@ impl <'a> Renderer<'a>
         self.canvas.copy(&mut self.surface, None, self.target_rect)?;
         self.canvas.present();
         Ok(())
+    }
+}
+
+fn compare(a: &f64, b: &f64) -> Ordering {
+    match a.partial_cmp(b) {
+        Some(ord) => ord,
+        None => Ordering::Equal
     }
 }
 
