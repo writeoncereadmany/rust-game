@@ -1,6 +1,6 @@
 use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 
-pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<SquareWave>, String> {
+pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>, String> {
     let audio_subsystem = sdl_context.audio()?;
 
     let desired_spec = AudioSpecDesired {
@@ -11,13 +11,12 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<SquareWav
 
     let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
         // initialize the audio callback
-        SquareWave {
+        Channel {
             phase_inc: 880.0 / spec.freq as f32,
             phase: 0.0,
-            volume: 0.0,
-            waveform: Waveform::Sine
+            volume: 0.00,
+            waveform: Waveform::Pulse(0.1)
         }
-        
     }).unwrap();
 
     // Start playback
@@ -25,14 +24,14 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<SquareWav
     Ok(audio_device)
 }
 
-pub struct SquareWave {
+pub struct Channel {
     phase_inc: f32,
     phase: f32,
     volume: f32,
     waveform: Waveform
 }
 
-impl AudioCallback for SquareWave {
+impl AudioCallback for Channel {
     type Channel = f32;
 
     fn callback(&mut self, out: &mut [f32]) {

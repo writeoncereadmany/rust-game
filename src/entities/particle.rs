@@ -55,7 +55,7 @@ pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Eve
         ]))
     );
 
-    events.schedule(Duration::from_millis(850), Destroy(spangle_id));
+    events.schedule(Duration::from_millis(1150), Destroy(spangle_id));
 }
 
 pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities, events: &mut Events) {
