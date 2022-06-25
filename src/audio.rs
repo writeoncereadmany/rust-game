@@ -1,3 +1,7 @@
+use rand::{ Rng, SeedableRng };
+use rand::rngs::SmallRng;
+use rand::distributions::{ Distribution, Uniform };
+
 use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 use component_derive::Event;
 use crate::events::EventTrait;
@@ -26,22 +30,28 @@ pub struct PlayNote {
     pub volume: f32
 }
 
-pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>, String> {
+#[derive(Event)]
+pub struct PlayNoise {
+    pub min_hz: f32,
+    pub max_hz: f32,
+    pub volume: f32
+}
+
+pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlayer>, String> {
     let audio_subsystem = sdl_context.audio()?;
 
     let desired_spec = AudioSpecDesired {
-        freq: Some(48000),
+        freq: None,
         channels: Some(1),  // mono
-        samples: Some(1024)  // default sample size
+        samples: Some(512) 
     };
 
     let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
         // initialize the audio callback
-        Channel {
-            phase_inc: 880.0 / spec.freq as f32,
-            phase: 0.0,
-            volume: 0.00,
-            waveform: Waveform::Pulse(0.1)
+        AudioPlayer {
+            rng: SmallRng::from_entropy(),
+            freq: spec.freq,
+            channel: Channel::Silence {}
         }
     }).unwrap();
 
@@ -50,35 +60,95 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>,
     Ok(audio_device)
 }
 
-pub fn play_note(device: &mut AudioDevice<Channel>, &PlayNote{ pitch, volume}: &PlayNote) {
-    *device.lock() = Channel {
-        phase_inc: pitch / 48000.0,
+pub fn play_note(device: &mut AudioDevice<AudioPlayer>, &PlayNote{ pitch, volume}: &PlayNote) {
+    let mut device = device.lock();
+    let freq = device.freq;
+    device.set_channel(Channel::Wave {
+        phase_inc: pitch / freq as f32,
         phase: 0.0,
         volume,
         waveform: Waveform::Sine
+    })
+}
+
+pub fn play_noise(device: &mut AudioDevice<AudioPlayer>, &PlayNoise{ min_hz, max_hz, volume }: &PlayNoise) {
+    let mut device = device.lock();
+    let max_cycle = (device.freq as f32 / min_hz) as u32;
+    let min_cycle = (device.freq as f32 / max_hz) as u32;
+    let distribution : Uniform<u32> = Uniform::from(min_cycle..max_cycle);
+    device.set_channel(Channel::Noise {
+        up: false,
+        next_flip: 0,
+        distribution,
+        volume
+    });
+}
+
+pub enum Channel {
+    Wave {
+        phase_inc: f32,
+        phase: f32,
+        volume: f32,
+        waveform: Waveform
+    }, 
+    Silence { }, 
+    Noise {
+        up: bool,
+        next_flip: u32,
+        distribution: Uniform<u32>,
+        volume: f32
     }
 }
 
-pub struct Channel {
-    phase_inc: f32,
-    phase: f32,
-    volume: f32,
-    waveform: Waveform
+pub struct AudioPlayer {
+    rng: SmallRng,
+    freq: i32,
+    channel: Channel
 }
 
-impl AudioCallback for Channel {
+impl AudioPlayer {
+    fn set_channel(&mut self, channel: Channel) {
+        self.channel = channel;
+    }
+}
+
+impl AudioCallback for AudioPlayer {
     type Channel = f32;
 
     fn callback(&mut self, out: &mut [f32]) {
-        // Generate a square wave
-        for x in out.iter_mut() {
-            *x = self.waveform.amplitude(self.phase) * self.volume;
-            self.phase = (self.phase + self.phase_inc) % 1.0;
+        match self.channel {
+            Channel::Wave { phase, volume, waveform, phase_inc } => {
+                let mut phase = phase;
+                for x in out.iter_mut() {
+                    *x = waveform.amplitude(phase) * volume;
+                    phase = (phase + phase_inc) % 1.0;
+                }
+                self.channel = Channel::Wave { phase, volume, waveform, phase_inc };
+            },
+            Channel::Silence {} => {
+                for x in out.iter_mut() {
+                    *x = 0.0;
+                }
+            },
+            Channel::Noise { up, mut next_flip, distribution, volume } => {
+                let mut up = up;
+                for x in out.iter_mut() {
+                    if next_flip == 0 {
+                        up = !up;
+                        next_flip = distribution.sample(&mut self.rng);
+                    }
+                    next_flip -= 1;
+
+                    *x = if up { volume } else { -volume }; 
+                }
+                self.channel = Channel::Noise { up, next_flip, distribution, volume };
+            }
         }
     }
 }
 
-enum Waveform {
+#[derive(Clone, Copy)]
+pub enum Waveform {
     Pulse(f32),
     Sine,
     Triangle(f32)

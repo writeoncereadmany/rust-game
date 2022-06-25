@@ -15,7 +15,7 @@ use crate::fps_counter::FpsCounter;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
-    pub audio_device: AudioDevice<Channel>,
+    pub audio_device: AudioDevice<AudioPlayer>,
     pub active_controller: Option<GameController>,
     pub game: Game<'a>,
     pub fps_counter: FpsCounter
@@ -51,6 +51,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         }
         event.apply(|_dt: &Duration| self.fps_counter.on_frame());
         event.apply(|note| play_note(&mut self.audio_device, note));
+        event.apply(|noise| play_noise(&mut self.audio_device, noise));
+
         self.game.event(event, events)
     }
 }
