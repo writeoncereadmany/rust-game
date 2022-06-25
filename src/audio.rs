@@ -1,22 +1,30 @@
 use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
+use component_derive::Event;
+use crate::events::EventTrait;
 
-pub const A: f64 = 440.0;
-pub const A_SHARP: f64 = (2.0: f64).powf(1.0/12.0) * A;
-pub const B_FLAT: f64 = A_SHARP;
-pub const B: f64 = (2.0: f64).powf(2.0/12.0) * A;
-pub const C: f64 = (2.0: f64).powf(3.0/12.0) * A;
-pub const C_SHARP: f64 = (2.0: f64).powf(4.0/12.0) * A;
-pub const D_FLAT: f64 = C_SHARP;
-pub const D: f64 = (2.0: f64).powf(5.0/12.0) * A;
-pub const D_SHARP: f64 = (2.0: f64).powf(6.0/12.0) * A;
-pub const E_FLAT: f64 = D_SHARP;
-pub const E: f64 = (2.0: f64).powf(7.0/12.0) * A;
-pub const F: f64 = (2.0: f64).powf(8.0/12.0) * A;
-pub const F_SHARP: f64 = (2.0: f64).powf(9.0/12.0) * A;
-pub const G_FLAT: f64 = F_SHARP;
-pub const G: f64 = (2.0: f64).powf(10.0/12.0) * A;
-pub const G_SHARP: f64 = (2.0: f64).powf(11.0/12.0) * A;
-pub const A_FLAT: f64 = G_SHARP;
+pub const A: f32 = 220.0;
+pub const A_SHARP: f32 = 233.082;
+pub const B_FLAT: f32 = A_SHARP;
+pub const B: f32 = 246.942;
+pub const C: f32 = 261.626;
+pub const C_SHARP: f32 = 277.183;
+pub const D_FLAT: f32 = C_SHARP;
+pub const D: f32 = 293.665;
+pub const D_SHARP: f32 = 311.127;
+pub const E_FLAT: f32 = D_SHARP;
+pub const E: f32 = 329.628;
+pub const F: f32 = 349.228;
+pub const F_SHARP: f32 = 369.994;
+pub const G_FLAT: f32 = F_SHARP;
+pub const G: f32 = 391.995;
+pub const G_SHARP: f32 = 415.305;
+pub const A_FLAT: f32 = G_SHARP;
+
+#[derive(Event)]
+pub struct PlayNote {
+    pub pitch: f32,
+    pub volume: f32
+}
 
 pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>, String> {
     let audio_subsystem = sdl_context.audio()?;
@@ -40,6 +48,15 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>,
     // Start playback
     audio_device.resume();
     Ok(audio_device)
+}
+
+pub fn play_note(device: &mut AudioDevice<Channel>, &PlayNote{ pitch, volume}: &PlayNote) {
+    *device.lock() = Channel {
+        phase_inc: pitch / 48000.0,
+        phase: 0.0,
+        volume,
+        waveform: Waveform::Sine
+    }
 }
 
 pub struct Channel {

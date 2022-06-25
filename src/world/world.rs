@@ -15,6 +15,7 @@ use crate::entities::timer::*;
 use crate::entities::hero::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
+use crate::audio::*;
 use crate::map::Map;
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
@@ -91,6 +92,14 @@ impl World {
         for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(1800), SpawnFlashBulb(x as f64, y as f64))}
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(16.0, 17.5));
+
+        events.fire(PlayNote { pitch: C, volume: 0.05 });
+        events.schedule(Duration::from_millis(200), PlayNote { pitch: D, volume: 0.05} );
+        events.schedule(Duration::from_millis(400), PlayNote { pitch: E, volume: 0.05} );
+        events.schedule(Duration::from_millis(600), PlayNote { pitch: F, volume: 0.05} );
+        events.schedule(Duration::from_millis(800), PlayNote { pitch: G, volume: 0.05} );
+        events.schedule(Duration::from_millis(1000), PlayNote { pitch: D, volume: 0.0} );
+
 
         World {
             map,

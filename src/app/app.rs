@@ -6,7 +6,7 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::audio::SquareWave;
+use crate::audio::*;
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::{ Renderer, Text, align };
@@ -15,7 +15,7 @@ use crate::fps_counter::FpsCounter;
 
 pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
-    pub audio_device: AudioDevice<SquareWave>,
+    pub audio_device: AudioDevice<Channel>,
     pub active_controller: Option<GameController>,
     pub game: Game<'a>,
     pub fps_counter: FpsCounter
@@ -49,9 +49,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
                 _ => {}
             }
         }
-        if let Some(_) = event.unwrap::<Duration>() {
-            self.fps_counter.on_frame();
-        }
+        event.apply(|_dt: &Duration| self.fps_counter.on_frame());
+        event.apply(|note| play_note(&mut self.audio_device, note));
         self.game.event(event, events)
     }
 }
