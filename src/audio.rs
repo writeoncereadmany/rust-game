@@ -32,7 +32,7 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<Channel>,
     let desired_spec = AudioSpecDesired {
         freq: Some(48000),
         channels: Some(1),  // mono
-        samples: None       // default sample size
+        samples: Some(1024)  // default sample size
     };
 
     let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
