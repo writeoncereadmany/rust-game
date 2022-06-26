@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use crate::app::assets::Assets;
 use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
 use crate::game_loop::*;
 use crate::events::*;
+use crate::audio::*;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
 use crate::controller::Controller;
@@ -28,7 +31,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
 
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         self.controller.on_event(event, &mut events);
-        event.apply(|CoinCollected { .. }| self.score += 10 );
+        event.apply(|CoinCollected { .. }| {
+            self.score += 10;
+            events.fire(PlayNote { pitch: B * 4.0, volume: 0.05 });
+            events.schedule(Duration::from_millis(60), PlayNote { pitch: E * 4.0, volume: 0.05 });
+
+            events.schedule(Duration::from_millis(300), PlayNote { pitch: C, volume: 0.0 });
+        });
         event.apply(|TimeLimitExpired| {
             self.world = World::new(
                 &self.assets,

@@ -43,7 +43,7 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
     let desired_spec = AudioSpecDesired {
         freq: None,
         channels: Some(1),  // mono
-        samples: Some(1024) 
+        samples: Some(128) 
     };
 
     let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
@@ -67,7 +67,7 @@ pub fn play_note(device: &mut AudioDevice<AudioPlayer>, &PlayNote{ pitch, volume
         phase_inc: pitch / freq as f32,
         phase: 0.0,
         volume,
-        waveform: Waveform::Sine
+        waveform: Waveform::Triangle(0.5)
     })
 }
 
