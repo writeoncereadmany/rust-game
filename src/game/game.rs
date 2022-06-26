@@ -33,8 +33,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         self.controller.on_event(event, &mut events);
         event.apply(|CoinCollected { .. }| {
             self.score += 10;
-            events.fire(Play(Note::Wave { pitch: B * 4.0, volume: 0.05, length: Duration::from_millis(60) }));
-            events.schedule(Duration::from_millis(60), Play(Note::Silence { }));
+            events.fire(Play(Note::Wave { pitch: B * 4.0, volume: 0.05, length: Duration::from_millis(200) }));
         });
         event.apply(|TimeLimitExpired| {
             self.world = World::new(

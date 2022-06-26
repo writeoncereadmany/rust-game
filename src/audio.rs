@@ -1,8 +1,11 @@
+use std::collections::BinaryHeap;
 use std::time::Duration;
 
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
 use rand::distributions::{ Distribution, Uniform };
+
+use derivative::Derivative;
 
 use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 use component_derive::Event;
@@ -39,7 +42,7 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
     let audio_subsystem = sdl_context.audio()?;
 
     let desired_spec = AudioSpecDesired {
-        freq: None,
+        freq: Some(48000),
         channels: Some(1),  // mono
         samples: Some(128) 
     };
@@ -49,6 +52,8 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
         AudioPlayer {
             rng: SmallRng::from_entropy(),
             freq: spec.freq,
+            cycles: 0,
+            queue: BinaryHeap::new(),
             channel: Channel::Silence {}
         }
     }).unwrap();
@@ -59,32 +64,8 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
 }
 
 pub fn play_note(device: &mut AudioDevice<AudioPlayer>, Play(note): &Play) {
-    let mut device = device.lock();
-    let freq = device.freq;
-
-    let channel = match note {
-        Note::Wave{ pitch, volume, .. } => {
-            Channel::Wave {
-                phase_inc: pitch / freq as f32,
-                phase: 0.0,
-                volume: *volume,
-                waveform: Waveform::Triangle(0.5)
-            }
-        },
-        Note::Noise{ low, high, volume, .. } => {
-            let max_cycle = (freq as f32 / low) as u32;
-            let min_cycle = (freq as f32 / high) as u32;
-            let distribution : Uniform<u32> = Uniform::from(min_cycle..max_cycle);
-            Channel::Noise {
-                up: false,
-                next_flip: 0,
-                distribution,
-                volume: *volume
-            }
-        },
-        Note::Silence => Channel::Silence { }
-    };
-    device.set_channel(channel);
+    let mut player = device.lock();
+    player.play(note);
 }
 
 pub enum Channel {
@@ -92,20 +73,32 @@ pub enum Channel {
         phase_inc: f32,
         phase: f32,
         volume: f32,
+        cycles_remaining: u32,
         waveform: Waveform
     }, 
-    Silence { }, 
+    Silence, 
     Noise {
         up: bool,
         next_flip: u32,
         distribution: Uniform<u32>,
-        volume: f32
+        volume: f32,
+        cycles_remaining: u32,
     }
+}
+
+#[derive(Derivative)]
+#[derivative(PartialEq, Eq, PartialOrd, Ord)]
+pub struct Cue {
+    start_at: u64,
+    #[derivative(PartialEq="ignore", PartialOrd="ignore", Ord="ignore")]
+    note: Note
 }
 
 pub struct AudioPlayer {
     rng: SmallRng,
     freq: i32,
+    cycles: u64,
+    queue: BinaryHeap<Cue>,
     channel: Channel
 }
 
@@ -119,34 +112,101 @@ impl AudioCallback for AudioPlayer {
     type Channel = f32;
 
     fn callback(&mut self, out: &mut [f32]) {
-        match self.channel {
-            Channel::Wave { phase, volume, waveform, phase_inc } => {
-                let mut phase = phase;
-                for x in out.iter_mut() {
-                    *x = waveform.amplitude(phase) * volume;
-                    phase = (phase + phase_inc) % 1.0;
-                }
-                self.channel = Channel::Wave { phase, volume, waveform, phase_inc };
-            },
-            Channel::Silence {} => {
-                for x in out.iter_mut() {
-                    *x = 0.0;
-                }
-            },
-            Channel::Noise { up, mut next_flip, distribution, volume } => {
-                let mut up = up;
-                for x in out.iter_mut() {
-                    if next_flip == 0 {
-                        up = !up;
-                        next_flip = distribution.sample(&mut self.rng);
-                    }
-                    next_flip -= 1;
+        for x in out.iter_mut() {
 
-                    *x = if up { volume } else { -volume }; 
-                }
-                self.channel = Channel::Noise { up, next_flip, distribution, volume };
+            let maybe_note = self.due();
+            if let Some(note) = maybe_note {
+                self.play(&note);
             }
+
+            match self.channel {
+                Channel::Wave { phase, volume, waveform, phase_inc, cycles_remaining } => {
+                    *x = waveform.amplitude(phase) * volume;
+                    if cycles_remaining > 0 {
+                        self.channel = Channel::Wave { 
+                            phase: (phase + phase_inc) % 1.0, 
+                            volume, 
+                            waveform, 
+                            phase_inc, 
+                            cycles_remaining: cycles_remaining - 1 
+                        };
+                    }
+                    else {
+                        self.channel = Channel::Silence;
+                    }
+                },
+                Channel::Silence {} => {
+                    *x = 0.0;
+                },
+                Channel::Noise { up, next_flip, distribution, volume, cycles_remaining } => {
+                    *x = if up { volume } else { -volume }; 
+
+                    if cycles_remaining > 0 {
+                        self.channel = Channel::Noise { 
+                            up: if next_flip == 0 { !up } else { up } , 
+                            next_flip: if next_flip == 0 { distribution.sample(&mut self.rng) } else { next_flip - 1 }, 
+                            distribution, 
+                            volume,
+                            cycles_remaining: cycles_remaining - 1
+                        };
+                    } else {
+                        self.channel = Channel::Silence
+                    }
+                }
+            }
+            self.cycles += 1;
         }
+    } 
+}
+
+impl AudioPlayer {
+
+    fn due(&mut self) -> Option<Note> {
+        if match self.queue.peek() {
+            Some(cue) if cue.start_at <= self.cycles => true,
+            _otherwise => false
+        } {
+            self.queue.pop().map(|cue| cue.note)
+        } else {
+            Option::None
+        }
+    }
+
+    fn play(&mut self, note: &Note) {
+        let freq = self.freq;
+
+        let current_phase = match self.channel {
+            Channel::Wave { phase, ..} => phase,
+            _ => 0.0
+        };
+    
+        let channel = match note {
+            Note::Wave{ pitch, volume, length } => {
+                let cycles_remaining = (length.as_secs_f64() * freq as f64) as u32;
+                Channel::Wave {
+                    phase_inc: pitch / freq as f32,
+                    phase: current_phase,
+                    volume: *volume,
+                    waveform: Waveform::Triangle(0.5),
+                    cycles_remaining
+                }
+            },
+            Note::Noise{ low, high, volume, length } => {
+                let max_cycle = (freq as f32 / low) as u32;
+                let min_cycle = (freq as f32 / high) as u32;
+                let distribution : Uniform<u32> = Uniform::from(min_cycle..max_cycle);
+                let cycles_remaining = (length.as_secs_f64() * freq as f64) as u32;
+                Channel::Noise {
+                    up: false,
+                    next_flip: 0,
+                    distribution,
+                    volume: *volume,
+                    cycles_remaining
+                }
+            },
+            Note::Silence => Channel::Silence
+        };
+        self.set_channel(channel);
     }
 }
 

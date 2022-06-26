@@ -19,6 +19,7 @@ features = ["small_rng"]
 
 [dependencies]
 find_folder = "0.3.0"
+derivative = "2.2.0"
 image = "0.23.14"
 component-derive = { path = "component-derive" }
 entity = { path = "entity" }
