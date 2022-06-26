@@ -93,15 +93,6 @@ impl World {
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(16.0, 17.5));
 
-        events.fire(PlayNote { pitch: C, volume: 0.05 });
-        events.schedule(Duration::from_millis(200), PlayNote { pitch: D, volume: 0.05} );
-        events.schedule(Duration::from_millis(400), PlayNote { pitch: E, volume: 0.05} );
-        events.schedule(Duration::from_millis(600), PlayNote { pitch: F, volume: 0.05} );
-        events.schedule(Duration::from_millis(800), PlayNote { pitch: G, volume: 0.05} );
-        events.schedule(Duration::from_millis(1000), PlayNoise { min_hz: C, max_hz: C * 4.0, volume: 0.05} );
-        events.schedule(Duration::from_millis(1500), PlayNote { pitch: D, volume: 0.0} );
-
-
         World {
             map,
             entities,
