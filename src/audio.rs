@@ -1,4 +1,6 @@
-use rand::{ Rng, SeedableRng };
+use std::time::Duration;
+
+use rand::SeedableRng;
 use rand::rngs::SmallRng;
 use rand::distributions::{ Distribution, Uniform };
 
@@ -25,16 +27,12 @@ pub const G_SHARP: f32 = 415.305;
 pub const A_FLAT: f32 = G_SHARP;
 
 #[derive(Event)]
-pub struct PlayNote {
-    pub pitch: f32,
-    pub volume: f32
-}
+pub struct Play(pub Note);
 
-#[derive(Event)]
-pub struct PlayNoise {
-    pub min_hz: f32,
-    pub max_hz: f32,
-    pub volume: f32
+pub enum Note {
+    Silence,
+    Wave { pitch: f32, volume: f32, length: Duration },
+    Noise { low: f32, high: f32, volume: f32, length: Duration }
 }
 
 pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlayer>, String> {
@@ -60,28 +58,33 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
     Ok(audio_device)
 }
 
-pub fn play_note(device: &mut AudioDevice<AudioPlayer>, &PlayNote{ pitch, volume}: &PlayNote) {
+pub fn play_note(device: &mut AudioDevice<AudioPlayer>, Play(note): &Play) {
     let mut device = device.lock();
     let freq = device.freq;
-    device.set_channel(Channel::Wave {
-        phase_inc: pitch / freq as f32,
-        phase: 0.0,
-        volume,
-        waveform: Waveform::Triangle(0.5)
-    })
-}
 
-pub fn play_noise(device: &mut AudioDevice<AudioPlayer>, &PlayNoise{ min_hz, max_hz, volume }: &PlayNoise) {
-    let mut device = device.lock();
-    let max_cycle = (device.freq as f32 / min_hz) as u32;
-    let min_cycle = (device.freq as f32 / max_hz) as u32;
-    let distribution : Uniform<u32> = Uniform::from(min_cycle..max_cycle);
-    device.set_channel(Channel::Noise {
-        up: false,
-        next_flip: 0,
-        distribution,
-        volume
-    });
+    let channel = match note {
+        Note::Wave{ pitch, volume, .. } => {
+            Channel::Wave {
+                phase_inc: pitch / freq as f32,
+                phase: 0.0,
+                volume: *volume,
+                waveform: Waveform::Triangle(0.5)
+            }
+        },
+        Note::Noise{ low, high, volume, .. } => {
+            let max_cycle = (freq as f32 / low) as u32;
+            let min_cycle = (freq as f32 / high) as u32;
+            let distribution : Uniform<u32> = Uniform::from(min_cycle..max_cycle);
+            Channel::Noise {
+                up: false,
+                next_flip: 0,
+                distribution,
+                volume: *volume
+            }
+        },
+        Note::Silence => Channel::Silence { }
+    };
+    device.set_channel(channel);
 }
 
 pub enum Channel {
