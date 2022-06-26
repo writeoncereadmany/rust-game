@@ -1,5 +1,6 @@
 use std::collections::BinaryHeap;
 use std::time::Duration;
+use std::cmp::{Ord, Ordering};
 
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
@@ -32,6 +33,10 @@ pub const A_FLAT: f32 = G_SHARP;
 #[derive(Event)]
 pub struct Play(pub Note);
 
+#[derive(Event)]
+pub struct PlayTune(pub Vec<(Duration, Note)>);
+
+#[derive(Clone, Copy, Debug)]
 pub enum Note {
     Silence,
     Wave { pitch: f32, volume: f32, length: Duration },
@@ -64,8 +69,11 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
 }
 
 pub fn play_note(device: &mut AudioDevice<AudioPlayer>, Play(note): &Play) {
-    let mut player = device.lock();
-    player.play(note);
+    device.lock().play(note);
+}
+
+pub fn play_tune(device: &mut AudioDevice<AudioPlayer>, PlayTune(tune): &PlayTune) {
+    device.lock().cue(tune);
 }
 
 pub enum Channel {
@@ -86,13 +94,24 @@ pub enum Channel {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Debug, Derivative)]
 #[derivative(PartialEq, Eq, PartialOrd, Ord)]
 pub struct Cue {
+    #[derivative(PartialOrd(compare_with="partial_reversed"), Ord(compare_with="reversed"))]
     start_at: u64,
     #[derivative(PartialEq="ignore", PartialOrd="ignore", Ord="ignore")]
     note: Note
 }
+
+pub fn reversed<T: Ord>(first: &T, second: &T) -> Ordering {
+    second.cmp(first)
+}
+
+
+pub fn partial_reversed<T: Ord>(first: &T, second: &T) -> Option<Ordering> {
+    Some(reversed(first, second))
+}
+
 
 pub struct AudioPlayer {
     rng: SmallRng,
@@ -114,8 +133,7 @@ impl AudioCallback for AudioPlayer {
     fn callback(&mut self, out: &mut [f32]) {
         for x in out.iter_mut() {
 
-            let maybe_note = self.due();
-            if let Some(note) = maybe_note {
+            if let Some(note) = self.due() {
                 self.play(&note);
             }
 
@@ -160,6 +178,15 @@ impl AudioCallback for AudioPlayer {
 }
 
 impl AudioPlayer {
+
+    fn cue(&mut self, tune: &Vec<(Duration, Note)>) {
+        self.queue.clear();
+        for (delay, note) in tune {
+            let cycles_before_start = (delay.as_secs_f64() * self.freq as f64) as u64;
+            let start_at = cycles_before_start + self.cycles;
+            self.queue.push(Cue { start_at, note: *note });
+        }
+    }
 
     fn due(&mut self) -> Option<Note> {
         if match self.queue.peek() {
@@ -228,5 +255,27 @@ impl Waveform {
                 ((1.0 - phase) / (1.0 - duty_cycle)) * 2.0 - 1.0
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn should_iterate_only_over_subset(){
+        let mut heap = BinaryHeap::new();
+
+        heap.push(Cue { start_at: 1, note: Note::Silence });
+        heap.push(Cue { start_at: 2, note: Note::Silence });
+        heap.push(Cue { start_at: 3, note: Note::Silence });
+        heap.push(Cue { start_at: 4, note: Note::Silence });
+
+        assert_eq!(heap.pop().unwrap().start_at, 1);
+        assert_eq!(heap.pop().unwrap().start_at, 2);
+        assert_eq!(heap.pop().unwrap().start_at, 3);
+        assert_eq!(heap.pop().unwrap().start_at, 4);
+        assert_eq!(heap.pop(), None);
     }
 }

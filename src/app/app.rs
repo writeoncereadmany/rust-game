@@ -51,6 +51,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         }
         event.apply(|_dt: &Duration| self.fps_counter.on_frame());
         event.apply(|note| play_note(&mut self.audio_device, note));
+        event.apply(|tune| play_tune(&mut self.audio_device, tune));
+
 
         self.game.event(event, events)
     }
