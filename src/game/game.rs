@@ -34,8 +34,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         event.apply(|CoinCollected { .. }| {
             self.score += 10;
             events.fire(PlayTune(vec![
-                (Duration::from_millis(0), Note::Wave { pitch: E * 2.0, volume: 0.05, length: Duration::from_millis(200) }),
-                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, volume: 0.05, length: Duration::from_millis(200) })
+                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, volume: 0.05, length: Duration::from_millis(200) }),
+                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, volume: 0.05, length: Duration::from_millis(250) })
             ]));
         });
         event.apply(|TimeLimitExpired| {
