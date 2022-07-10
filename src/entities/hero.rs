@@ -23,6 +23,7 @@ const JUMP_SPEED: f64 = 15.0;
 const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.215;
+const COYOTE_TIME: f64 = 0.1;
 
 const PANDA_OFFSET: i32 = 1;
 const RED_PANDA_OFFSET: i32 = 4;
@@ -54,6 +55,9 @@ pub struct LastPush(pub f64, pub f64);
 #[derive(Variable)]
 pub struct Facing(Sign);
 
+#[derive(Variable)]
+pub struct CoyoteTime(pub f64);
+
 #[derive(Event)]
 pub struct Jumped;
 
@@ -69,6 +73,7 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(LastPush(0.0,0.0))
         .with(Facing(Sign::POSITIVE))
         .with(panda_type)
+        .with(CoyoteTime(0.0))
         .with(Ascending(0.0))
     );
 }
@@ -82,6 +87,7 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
 
 fn update_hero(entities: &mut Entities, dt: &Duration) {
     do_move(entities, dt);
+    update_coyote_time(entities, dt);
     wall_stick(entities, dt);
     gravity(entities, dt);
     uplift(entities, dt);
@@ -137,6 +143,18 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
             } else {
                 Velocity(dx + REVERSE_ACCEL * dt * x_input.unit_f64(), dy)
             }
+        }
+    })
+}
+
+fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
+    entities.apply_2(|&CoyoteTime(prev_coyote_time), &LastPush(_px, py)| {
+        if py > 0.0 {
+            CoyoteTime(COYOTE_TIME)
+        }
+        else
+        {
+            CoyoteTime(f64::max(prev_coyote_time - dt.as_secs_f64(), 0.0))
         }
     })
 }
@@ -207,8 +225,8 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
-    entities.apply_2(|&Velocity(dx, dy), &LastPush(px, py)| {
-        if py > 0.0 {
+    entities.apply_3(|&Velocity(dx, dy), &LastPush(px, py), &CoyoteTime(ct)| {
+        if ct > 0.0 {
             events.fire(Jumped);
             Velocity(dx, JUMP_SPEED)
         } else if px > 0.0 {
