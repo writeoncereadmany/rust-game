@@ -24,6 +24,7 @@ const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.215;
 const COYOTE_TIME: f64 = 0.1;
+const PREJUMP: f64 = 0.1;
 
 const PANDA_OFFSET: i32 = 1;
 const RED_PANDA_OFFSET: i32 = 4;
@@ -66,8 +67,11 @@ pub struct Facing(Sign);
 #[derive(Variable)]
 pub struct CoyoteTime(pub JumpDirection, pub f64);
 
+#[derive(Variable)]
+pub struct Prejump(pub f64);
+
 #[derive(Event)]
-pub struct Jumped;
+pub struct Jumped(pub JumpDirection);
 
 pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities) {
     entities.spawn(entity()
@@ -82,6 +86,7 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(Facing(Sign::POSITIVE))
         .with(panda_type)
         .with(CoyoteTime(JumpDirection::NONE, 0.0))
+        .with(Prejump(0.0))
         .with(Ascending(0.0))
     );
 }
@@ -90,12 +95,13 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|controller| control(entities, controller));
     event.apply(|buttonpress| jump(entities, events, buttonpress));
     event.apply(|jump| on_jump(entities, jump));
-    event.apply(|dt| update_hero(entities, dt));
+    event.apply(|dt| update_hero(entities, dt, events));
 }
 
-fn update_hero(entities: &mut Entities, dt: &Duration) {
+fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     do_move(entities, dt);
     update_coyote_time(entities, dt);
+    check_prejump(entities, dt, events);
     wall_stick(entities, dt);
     gravity(entities, dt);
     uplift(entities, dt);
@@ -153,6 +159,23 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
             }
         }
     })
+}
+
+fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
+    entities.apply_2(|&Prejump(pt), &LastPush(px, py)| {
+        if pt > 0.0 {
+            if py > 0.0 {
+                events.fire(Jumped(JumpDirection::UP))
+            } 
+            else if px > 0.0 {
+                events.fire(Jumped(JumpDirection::RIGHT))
+            }
+            else if px < 0.0 {
+                events.fire(Jumped(JumpDirection::LEFT))
+            }
+        }
+        Prejump(f64::max(pt - dt.as_secs_f64(), 0.0));
+    });
 }
 
 fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
@@ -243,22 +266,27 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
-    entities.apply_2(|&Velocity(dx, dy), &CoyoteTime(direction, _ct)| {
-        if direction == JumpDirection::UP {
-            events.fire(Jumped);
-            Velocity(dx, JUMP_SPEED)
-        } else if direction == JumpDirection::RIGHT {
-            events.fire(Jumped);
-            Velocity(WALLJUMP_DX, WALLJUMP_DY)
-        } else if direction == JumpDirection::LEFT {
-            events.fire(Jumped);
-            Velocity(-WALLJUMP_DX, WALLJUMP_DY)
+    entities.apply(|&CoyoteTime(direction, _ct)| {
+        if direction != JumpDirection::NONE {
+            events.fire(Jumped(direction));
+            Prejump(0.0)
         } else {
-            Velocity(dx, dy)
+            Prejump(PREJUMP)
         }
     })
 }
 
-fn on_jump(entities: &mut Entities, _jump: &Jumped) {
-    entities.apply(|&Ascending(_)| Ascending(EXTRA_JUMP_DURATION))
+fn on_jump(entities: &mut Entities, Jumped(direction): &Jumped) {
+    entities.apply(|&Velocity(dx, dy)| {
+        match direction {
+            JumpDirection::UP => Velocity(dx, JUMP_SPEED),
+            JumpDirection::RIGHT => Velocity(WALLJUMP_DX, WALLJUMP_DY),
+            JumpDirection::LEFT => Velocity(-WALLJUMP_DX, WALLJUMP_DY),
+            JumpDirection::NONE => Velocity(dx, dy)
+        }
+    });
+    entities.apply(|&Ascending(_)| Ascending(EXTRA_JUMP_DURATION));
+
+    entities.apply(|&CoyoteTime(_, _)| CoyoteTime(JumpDirection::NONE, 0.0));
+    entities.apply(|&Prejump(_)| Prejump(0.0));
 }
