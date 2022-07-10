@@ -257,7 +257,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_iterate_only_over_subset(){
+    fn should_iterate_over_cues_in_increasing_time_order(){
         let mut heap = BinaryHeap::new();
 
         heap.push(Cue { start_at: 1, note: Note::Silence });
