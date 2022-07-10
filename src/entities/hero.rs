@@ -34,6 +34,14 @@ const ASCENDING : (i32, i32) = (2, 0);
 const DESCENDING : (i32, i32) = (3, 0);
 const STANDING: (i32, i32) = (0, 1);
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum JumpDirection {
+    UP,
+    LEFT,
+    RIGHT,
+    NONE
+}
+
 #[derive(Clone, Copy, Constant)]
 pub enum PandaType {
     GiantPanda,
@@ -56,7 +64,7 @@ pub struct LastPush(pub f64, pub f64);
 pub struct Facing(Sign);
 
 #[derive(Variable)]
-pub struct CoyoteTime(pub f64);
+pub struct CoyoteTime(pub JumpDirection, pub f64);
 
 #[derive(Event)]
 pub struct Jumped;
@@ -73,7 +81,7 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(LastPush(0.0,0.0))
         .with(Facing(Sign::POSITIVE))
         .with(panda_type)
-        .with(CoyoteTime(0.0))
+        .with(CoyoteTime(JumpDirection::NONE, 0.0))
         .with(Ascending(0.0))
     );
 }
@@ -148,13 +156,23 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
 }
 
 fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|&CoyoteTime(prev_coyote_time), &LastPush(_px, py)| {
+    entities.apply_2(|&CoyoteTime(prev_direction, prev_coyote_time), &LastPush(px, py)| {
         if py > 0.0 {
-            CoyoteTime(COYOTE_TIME)
+            CoyoteTime(JumpDirection::UP, COYOTE_TIME)
         }
-        else
+        else if px < 0.0 {
+            CoyoteTime(JumpDirection::LEFT, COYOTE_TIME)
+        }
+        else if px > 0.0 {
+            CoyoteTime(JumpDirection::RIGHT, COYOTE_TIME)
+        }
+        else if prev_coyote_time > dt.as_secs_f64()
         {
-            CoyoteTime(f64::max(prev_coyote_time - dt.as_secs_f64(), 0.0))
+            CoyoteTime(prev_direction, f64::max(prev_coyote_time - dt.as_secs_f64(), 0.0))
+        }
+        else 
+        {
+            CoyoteTime(JumpDirection::NONE, 0.0)
         }
     })
 }
@@ -225,14 +243,14 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
-    entities.apply_3(|&Velocity(dx, dy), &LastPush(px, py), &CoyoteTime(ct)| {
-        if ct > 0.0 {
+    entities.apply_2(|&Velocity(dx, dy), &CoyoteTime(direction, _ct)| {
+        if direction == JumpDirection::UP {
             events.fire(Jumped);
             Velocity(dx, JUMP_SPEED)
-        } else if px > 0.0 {
+        } else if direction == JumpDirection::RIGHT {
             events.fire(Jumped);
             Velocity(WALLJUMP_DX, WALLJUMP_DY)
-        } else if px < 0.0 {
+        } else if direction == JumpDirection::LEFT {
             events.fire(Jumped);
             Velocity(-WALLJUMP_DX, WALLJUMP_DY)
         } else {
