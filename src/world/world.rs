@@ -76,13 +76,20 @@ impl World {
             map.put(x as i32, y as i32, Meshed{ item, mesh }); 
         }
 
+        let ledges = pixels(image, &Rgb([128, 128, 128]));
+        for &(x, y) in &ledges {
+            let neighbours = neighbours(&ledges, x as i32, y as i32);
+            let item = Tile::LEDGE(ledge_from_neighbours(&neighbours));
+            let mesh = ledge_mesh(x as f64, y as f64);
+            map.put(x as i32, y as i32, Meshed{ item, mesh });
+        }
+
         for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
             spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
             events.schedule(Duration::from_millis(1800), SpawnHero(x as f64, y as f64, panda_type)); 
         }
-        for (x, y) in pixels(image, &Rgb([128, 128, 128])) { map.put(x as i32, y as i32, Meshed { item : Tile::LEDGE((6, 4)), mesh: ledge_mesh(x as f64, y as f64) }); }
        
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.fire(SpawnBulb(x as f64, y as f64)); }
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64))}
@@ -146,6 +153,17 @@ fn tile_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
     };
 
     (tx, ty)
+}
+
+fn ledge_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
+    let tx = match (neighbours.left, neighbours.right) {
+        (false, true) => 4,
+        (true, true) => 5,
+        (true, false) => 6,
+        (false, false) => 7 
+    };
+
+    (tx, 4)
 }
 
 fn mesh_from_neighbours(x: f64, y: f64, neighbours: &Neighbours) -> ConvexMesh {
