@@ -25,7 +25,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         renderer.draw_text(
             &Text { text: self.score.to_string(), justification: align::RIGHT & align::MIDDLE}, 
             3.0, 
-            17.5);
+            14.5);
         Ok(())
     }
 

@@ -31,8 +31,8 @@ use world::world::World;
 use events::Events;
 use game::game::Game;
 
-const COLUMNS: usize = 32;
-const ROWS: usize = 18;
+const COLUMNS: usize = 26;
+const ROWS: usize = 15;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -42,7 +42,7 @@ fn main() -> Result<(), String> {
 
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
-    let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
+    let window = video_subsystem.window("rust-sdl2 demo", 1280, 720)
         .fullscreen_desktop()
         .build()
         .expect("could not initialize video subsystem");
