@@ -174,7 +174,7 @@ fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
                 events.fire(Jumped(JumpDirection::LEFT))
             }
         }
-        Prejump(f64::max(pt - dt.as_secs_f64(), 0.0));
+        Prejump(f64::max(pt - dt.as_secs_f64(), 0.0))
     });
 }
 
