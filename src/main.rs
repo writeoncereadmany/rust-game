@@ -92,7 +92,7 @@ fn main() -> Result<(), String> {
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
-    run_game_loop(app, &mut renderer, &mut event_pump, 1, events)?;
+    run_game_loop(app, &mut renderer, &mut event_pump, 4, events)?;
 
     Ok(())
 }
