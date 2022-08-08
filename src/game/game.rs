@@ -35,7 +35,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             self.score += 10;
             events.fire(PlayTune(vec![
                 (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) })
+                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) })
             ]));
         });
         event.apply(|TimeLimitExpired| {
