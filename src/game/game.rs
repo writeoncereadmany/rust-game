@@ -5,7 +5,7 @@ use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
 use crate::game_loop::*;
 use crate::events::*;
-use crate::audio::*;
+use crate::audio::audio::*;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
 use crate::controller::Controller;
@@ -34,8 +34,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         event.apply(|CoinCollected { .. }| {
             self.score += 10;
             events.fire(PlayTune(vec![
-                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, volume: 0.05, length: Duration::from_millis(200) }),
-                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, volume: 0.05, length: Duration::from_millis(250) })
+                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) })
             ]));
         });
         event.apply(|TimeLimitExpired| {

@@ -19,7 +19,7 @@ use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
 use entities::hero::PandaType;
-use audio::initialise_audio;
+use audio::audio::initialise_audio;
 use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::renderer::{Renderer};

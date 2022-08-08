@@ -6,7 +6,7 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use crate::audio::*;
+use crate::audio::audio::*;
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::{ Renderer, Text, align };
