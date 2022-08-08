@@ -163,7 +163,7 @@ struct Noise {
     cycle: u32,
 }
 
-pub enum Channel {
+enum Channel {
     Wave(Wave), 
     Silence, 
     Noise(Noise)
