@@ -8,6 +8,7 @@ use entity::{ Id, Entities };
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
+use crate::audio::audio::*;
 use crate::shapes::push::Push;
 use crate::entities::door::*;
 use crate::entities::coin::*;
@@ -98,6 +99,17 @@ impl World {
         for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(1800), SpawnFlashBulb(x as f64, y as f64))}
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
+
+        events.fire(PlayTune(vec![
+            (Duration::from_millis(0), Note::Wave { pitch: C, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(150), Note::Wave { pitch: D, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(300), Note::Wave { pitch: E, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(450), Note::Wave { pitch: F, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(600), Note::Wave { pitch: G, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(750), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(900), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(1050), Note::Wave { pitch: C * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+        ]));
 
         World {
             map,

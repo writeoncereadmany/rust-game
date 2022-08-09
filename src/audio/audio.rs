@@ -12,21 +12,21 @@ use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
 use component_derive::Event;
 use crate::events::EventTrait;
 
-// pub const A: f32 = 220.0;
+pub const A: f32 = 220.0;
 // pub const A_SHARP: f32 = 233.082;
 // pub const B_FLAT: f32 = A_SHARP;
 pub const B: f32 = 246.942;
-// pub const C: f32 = 261.626;
+pub const C: f32 = 261.626;
 // pub const C_SHARP: f32 = 277.183;
 // pub const D_FLAT: f32 = C_SHARP;
-// pub const D: f32 = 293.665;
+pub const D: f32 = 293.665;
 // pub const D_SHARP: f32 = 311.127;
 // pub const E_FLAT: f32 = D_SHARP;
 pub const E: f32 = 329.628;
-// pub const F: f32 = 349.228;
+pub const F: f32 = 349.228;
 // pub const F_SHARP: f32 = 369.994;
 // pub const G_FLAT: f32 = F_SHARP;
-// pub const G: f32 = 391.995;
+pub const G: f32 = 391.995;
 // pub const G_SHARP: f32 = 415.305;
 // pub const A_FLAT: f32 = G_SHARP;
 
