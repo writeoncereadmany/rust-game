@@ -8,6 +8,7 @@ use sdl2::video::{WindowContext};
 use component_derive::{ Variable };
 use entity::{ Component, Variable };
 
+use crate::fps_counter::FpsCounter;
 use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
@@ -37,7 +38,8 @@ pub struct Renderer<'a>
     source_rect: Rect,
     target_rect: Rect,
     text_width: f64,
-    text_height: f64
+    text_height: f64,
+    fps_counter: FpsCounter
 }
 
 pub trait Tiled {
@@ -76,7 +78,8 @@ impl <'a> Renderer<'a>
             batch,
             textbatch,
             text_width,
-            text_height
+            text_height,
+            fps_counter: FpsCounter::new(30)
         })
     }
 
@@ -172,6 +175,7 @@ impl <'a> Renderer<'a>
         self.canvas.clear();
         self.canvas.copy(&mut self.surface, None, self.target_rect)?;
         self.canvas.present();
+        self.fps_counter.on_frame();
         Ok(())
     }
 }

@@ -20,7 +20,6 @@ use sdl2::video::Window;
 
 use entities::hero::PandaType;
 use audio::audio::initialise_audio;
-use fps_counter::FpsCounter;
 use game_loop::run_game_loop;
 use graphics::renderer::{Renderer};
 use graphics::sprite::SpriteSheet;
@@ -87,7 +86,6 @@ fn main() -> Result<(), String> {
         game_controller_subsystem, 
         audio_device,
         active_controller: None,
-        fps_counter: FpsCounter::new(),
         game
     };
 
