@@ -80,7 +80,9 @@ fn main() -> Result<(), String> {
         world, 
         controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
         level: 0, 
-        score: 0 };
+        score: 0,
+        pause: 0.0
+    };
 
     let app = App {
         game_controller_subsystem, 

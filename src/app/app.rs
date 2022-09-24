@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use sdl2::event::Event as SdlEvent;
 use sdl2::audio::AudioDevice;
 use sdl2::GameControllerSubsystem;
