@@ -18,6 +18,7 @@ pub struct Game<'a> {
     pub world: World,
     pub level: usize,
     pub score: u32,
+    pub score_this_level: u32,
     pub pause: f64
 }
 #[derive (Event)]
@@ -31,9 +32,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
         renderer.draw_text(
-            &Text { text: self.score.to_string(), justification: align::RIGHT & align::MIDDLE}, 
-            3.0, 
+            &Text { text: self.score.to_string(), justification: align::RIGHT | align::MIDDLE},
+            25.0,
             14.5);
+        renderer.draw_text(
+            &Text { text: self.score_this_level.to_string(), justification: align::RIGHT | align::MIDDLE}, 
+            3.0, 
+            14.5);   
         Ok(())
     }
 
@@ -41,7 +46,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         self.controller.on_event(event, &mut events);
         
         event.apply(|CoinCollected { .. }| {
-            self.score += 10;
+            self.score_this_level += 10;
             events.fire(PlayTune(vec![
                 (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
                 (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) })
@@ -63,6 +68,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|NewLevel| {
+            self.score += self.score_this_level;
+            self.score_this_level = 0;
             self.world = World::new(
                 &self.assets,
                 self.level, 

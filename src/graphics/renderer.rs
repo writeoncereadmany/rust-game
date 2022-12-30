@@ -13,12 +13,12 @@ use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
 pub mod align {
-    pub const CENTER: u8 = 0b_0000_0000;
-    pub const LEFT: u8 = 0b_0000_0001;
-    pub const RIGHT: u8 = 0b_0000_0010;
-    pub const MIDDLE: u8 = 0b_0000_0000;
-    pub const BOTTOM: u8 = 0b_0000_0100;
-    pub const TOP: u8 = 0b_0000_1000;
+    pub const CENTER: u8 = 0b_0000_0001;
+    pub const LEFT: u8 = 0b_0000_0010;
+    pub const RIGHT: u8 = 0b_0000_0100;
+    pub const MIDDLE: u8 = 0b_0000_1000;
+    pub const BOTTOM: u8 = 0b_0001_0000;
+    pub const TOP: u8 = 0b_0010_0000;
 }
 
 #[derive(Variable)]

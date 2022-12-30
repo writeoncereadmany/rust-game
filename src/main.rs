@@ -81,6 +81,7 @@ fn main() -> Result<(), String> {
         controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
         level: 0, 
         score: 0,
+        score_this_level: 0,
         pause: 0.0
     };
 
