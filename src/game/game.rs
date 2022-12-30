@@ -45,12 +45,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         self.controller.on_event(event, &mut events);
         
-        event.apply(|CoinCollected { .. }| {
+        event.apply(|CoinCollected| {
             self.score_this_level += 10;
-            events.fire(PlayTune(vec![
-                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) })
-            ]));
+        });
+
+        event.apply(|BellCollected| {
+            self.score_this_level *= 2;
         });
 
         event.apply(|TimeLimitExpired| {

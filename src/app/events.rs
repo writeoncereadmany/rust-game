@@ -3,11 +3,9 @@ use component_derive::Event;
 use crate::events::EventTrait;
 
 #[derive(Event)]
-pub struct CoinCollected {
-    pub id: u64,
-    pub x: f64,
-    pub y: f64
-}
+pub struct CoinCollected;
+#[derive(Event)]
+pub struct BellCollected;
 
 #[derive(Event)]
 pub struct TimeLimitExpired;

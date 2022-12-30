@@ -1,3 +1,4 @@
+pub mod bell;
 pub mod coin;
 pub mod components;
 pub mod door;

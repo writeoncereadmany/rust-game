@@ -7,7 +7,7 @@ use crate::graphics::sprite::Sprite;
 use crate::app::events::Destroy;
 use entity::{ Entities, entity };
 
-pub fn spawn_particle(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
+pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
     let spangle_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(0, 4, 0.5))
@@ -20,7 +20,7 @@ pub fn spawn_particle(x: f64, y: f64, entities: &mut Entities, events: &mut Even
 }
 
 pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
-    let spangle_id = entities.spawn(entity()
+    let bulb_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(4, 5, 2.0))
         .with(Period(0.6))
@@ -36,12 +36,12 @@ pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) 
         ]))
     );
 
-    events.schedule(Duration::from_millis(600), Destroy(spangle_id));
+    events.schedule(Duration::from_millis(600), Destroy(bulb_id));
 }
 
 
 pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
-    let spangle_id = entities.spawn(entity()
+    let bulb_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(4, 5, 2.0))
         .with(Period(0.3))
@@ -55,7 +55,7 @@ pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Eve
         ]))
     );
 
-    events.schedule(Duration::from_millis(1150), Destroy(spangle_id));
+    events.schedule(Duration::from_millis(1150), Destroy(bulb_id));
 }
 
 pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities, events: &mut Events) {
@@ -65,7 +65,7 @@ pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entiti
     };
 
 
-    let spangle_id = entities.spawn(entity()
+    let shadow_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(offset + 0, 6, 1.0))
         .with(Period(0.4))
@@ -78,5 +78,5 @@ pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entiti
         ]))
     );
 
-    events.schedule(Duration::from_millis(1800), Destroy(spangle_id));
+    events.schedule(Duration::from_millis(1800), Destroy(shadow_id));
 }

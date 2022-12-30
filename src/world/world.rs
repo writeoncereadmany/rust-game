@@ -11,6 +11,7 @@ use crate::app::events::*;
 use crate::audio::audio::*;
 use crate::shapes::push::Push;
 use crate::entities::door::*;
+use crate::entities::bell::*;
 use crate::entities::coin::*;
 use crate::entities::timer::*;
 use crate::entities::hero::*;
@@ -87,6 +88,7 @@ impl World {
 
         for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([255,0,255])) { spawn_bell(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
             spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
             events.schedule(Duration::from_millis(1800), SpawnHero(x as f64, y as f64, panda_type)); 
@@ -227,15 +229,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|Destroy(id)| self.entities.delete(id));
         event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, &mut self.entities));
         event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, &mut self.entities));
-        event.apply(|&SpawnParticle(x, y)| spawn_particle(x, y, &mut self.entities, events));
+        event.apply(|&SpawnParticle(x, y)| spawn_spangle(x, y, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-
-
-        event.apply(|&CoinCollected{ x, y, id }| {
-            events.fire(SpawnParticle(x, y));
-            self.entities.delete(&id);
-        });
 
         Ok(())
     }
@@ -298,13 +294,33 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
 
         for (Coin, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(CoinCollected{ id, x, y });
+                events.fire(CoinCollected);
+                events.fire(Destroy(id));
+                events.fire(SpawnParticle(x, y));
+                events.fire(PlayTune(vec![
+                    (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                    (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                ]));
             }        
         }
 
         for (Door, Mesh(mesh)) in entities.collect_2() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
                 events.fire(ReachedDoor);
+            }
+        }
+
+        for (Bell, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
+            if hero_mesh.bbox().touches(&mesh.bbox()) {
+                events.fire(BellCollected);
+                events.fire(Destroy(id));
+                events.fire(SpawnParticle(x, y));
+                events.fire(PlayTune(vec![
+                    (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                    (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(120), Note::Wave { pitch: E * 3.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(180), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                ]));
             }
         }
     }
