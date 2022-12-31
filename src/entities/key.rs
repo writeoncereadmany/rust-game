@@ -9,6 +9,7 @@ use crate::graphics::sprite::Sprite;
 use crate::events::Events;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
+use super::chest::*;
 
 #[derive(Constant)]
 pub struct Key;
@@ -30,4 +31,5 @@ pub fn collect_key(&KeyCollected { x, y, id }: &KeyCollected, entities: &mut Ent
         (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
         (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
     ]));
+    open_chests(entities, events);
 }

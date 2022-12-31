@@ -45,12 +45,17 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         self.controller.on_event(event, &mut events);
         
         event.apply(|CoinCollected| {
-            self.score_this_level += 10;
+            self.score_this_level += 5;
         });
 
         event.apply(|BellCollected { .. }| {
             self.score_this_level *= 2;
         });
+
+        event.apply(| ChestCollected { .. }| {
+            self.score_this_level += 100;
+        });
+
 
         event.apply(|TimeLimitExpired| {
             self.world = World::new(

@@ -12,6 +12,8 @@ pub struct BellCollected { pub x: f64, pub y: f64, pub id: u64 }
 #[derive(Event)]
 pub struct KeyCollected { pub x: f64, pub y: f64, pub id: u64 }
 
+#[derive(Event)]
+pub struct ChestCollected { pub x: f64, pub y: f64, pub id: u64 } 
 
 #[derive(Event)]
 pub struct TimeLimitExpired;

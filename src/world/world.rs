@@ -12,6 +12,7 @@ use crate::audio::audio::*;
 use crate::shapes::push::Push;
 use crate::entities::door::*;
 use crate::entities::bell::*;
+use crate::entities::chest::*;
 use crate::entities::key::*;
 use crate::entities::coin::*;
 use crate::entities::timer::*;
@@ -81,6 +82,8 @@ impl World {
         for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255,0,255])) { spawn_bell(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([0,255,255])) { spawn_key(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([255,127,0])) { spawn_chest(x as f64, y as f64, &mut entities); }
+
 
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
             spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
@@ -228,6 +231,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
         event.apply(|bell| { collect_bell(bell, events)});
         event.apply(|key| { collect_key(key, &mut self.entities, events)});
+        event.apply(|chest| { open_chest(chest, &mut self.entities)});
+        event.apply(|chest| { collect_chest(chest, &mut self.entities, events)});
 
         Ok(())
     }
@@ -333,6 +338,13 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
         for (Key, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
                 events.fire(KeyCollected { x, y, id });
+            }
+        }
+
+
+        for (Chest, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
+            if hero_mesh.bbox().touches(&mesh.bbox()) {
+                events.fire(ChestCollected { x, y, id });
             }
         }
     }

@@ -1,4 +1,5 @@
 pub mod bell;
+pub mod chest;
 pub mod coin;
 pub mod key;
 pub mod components;
