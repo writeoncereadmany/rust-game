@@ -36,20 +36,6 @@ struct SpawnHero(f64, f64, PandaType);
 #[derive(Event)]
 struct SpawnTimer(f64, f64);
 
-#[derive(Event)]
-struct SpawnParticle(f64, f64);
-
-
-#[derive(Event)]
-struct SpawnText(f64, f64, String);
-
-#[derive(Event)]
-struct SpawnBulb(f64, f64);
-
-#[derive(Event)]
-struct SpawnFlashBulb(f64, f64);
-
-
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
         match self {
@@ -237,6 +223,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
+        event.apply(|bell| { collect_bell(bell, events)});
 
         Ok(())
     }
@@ -334,15 +321,7 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
 
         for (Bell, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(BellCollected);
-                events.fire(Destroy(id));
-                events.fire(SpawnParticle(x, y));
-                events.fire(SpawnText(x + 0.5, y + 1.5, "x2".to_string()));
-                events.fire(PlayTune(vec![
-                    (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                    (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                ]));
+                events.fire(BellCollected { x, y, id });
             }
         }
     }

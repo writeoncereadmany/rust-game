@@ -48,7 +48,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             self.score_this_level += 10;
         });
 
-        event.apply(|BellCollected| {
+        event.apply(|BellCollected { .. }| {
             self.score_this_level *= 2;
         });
 
