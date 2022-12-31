@@ -4,6 +4,7 @@ use super::components::*;
 use super::hero::PandaType;
 use crate::events::Events;
 use crate::graphics::sprite::Sprite;
+use crate::graphics::renderer::{align, Text};
 use crate::app::events::Destroy;
 use entity::{ Entities, entity };
 
@@ -17,6 +18,15 @@ pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Event
     );
 
     events.schedule(Duration::from_millis(450), Destroy(spangle_id));
+}
+
+pub fn spawn_text(x: f64, y: f64, text: &str, entities: &mut Entities, events: &mut Events) {
+    let text_id = entities.spawn(entity()
+        .with(Position(x, y))
+        .with(Text { text: text.to_string(), justification: align::CENTER | align::MIDDLE})
+        .with(Velocity(0.0, 0.1))
+    );
+    events.schedule(Duration::from_millis(1000), Destroy(text_id));
 }
 
 pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {

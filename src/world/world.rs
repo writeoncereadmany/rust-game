@@ -39,6 +39,10 @@ struct SpawnTimer(f64, f64);
 #[derive(Event)]
 struct SpawnParticle(f64, f64);
 
+
+#[derive(Event)]
+struct SpawnText(f64, f64, String);
+
 #[derive(Event)]
 struct SpawnBulb(f64, f64);
 
@@ -230,6 +234,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, &mut self.entities));
         event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, &mut self.entities));
         event.apply(|&SpawnParticle(x, y)| spawn_spangle(x, y, &mut self.entities, events));
+        event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
 
@@ -307,6 +312,23 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
         for (Door, Mesh(mesh)) in entities.collect_2() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
                 events.fire(ReachedDoor);
+                events.fire(PlayTune(vec![
+                    (Duration::from_millis(0), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                    (Duration::from_millis(30), Note::Wave { pitch: Bb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(60), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(90), Note::Wave { pitch: C * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(120), Note::Wave { pitch: Db * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(150), Note::Wave { pitch: D * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(180), Note::Wave { pitch: Eb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(210), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(240), Note::Wave { pitch: F * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(270), Note::Wave { pitch: Gb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(300), Note::Wave { pitch: G * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(330), Note::Wave { pitch: Ab * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(360), Note::Wave { pitch: A * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+
+
+                ]));
             }
         }
 
@@ -315,11 +337,11 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
                 events.fire(BellCollected);
                 events.fire(Destroy(id));
                 events.fire(SpawnParticle(x, y));
+                events.fire(SpawnText(x + 0.5, y + 1.5, "x2".to_string()));
                 events.fire(PlayTune(vec![
-                    (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                    (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(120), Note::Wave { pitch: E * 3.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(180), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                    (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                    (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+                    (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
                 ]));
             }
         }
