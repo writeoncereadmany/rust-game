@@ -24,9 +24,9 @@ pub fn spawn_text(x: f64, y: f64, text: &str, entities: &mut Entities, events: &
     let text_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Text { text: text.to_string(), justification: align::CENTER | align::MIDDLE})
-        .with(Velocity(0.0, 0.1))
+        .with(Velocity(0.0, 2.0))
     );
-    events.schedule(Duration::from_millis(1000), Destroy(text_id));
+    events.schedule(Duration::from_millis(600), Destroy(text_id));
 }
 
 pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {

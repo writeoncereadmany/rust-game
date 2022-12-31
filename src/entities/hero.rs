@@ -52,6 +52,9 @@ pub enum PandaType {
 #[derive(Constant)]
 pub struct Hero;
 
+#[derive(Constant)]
+pub struct Gravity;
+
 #[derive(Variable)]
 pub struct MovingX(pub Sign);
 
@@ -76,6 +79,7 @@ pub struct Jumped(pub JumpDirection);
 pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Hero)
+        .with(Gravity)
         .with(Position(x, y))
         .with(ReferenceMesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![])))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
@@ -201,7 +205,7 @@ fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
 }
 
 fn gravity(entities: &mut Entities, dt: &Duration) {
-    entities.apply(|&Velocity(dx, dy)| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
+    entities.apply_2(|&Gravity, &Velocity(dx, dy)| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
 }
 
 fn integrate(entities: &mut Entities, dt: &Duration) {
