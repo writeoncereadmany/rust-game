@@ -44,7 +44,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         self.controller.on_event(event, &mut events);
         
-        event.apply(|CoinCollected| {
+        event.apply(|CoinCollected { .. }| {
             self.score_this_level += 5;
         });
 

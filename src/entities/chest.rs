@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use component_derive::{ Constant, Event };
 use entity::{ entity, Component, Entities };
 
@@ -42,7 +40,7 @@ pub fn open_chest(&OpenChest { x, y, id }: &OpenChest, entities: &mut Entities) 
 }
 
 pub fn collect_chest(&ChestCollected { x, y, id }: &ChestCollected, entities: &mut Entities, events: &mut Events) {
-    events.fire(Destroy(id));
+    entities.delete(&id);
     spawn_spangle(x, y, entities, events);
     spawn_text(x + 0.5, y + 0.5, "100", entities, events);
 }

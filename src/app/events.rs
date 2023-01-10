@@ -3,7 +3,7 @@ use component_derive::Event;
 use crate::events::EventTrait;
 
 #[derive(Event)]
-pub struct CoinCollected;
+pub struct CoinCollected { pub x: f64, pub y: f64, pub id: u64} 
 
 #[derive(Event)]
 pub struct BellCollected { pub x: f64, pub y: f64, pub id: u64 }

@@ -38,7 +38,7 @@ pub fn spawn_empty_flagpole(x: f64, y: f64, entities: &mut Entities) {
 
 pub fn collect_flag(&FlagpoleCollected { x, y, id }: &FlagpoleCollected, entities: &mut Entities, events: &mut Events)
 {
-    events.fire(Destroy(id));
+    entities.delete(&id);
     spawn_empty_flagpole(x, y, entities);
     events.fire(PlayTune(vec![
         (Duration::from_millis(0), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),

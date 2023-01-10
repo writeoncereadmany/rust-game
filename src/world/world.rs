@@ -229,11 +229,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|bell| { collect_bell(bell, events)});
-        event.apply(|key| { collect_key(key, &mut self.entities, events)});
-        event.apply(|chest| { open_chest(chest, &mut self.entities)});
-        event.apply(|chest| { collect_chest(chest, &mut self.entities, events)});
-        event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events)});
+        event.apply(|coin| { collect_coin(coin, &mut self.entities, events) });
+        event.apply(|bell| { collect_bell(bell, &mut self.entities, events) });
+        event.apply(|key| { collect_key(key, &mut self.entities, events) });
+        event.apply(|chest| { open_chest(chest, &mut self.entities) });
+        event.apply(|chest| { collect_chest(chest, &mut self.entities, events) });
+        event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
 
         Ok(())
     }
@@ -296,14 +297,8 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
 
         for (Coin, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(CoinCollected);
-                events.fire(Destroy(id));
-                events.fire(SpawnParticle(x, y));
-                events.fire(PlayTune(vec![
-                    (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                    (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                ]));
-            }        
+                events.fire(CoinCollected { x, y, id });
+            }
         }
 
         for (Flagpole, Mesh(mesh), &Position(x, y), &Id(id)) in entities.collect_4() {
@@ -318,13 +313,11 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
             }
         }
 
-
         for (Key, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
                 events.fire(KeyCollected { x, y, id });
             }
         }
-
 
         for (Chest, &Id(id), &Position(x, y), Mesh(mesh)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {

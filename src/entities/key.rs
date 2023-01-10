@@ -10,6 +10,7 @@ use crate::events::Events;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::chest::*;
+use super::particle::spawn_spangle;
 
 #[derive(Constant)]
 pub struct Key;
@@ -24,8 +25,8 @@ pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
 }
 
 pub fn collect_key(&KeyCollected { x, y, id }: &KeyCollected, entities: &mut Entities, events: &mut Events) {
-    events.fire(Destroy(id));
-    events.fire(SpawnParticle(x, y));
+    entities.delete(&id);
+    spawn_spangle(x, y, entities, events);
     events.fire(PlayTune(vec![
         (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
         (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
