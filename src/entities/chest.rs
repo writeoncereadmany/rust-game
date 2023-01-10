@@ -9,6 +9,7 @@ use crate::events::{ EventTrait, Events };
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::app::events::*;
 use super::components::*;
+use super::particle::{spawn_spangle, spawn_text};
 
 #[derive(Constant)]
 pub struct Chest;
@@ -42,6 +43,6 @@ pub fn open_chest(&OpenChest { x, y, id }: &OpenChest, entities: &mut Entities) 
 
 pub fn collect_chest(&ChestCollected { x, y, id }: &ChestCollected, entities: &mut Entities, events: &mut Events) {
     events.fire(Destroy(id));
-    events.fire(SpawnParticle(x, y));
-    events.fire(SpawnText(x + 0.5, y + 1.5, "100".to_string()));
+    spawn_spangle(x, y, entities, events);
+    spawn_text(x + 0.5, y + 0.5, "100", entities, events);
 }

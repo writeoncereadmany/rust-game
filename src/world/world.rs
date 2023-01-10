@@ -10,7 +10,7 @@ use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::audio::audio::*;
 use crate::shapes::push::Push;
-use crate::entities::door::*;
+use crate::entities::flagpole::*;
 use crate::entities::bell::*;
 use crate::entities::chest::*;
 use crate::entities::key::*;
@@ -79,7 +79,7 @@ impl World {
         }
 
         for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_door(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_flagpole(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255,0,255])) { spawn_bell(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([0,255,255])) { spawn_key(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255,127,0])) { spawn_chest(x as f64, y as f64, &mut entities); }
@@ -233,6 +233,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|key| { collect_key(key, &mut self.entities, events)});
         event.apply(|chest| { open_chest(chest, &mut self.entities)});
         event.apply(|chest| { collect_chest(chest, &mut self.entities, events)});
+        event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events)});
 
         Ok(())
     }
@@ -305,26 +306,9 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
             }        
         }
 
-        for (Door, Mesh(mesh)) in entities.collect_2() {
+        for (Flagpole, Mesh(mesh), &Position(x, y), &Id(id)) in entities.collect_4() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(ReachedDoor);
-                events.fire(PlayTune(vec![
-                    (Duration::from_millis(0), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                    (Duration::from_millis(30), Note::Wave { pitch: Bb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(60), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(90), Note::Wave { pitch: C * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(120), Note::Wave { pitch: Db * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(150), Note::Wave { pitch: D * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(180), Note::Wave { pitch: Eb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(210), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(240), Note::Wave { pitch: F * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(270), Note::Wave { pitch: Gb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(300), Note::Wave { pitch: G * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(330), Note::Wave { pitch: Ab * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-                    (Duration::from_millis(360), Note::Wave { pitch: A * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-
-
-                ]));
+                events.fire(FlagpoleCollected { x, y, id });
             }
         }
 
