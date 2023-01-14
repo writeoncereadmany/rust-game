@@ -10,10 +10,10 @@ use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 use super::components::*;
 
-const ACCEL: f64 = 30.0;
-const REVERSE_ACCEL: f64 = 40.0;
-const AIR_ACCEL: f64 = 12.0;
-const AIR_SLOWDOWN: f64 = 7.0;
+const ACCEL: f64 = 60.0;
+const REVERSE_ACCEL: f64 = 80.0;
+const AIR_ACCEL: f64 = 20.0;
+const AIR_SLOWDOWN: f64 = 10.0;
 const STOPPING_SPEED: f64 = 1.0;
 const VEL_CAP: f64 = 12.0;
 const WALLJUMP_DY: f64 = 10.0;
