@@ -69,8 +69,8 @@ impl Entities {
         id
     }
 
-    pub fn delete(&mut self, id: &u64) {
-        self.entities.remove(id);
+    pub fn delete(&mut self, id: &u64) -> Option<Entity> {
+        self.entities.remove(id)
     }
 
     pub fn for_each(&self, mut f: impl FnMut(&Entity)) 
