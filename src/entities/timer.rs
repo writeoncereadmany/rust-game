@@ -8,7 +8,7 @@ use crate::events::Events;
 use crate::app::events::TimeLimitExpired;
 use entity::*;
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct RemainingTime(f64);
 
 const CENTRED: u8 = align::CENTER & align::MIDDLE;

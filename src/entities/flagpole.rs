@@ -12,7 +12,7 @@ use crate::graphics::sprite::Sprite;
 
 use super::components::*;
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Flagpole;
 
 pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {

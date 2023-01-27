@@ -2,10 +2,10 @@ use core::any::*;
 use std::collections::HashMap;
 use component_derive::*;
 
-pub trait Component: Any { }
+pub trait Component: Any + Clone { }
 pub trait Variable: Component { }
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Id(pub u64);
 
 impl Component for () {}
@@ -180,9 +180,9 @@ mod tests {
     use super::*;
     use component_derive::{Variable};
 
-    #[derive(Debug, PartialEq, Eq, Variable)] struct Count(u64);
-    #[derive(Debug, PartialEq, Eq, Variable)] struct Score(u64);
-    #[derive(Debug, PartialEq, Eq, Variable)] struct Name(&'static str);
+    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Count(u64);
+    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Score(u64);
+    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Name(&'static str);
 
     #[test]
     pub fn fetches_value_by_type() {

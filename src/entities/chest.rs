@@ -9,7 +9,7 @@ use crate::app::events::*;
 use super::components::*;
 use super::particle::{spawn_spangle, spawn_text};
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Chest;
 
 #[derive(Event)]

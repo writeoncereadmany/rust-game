@@ -12,7 +12,7 @@ use super::components::*;
 use super::chest::*;
 use super::particle::spawn_spangle;
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Key;
 
 pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {

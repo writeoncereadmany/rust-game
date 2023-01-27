@@ -11,7 +11,7 @@ use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::particle::{spawn_spangle, spawn_text};
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Bell;
 
 pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {

@@ -49,28 +49,28 @@ pub enum PandaType {
     RedPanda
 }
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Hero;
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Gravity;
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct MovingX(pub Sign);
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct Ascending(pub f64);
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct LastPush(pub f64, pub f64);
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct Facing(Sign);
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct CoyoteTime(pub JumpDirection, pub f64);
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct Prejump(pub f64);
 
 #[derive(Event)]

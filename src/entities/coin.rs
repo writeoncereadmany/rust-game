@@ -11,11 +11,8 @@ use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::particle::spawn_spangle;
 
-#[derive(Constant)]
+#[derive(Clone, Constant)]
 pub struct Coin;
-
-#[derive(Constant)]
-pub struct OnCollection(Box<dyn Fn(&Entity, &mut Entities, &mut Events)>);
 
 pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
     let phase = phase_offset(x, y);
@@ -32,15 +29,6 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
         .with(Phase(phase_offset(x, y)))
         .with(animation_cycle)
-        .with(OnCollection(Box::new(|entity, entities, events| {
-            if let Some(&Position(x, y)) = entity.get() {
-                spawn_spangle(x, y, entities, events);
-            }
-            events.fire(PlayTune(vec![
-                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            ]));
-        })))
     );
 }
 
@@ -52,9 +40,13 @@ fn phase_offset(x: f64, y: f64) -> f64 {
 pub fn collect_coin(&CoinCollected { x, y, id }: &CoinCollected, entities: &mut Entities, events: &mut Events)
 {
         if let Some(entity) = entities.delete(&id) {
-            if let Some(OnCollection(f)) = entity.get() {
-                f(&entity, entities, events);
+            if let Some(&Position(x, y)) = entity.get() {
+                spawn_spangle(x, y, entities, events);
             }
+            events.fire(PlayTune(vec![
+                (Duration::from_millis(0), Note::Wave { pitch: B * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+                (Duration::from_millis(60), Note::Wave { pitch: E * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            ]));
         }
         
 }

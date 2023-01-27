@@ -21,7 +21,7 @@ pub mod align {
     pub const TOP: u8 = 0b_0010_0000;
 }
 
-#[derive(Variable)]
+#[derive(Clone, Variable)]
 pub struct Text {
     pub text: String,
     pub justification: u8
