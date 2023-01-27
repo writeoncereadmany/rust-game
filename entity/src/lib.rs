@@ -187,10 +187,10 @@ impl Entities {
         accumulated
     }
 
-    pub fn apply<I: Component, O: Variable>(&mut self, mut f: impl FnMut(&I) -> O) 
+    pub fn apply<T: Component, O: Variable>(&mut self, mut f: impl FnMut(T) -> O) 
     {
         for entity in self.entities.values_mut() {
-            if let Some(i) = entity.get() {
+            if let Some(i) = T::get(entity) {
                 let val = f(i);
                 entity.set(val)  
             } 

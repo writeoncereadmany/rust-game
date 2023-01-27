@@ -23,6 +23,6 @@ pub fn spawn_timer(x: f64, y: f64, entities: &mut Entities) {
 
 pub fn update_timer(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     entities.apply(|RemainingTime(rt)| RemainingTime(rt - dt.as_secs_f64()));
-    entities.apply(|&RemainingTime(rt)| if rt <= 0.0 { events.fire(TimeLimitExpired )});
+    entities.apply(|RemainingTime(rt)| if rt <= 0.0 { events.fire(TimeLimitExpired )});
     entities.apply(|RemainingTime(rt)| Text{ text: format!("{:01}", (rt * 10.0) as u32), justification: CENTRED });
 }

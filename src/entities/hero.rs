@@ -137,8 +137,8 @@ fn animate(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn control(entities: &mut Entities, &ControllerState { x, jump_held, .. }: &ControllerState ) {
-    entities.apply(|&Ascending(y)| if !jump_held { Ascending(0.0) } else { Ascending(y) });
-    entities.apply(|&MovingX(_)| MovingX(x) );
+    entities.apply(|Ascending(y)| if !jump_held { Ascending(0.0) } else { Ascending(y) });
+    entities.apply(|MovingX(_)| MovingX(x) );
 }
 
 fn do_move(entities: &mut Entities, dt: &Duration) {
@@ -209,7 +209,7 @@ fn gravity(entities: &mut Entities, dt: &Duration) {
 }
 
 fn integrate(entities: &mut Entities, dt: &Duration) {
-    entities.apply(|&Velocity(dx, dy)| Translation(dx * dt.as_secs_f64(), dy * dt.as_secs_f64()));
+    entities.apply(|Velocity(dx, dy)| Translation(dx * dt.as_secs_f64(), dy * dt.as_secs_f64()));
 }
 
 fn translate(entities: &mut Entities, _dt: &Duration) {
@@ -234,7 +234,7 @@ fn uplift(entities: &mut Entities, dt: &Duration) {
             Velocity(dx, dy)
         }
     });
-    entities.apply(|&Ascending(gas)| Ascending(f64::max(gas - dt.as_secs_f64(), 0.0)))
+    entities.apply(|Ascending(gas)| Ascending(f64::max(gas - dt.as_secs_f64(), 0.0)))
 }
 
 fn facing(entities: &mut Entities, _dt: &Duration) {
@@ -270,7 +270,7 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
-    entities.apply(|&CoyoteTime(direction, _ct)| {
+    entities.apply(|CoyoteTime(direction, _ct)| {
         if direction != JumpDirection::NONE {
             events.fire(Jumped(direction));
             Prejump(0.0)
@@ -281,7 +281,7 @@ fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
 }
 
 fn on_jump(entities: &mut Entities, Jumped(direction): &Jumped) {
-    entities.apply(|&Velocity(dx, dy)| {
+    entities.apply(|Velocity(dx, dy)| {
         match direction {
             JumpDirection::UP => Velocity(dx, JUMP_SPEED),
             JumpDirection::RIGHT => Velocity(WALLJUMP_DX, WALLJUMP_DY),
@@ -289,8 +289,8 @@ fn on_jump(entities: &mut Entities, Jumped(direction): &Jumped) {
             JumpDirection::NONE => Velocity(dx, dy)
         }
     });
-    entities.apply(|&Ascending(_)| Ascending(EXTRA_JUMP_DURATION));
+    entities.apply(|Ascending(_)| Ascending(EXTRA_JUMP_DURATION));
 
-    entities.apply(|&CoyoteTime(_, _)| CoyoteTime(JumpDirection::NONE, 0.0));
-    entities.apply(|&Prejump(_)| Prejump(0.0));
+    entities.apply(|CoyoteTime(_, _)| CoyoteTime(JumpDirection::NONE, 0.0));
+    entities.apply(|Prejump(_)| Prejump(0.0));
 }
