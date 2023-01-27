@@ -1,14 +1,26 @@
 use core::any::*;
 use std::collections::HashMap;
-use component_derive::*;
 
-pub trait Component: Any + Clone { }
+pub trait Component: Any + Clone + Sized {
+    fn get(entity : &Entity) -> Option<Self>;
+ }
 pub trait Variable: Component { }
 
-#[derive(Clone, Constant)]
+#[derive(Clone)]
 pub struct Id(pub u64);
 
-impl Component for () {}
+impl Component for Id {
+    fn get(entity: &Entity) -> Option<Self> {
+        Some(entity.get::<Id>()?.clone())
+    }
+}
+
+// these are so we can have non-setting applications, which just fire events
+impl Component for () {
+    fn get(_entity: &Entity) -> Option<Self> {
+        Some(())
+    }
+}
 impl Variable for () {}
 
 pub struct EntityBuilder {
@@ -23,6 +35,79 @@ impl EntityBuilder {
     pub fn with<T: Component>(mut self, value: T) -> Self {
         self.data.insert(TypeId::of::<T>(), Box::new(value));        
         self
+    }
+}
+
+impl <A: Component, B: Component> Component for (A, B) {
+    fn get(entity: &Entity) -> Option<(A, B)> {
+        Some((
+            entity.get::<A>()?.clone(), 
+            entity.get::<B>()?.clone())
+        )
+    }
+}
+
+impl <A: Component, B: Component, C: Component> Component for (A, B, C) {
+    fn get(entity: &Entity) -> Option<(A, B, C)> {
+        Some((
+            entity.get::<A>()?.clone(), 
+            entity.get::<B>()?.clone(), 
+            entity.get::<C>()?.clone())
+        )
+    }
+}
+
+impl <A: Component, B: Component, C: Component, D: Component> Component for (A, B, C, D) {
+    fn get(entity: &Entity) -> Option<(A, B, C, D)> {
+        Some((
+            entity.get::<A>()?.clone(), 
+            entity.get::<B>()?.clone(), 
+            entity.get::<C>()?.clone(), 
+            entity.get::<D>()?.clone())
+        )
+    }
+}
+
+impl <A: Component, B: Component, C: Component, D: Component, E: Component> Component for (A, B, C, D, E) {
+    fn get(entity: &Entity) -> Option<(A, B, C, D, E)> {
+        Some((
+            entity.get::<A>()?.clone(), 
+            entity.get::<B>()?.clone(), 
+            entity.get::<C>()?.clone(), 
+            entity.get::<D>()?.clone(),
+            entity.get::<E>()?.clone())
+        )
+    }
+}
+
+impl <A: Component, B: Component, C: Component, D: Component, E: Component, F: Component> Component for (A, B, C, D, E, F) {
+    fn get(entity: &Entity) -> Option<(A, B, C, D, E, F)> {
+        Some((
+            entity.get::<A>()?.clone(), 
+            entity.get::<B>()?.clone(), 
+            entity.get::<C>()?.clone(), 
+            entity.get::<D>()?.clone(),
+            entity.get::<E>()?.clone(),
+            entity.get::<F>()?.clone())
+        )
+    }
+}
+
+impl <T: Component> Component for Option<T> {
+    fn get(entity: &Entity) -> Option<Option<T>> {
+        Some(entity.get::<T>().map(|component| component.clone()))
+    }
+}
+
+#[derive(Clone)]
+enum Not<T> {
+    Not(),
+    _Is(T)
+}
+
+impl <T: Component> Component for Not<T> {
+    fn get(entity: &Entity) -> Option<Not<T>> {
+        if entity.get::<T>().is_none() { Some(Not::Not()) } else { None }
     }
 }
 
@@ -87,20 +172,8 @@ impl Entities {
         }
     }
 
-    pub fn collect<T: Component>(&self) -> Vec<&T> {
-        self.entities.values().flat_map(|e| e.get() ).collect()
-    }
-
-    pub fn collect_2<T1: Component, T2: Component>(&self) -> Vec<(&T1, &T2)> {
-        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?)) ).collect()
-    }
-
-    pub fn collect_3<T1: Component, T2: Component, T3: Component>(&self) -> Vec<(&T1, &T2, &T3)> {
-        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?, e.get()?)) ).collect()
-    }
-
-    pub fn collect_4<T1: Component, T2: Component, T3: Component, T4: Component>(&self) -> Vec<(&T1, &T2, &T3, &T4)> {
-        self.entities.values().flat_map(|e| Some((e.get()?, e.get()?, e.get()?, e.get()?)) ).collect()
+    pub fn collect<T: Component>(&self) -> Vec<T> {
+        self.entities.values().flat_map(|entity| T::get(entity)).collect()
     }
 
     pub fn fold<T: Component, R>(&self, initial: R, f: impl Fn(&R, &T) -> R) -> R 
@@ -178,11 +251,34 @@ impl Entities {
 mod tests {
 
     use super::*;
-    use component_derive::{Variable};
 
-    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Count(u64);
-    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Score(u64);
-    #[derive(Debug, PartialEq, Eq, Clone, Variable)] struct Name(&'static str);
+    #[derive(Debug, PartialEq, Eq, Clone)] struct Count(u64);
+    #[derive(Debug, PartialEq, Eq, Clone)] struct Score(u64);
+    #[derive(Debug, PartialEq, Eq, Clone)] struct Name(&'static str);
+
+    impl Component for Count {
+        fn get(entity: &Entity) -> Option<Self> {
+            Some(entity.get::<Count>()?.clone())
+        }    
+    }
+
+    impl Component for Score {
+        fn get(entity: &Entity) -> Option<Self> {
+            Some(entity.get::<Score>()?.clone())
+        }    
+    }
+
+    impl Component for Name {
+        fn get(entity: &Entity) -> Option<Self> {
+            Some(entity.get::<Name>()?.clone())
+        }    
+    }
+
+    impl Variable for Count {}
+    impl Variable for Score {}
+    impl Variable for Name {}
+
+
 
     #[test]
     pub fn fetches_value_by_type() {
@@ -278,7 +374,7 @@ mod tests {
             }
         });
 
-        assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
-        assert_eq!(vec![&Score(333), &Score(456)], entities.collect());
+        assert_eq!(vec![Count(123), Count(579)], entities.collect());
+        assert_eq!(vec![Score(333), Score(456)], entities.collect());
     }
 }
