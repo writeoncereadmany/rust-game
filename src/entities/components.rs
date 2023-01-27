@@ -19,14 +19,14 @@ pub struct Period(pub f64);
 pub struct Phase(pub f64);
 
 pub fn phase(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|Period(period), Phase(phase)| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
+    entities.apply(|(Period(period), Phase(phase))| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
 } 
 
 #[derive(Clone, Constant)]
 pub struct AnimationCycle(pub Vec<(f64, Sprite)>);
 
 pub fn animation_cycle(entities: &mut Entities) {
-    entities.apply_2(|Phase(phase), cycle| next_frame(phase, cycle));
+    entities.apply(|(Phase(phase), cycle)| next_frame(phase, &cycle));
 }
 
 #[derive(Clone, Constant)]
@@ -35,7 +35,7 @@ pub struct ReferenceMesh(pub ConvexMesh);
 #[derive(Clone, Variable)]
 pub struct Mesh(pub ConvexMesh);
 
-pub fn next_frame(phase: &f64, AnimationCycle(frames): &AnimationCycle) -> Sprite {
+pub fn next_frame(phase: f64, AnimationCycle(frames): &AnimationCycle) -> Sprite {
     let phase = phase % 1.0;
     for (frame_limit, sprite) in frames {
         if &phase < frame_limit {

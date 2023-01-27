@@ -24,7 +24,7 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Coin)
         .with(Position(x, y))
-        .with(next_frame(&phase, &animation_cycle))
+        .with(next_frame(phase, &animation_cycle))
         .with(Period(0.7))
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
         .with(Phase(phase_offset(x, y)))

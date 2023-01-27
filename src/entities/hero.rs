@@ -118,7 +118,7 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
 }
 
 fn animate(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_6(| &Hero, &Position(x, _y), &Velocity(dx, dy), &Facing(facing), &LastPush(_px, py), panda_type : &PandaType | {
+    entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(_px, py), panda_type ) | {
         let tile = if py == 0.0 {
             if dy > 0.0 { 
                 ASCENDING
@@ -132,7 +132,7 @@ fn animate(entities: &mut Entities, _dt: &Duration) {
             RUN_CYCLE[frame]
         };
         let flip_x = facing == Sign::NEGATIVE;
-        offset_sprite(tile, panda_type, flip_x)
+        offset_sprite(tile, &panda_type, flip_x)
     });
 }
 
@@ -142,7 +142,7 @@ fn control(entities: &mut Entities, &ControllerState { x, jump_held, .. }: &Cont
 }
 
 fn do_move(entities: &mut Entities, dt: &Duration) {
-    entities.apply_3(|&Velocity(dx, dy), &MovingX(x_input), &LastPush(_px, py)| {
+    entities.apply(|(Velocity(dx, dy), MovingX(x_input), LastPush(_px, py))| {
         let dt = dt.as_secs_f64();
         let airborne = py <= 0.0;
         if x_input == Sign::ZERO {
@@ -166,7 +166,7 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
 }
 
 fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
-    entities.apply_2(|&Prejump(pt), &LastPush(px, py)| {
+    entities.apply(|(Prejump(pt), LastPush(px, py))| {
         if pt > 0.0 {
             if py > 0.0 {
                 events.fire(Jumped(JumpDirection::UP))
@@ -183,7 +183,7 @@ fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
 }
 
 fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|&CoyoteTime(prev_direction, prev_coyote_time), &LastPush(px, py)| {
+    entities.apply(|(CoyoteTime(prev_direction, prev_coyote_time), LastPush(px, py))| {
         if py > 0.0 {
             CoyoteTime(JumpDirection::UP, COYOTE_TIME)
         }
@@ -205,7 +205,7 @@ fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
 }
 
 fn gravity(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|&Gravity, &Velocity(dx, dy)| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
+    entities.apply(|(Gravity, Velocity(dx, dy))| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
 }
 
 fn integrate(entities: &mut Entities, dt: &Duration) {
@@ -213,11 +213,11 @@ fn integrate(entities: &mut Entities, dt: &Duration) {
 }
 
 fn translate(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_2(|&Translation(tx, ty), &Position(x, y)| Position(x + tx, y + ty));
+    entities.apply(|(Translation(tx, ty), Position(x, y))| Position(x + tx, y + ty));
 }
 
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_2(|&Velocity(dx, dy), &LastPush(px, _py)| {
+    entities.apply(|(Velocity(dx, dy), LastPush(px, _py))| {
         match px.sign() {
             Sign::POSITIVE => Velocity(dx -WALL_STICK, dy),
             Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy),
@@ -227,7 +227,7 @@ fn wall_stick(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn uplift(entities: &mut Entities, dt: &Duration) {
-    entities.apply_2(|&Velocity(dx, dy), &Ascending(gas)| {
+    entities.apply(|(Velocity(dx, dy), Ascending(gas))| {
         if gas > 0.0 {
             Velocity(dx, dy + (EXTRA_JUMP * dt.as_secs_f64()))
         } else {
@@ -238,7 +238,7 @@ fn uplift(entities: &mut Entities, dt: &Duration) {
 }
 
 fn facing(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_2(|&Velocity(dx, _dy), &Facing(old_facing)| {
+    entities.apply(|(Velocity(dx, _dy), Facing(old_facing))| {
         match dx.sign() {
             Sign::POSITIVE => Facing(Sign::POSITIVE),
             Sign::NEGATIVE => Facing(Sign::NEGATIVE),
@@ -248,7 +248,7 @@ fn facing(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn clamp(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_2(|&Velocity(dx, dy), &MovingX(x_input)| {
+    entities.apply(|(Velocity(dx, dy), MovingX(x_input))| {
         if x_input == Sign::ZERO && dx.abs() < STOPPING_SPEED {
             Velocity(0.0, dy)
         } else {
@@ -258,7 +258,7 @@ fn clamp(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn update_box(entities: &mut Entities, _dt: &Duration) {
-    entities.apply_2(|&Position(x, y), ReferenceMesh(mesh)| Mesh(mesh.translate(x, y)))
+    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| Mesh(mesh.translate(x, y)))
 }
 
 

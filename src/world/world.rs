@@ -258,7 +258,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 const TRANSLATE_EPSILON: f64 = 0.01;
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
-    entities.apply_4(|Hero, Mesh(original_mesh), &Velocity(dx, dy), &Translation(tx, ty)| {
+    entities.apply(|(Hero, Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
         for (_pos, t) in map.overlapping(&updated_mesh.bbox()) {
@@ -280,16 +280,16 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
         LastPush(tot_x_push, tot_y_push)
     });
 
-    entities.apply_3(|Hero, &Position(x, y), &LastPush(px, py)| {
+    entities.apply(|(Hero, Position(x, y), LastPush(px, py))| {
         Position(x + px, y + py)
     });
-    entities.apply_3(|Hero, &Velocity(dx, dy), &LastPush(px, py)| 
+    entities.apply(|(Hero, Velocity(dx, dy), LastPush(px, py))| 
         Velocity(
             if px != 0.0 { 0.0 } else { dx }, 
             if py != 0.0 { 0.0 } else { dy },
         )
     );
-    entities.apply_3(|Hero, &Position(x, y), ReferenceMesh(mesh)| Mesh(mesh.translate(x, y)));
+    entities.apply(|(Hero, Position(x, y), ReferenceMesh(mesh))| Mesh(mesh.translate(x, y)));
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {

@@ -196,55 +196,6 @@ impl Entities {
             } 
         }
     }
-
-    pub fn apply_2<I1: Component, I2: Component, O: Variable>(&mut self, mut f: impl FnMut(&I1, &I2) -> O)
-    {
-        for entity in self.entities.values_mut() {
-            if let (Some(i1), Some(i2)) = (entity.get(), entity.get()) {
-                let val = f(i1, i2);
-                entity.set(val)
-            }
-        }
-    }
-
-    pub fn apply_3<I1: Component, I2: Component, I3: Component, O: Variable>(&mut self, mut f: impl FnMut(&I1, &I2, &I3) -> O)
-    {
-        for entity in self.entities.values_mut() {
-            if let (Some(i1), Some(i2), Some(i3)) = (entity.get(), entity.get(), entity.get()) {
-                let val = f(i1, i2, i3);
-                entity.set(val)
-            }
-        }
-    }
-
-    pub fn apply_4<I1: Component, I2: Component, I3: Component, I4: Component, O: Variable>(&mut self, mut f: impl FnMut(&I1, &I2, &I3, &I4) -> O)
-    {
-        for entity in self.entities.values_mut() {
-            if let (Some(i1), Some(i2), Some(i3), Some(i4)) = (entity.get(), entity.get(), entity.get(), entity.get()) {
-                let val = f(i1, i2, i3, i4);
-                entity.set(val)
-            }
-        }
-    }
-
-    pub fn apply_6<
-        I1: Component, 
-        I2: Component, 
-        I3: Component, 
-        I4: Component, 
-        I5: Component,
-        I6: Component,
-        O: Variable>(&mut self, mut f: impl FnMut(&I1, &I2, &I3, &I4, &I5, &I6) -> O)
-    {
-        for entity in self.entities.values_mut() {
-            if let (Some(i1), Some(i2), Some(i3), Some(i4), Some(i5), Some(i6)) 
-                = (entity.get(), entity.get(), entity.get(), entity.get(), entity.get(), entity.get()) 
-            {
-                let val = f(i1, i2, i3, i4, i5, i6);
-                entity.set(val)
-            }
-        }
-    }
 }
 
 #[cfg(test)]

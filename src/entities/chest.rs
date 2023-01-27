@@ -24,7 +24,7 @@ pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
 }
 
 pub fn open_chests(entities: &mut Entities, events: &mut Events) {
-    entities.apply_3(|&Chest, &Position(x, y), &Id(id)| {
+    entities.apply(|(Chest, Position(x, y), Id(id))| {
         events.fire(OpenChest { x, y, id });
     });
 }
