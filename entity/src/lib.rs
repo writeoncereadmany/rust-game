@@ -176,12 +176,12 @@ impl Entities {
         self.entities.values().flat_map(|entity| T::get(entity)).collect()
     }
 
-    pub fn fold<T: Component, R>(&self, initial: R, f: impl Fn(&R, &T) -> R) -> R 
+    pub fn fold<T: Component, R>(&self, initial: R, f: impl Fn(R, T) -> R) -> R 
     {
         let mut accumulated = initial;
         for entity in self.entities.values() {
-            if let Some(next) = entity.get() {
-                accumulated = f(&accumulated, next);
+            if let Some(next) = T::get(entity) {
+                accumulated = f(accumulated, next);
             }
         }
         accumulated
@@ -251,10 +251,13 @@ impl Entities {
 mod tests {
 
     use super::*;
+    use std::collections::HashSet;
+    use std::hash::Hash;
 
-    #[derive(Debug, PartialEq, Eq, Clone)] struct Count(u64);
-    #[derive(Debug, PartialEq, Eq, Clone)] struct Score(u64);
-    #[derive(Debug, PartialEq, Eq, Clone)] struct Name(&'static str);
+
+    #[derive(Debug, PartialEq, Eq, Clone, Hash)] struct Count(u64);
+    #[derive(Debug, PartialEq, Eq, Clone, Hash)] struct Score(u64);
+    #[derive(Debug, PartialEq, Eq, Clone, Hash)] struct Name(&'static str);
 
     impl Component for Count {
         fn get(entity: &Entity) -> Option<Self> {
@@ -278,23 +281,21 @@ mod tests {
     impl Variable for Score {}
     impl Variable for Name {}
 
-
-
     #[test]
     pub fn fetches_value_by_type() {
         let mut entity = Entity::new(1);
         entity.set(Count(123));
         entity.set(Name("Hello"));
 
-        assert_eq!(Some(&Count(123)), entity.get::<Count>());
-        assert_eq!(Some(&Name("Hello")), entity.get());
+        assert_eq!(Some(Count(123)), Component::get(&entity));
+        assert_eq!(Some(Name("Hello")), Component::get(&entity));
     }
 
     #[test]
     pub fn returns_empty_when_no_value_provided() {
         let mut entity = Entity::new(1);
         entity.set(Score(123));
-        let count : Option<&Count> = entity.get();
+        let count : Option<Count> = Component::get(&entity);
         assert_eq!(None, count)
     }
 
@@ -302,9 +303,9 @@ mod tests {
     pub fn can_remove_values_from_entity() {
         let mut entity = Entity::new(1);
         entity.set(Count(123));
-        assert_eq!(Some(&Count(123)), entity.get::<Count>());
+        assert_eq!(Some(Count(123)), Component::get(&entity));
         entity.remove::<Count>();
-        assert_eq!(None, entity.get::<Count>());
+        assert_eq!(None, Count::get(&entity));
     }
 
     #[test]
@@ -315,8 +316,8 @@ mod tests {
         entities.spawn(entity().with(Count(456)).with(Score(123)));
         entities.spawn(entity().with(Score(456)));
 
-        assert_eq!(vec![&Count(123), &Count(456)], entities.collect());
-        assert_eq!(vec![&Score(123), &Score(456)], entities.collect());
+        assert_eq!(set([Count(123), Count(456)]), set_(entities.collect()));
+        assert_eq!(set([Score(123), Score(456)]), set_(entities.collect()));
     }
 
     #[test]
@@ -340,7 +341,7 @@ mod tests {
 
         entities.apply(|Count(c)| Count(c + 1));
 
-        assert_eq!(vec![&Count(124), &Count(457)], entities.collect());
+        assert_eq!(set([Count(124), Count(457)]), set_(entities.collect()));
     }
 
 
@@ -354,7 +355,7 @@ mod tests {
 
         entities.apply_2(|Count(c), Score(s)| Count(c + s));
 
-        assert_eq!(vec![&Count(123), &Count(579)], entities.collect());
+        assert_eq!(set([Count(123), Count(579)]), set_(entities.collect()));
     }
 
     #[test]
@@ -374,7 +375,17 @@ mod tests {
             }
         });
 
-        assert_eq!(vec![Count(123), Count(579)], entities.collect());
-        assert_eq!(vec![Score(333), Score(456)], entities.collect());
+        assert_eq!(set([Count(123), Count(579)]), set_(entities.collect()));
+        assert_eq!(set([Score(333), Score(456)]), set_(entities.collect()));
     }
+
+
+    fn set<T: Hash + Eq, const N: usize>(arr: [T; N]) -> HashSet<T> {
+        HashSet::from(arr)
+    }
+
+    fn set_<T: Hash + Eq>(vec: Vec<T>) -> HashSet<T> {
+        HashSet::from_iter(vec)
+    }
+
 }
