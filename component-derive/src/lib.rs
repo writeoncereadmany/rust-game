@@ -24,7 +24,11 @@ pub fn derive_variable(input: TokenStream) -> TokenStream {
                 Some(entity.get::<#ident>()?.clone())
             } 
         }
-        impl Variable for #ident {}
+        impl Variable for #ident {
+            fn set(self, entity: &mut entity::Entity) {
+                entity.set(self)
+            }
+        }
     };
     output.into()
 }

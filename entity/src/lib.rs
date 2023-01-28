@@ -4,7 +4,9 @@ use std::collections::HashMap;
 pub trait Component: Any + Clone + Sized {
     fn get(entity : &Entity) -> Option<Self>;
  }
-pub trait Variable: Component { }
+pub trait Variable: Component { 
+    fn set(self, entity : &mut Entity);
+}
 
 #[derive(Clone)]
 pub struct Id(pub u64);
@@ -21,7 +23,9 @@ impl Component for () {
         Some(())
     }
 }
-impl Variable for () {}
+impl Variable for () {
+    fn set(self, _entity: &mut Entity) { }
+}
 
 pub struct EntityBuilder {
     data: HashMap<TypeId, Box<dyn Any>>
@@ -41,8 +45,8 @@ impl EntityBuilder {
 impl <A: Component, B: Component> Component for (A, B) {
     fn get(entity: &Entity) -> Option<(A, B)> {
         Some((
-            entity.get::<A>()?.clone(), 
-            entity.get::<B>()?.clone())
+            A::get(entity)?.clone(), 
+            B::get(entity)?.clone())
         )
     }
 }
@@ -50,9 +54,9 @@ impl <A: Component, B: Component> Component for (A, B) {
 impl <A: Component, B: Component, C: Component> Component for (A, B, C) {
     fn get(entity: &Entity) -> Option<(A, B, C)> {
         Some((
-            entity.get::<A>()?.clone(), 
-            entity.get::<B>()?.clone(), 
-            entity.get::<C>()?.clone())
+            A::get(entity)?.clone(), 
+            B::get(entity)?.clone(), 
+            C::get(entity)?.clone())
         )
     }
 }
@@ -60,10 +64,10 @@ impl <A: Component, B: Component, C: Component> Component for (A, B, C) {
 impl <A: Component, B: Component, C: Component, D: Component> Component for (A, B, C, D) {
     fn get(entity: &Entity) -> Option<(A, B, C, D)> {
         Some((
-            entity.get::<A>()?.clone(), 
-            entity.get::<B>()?.clone(), 
-            entity.get::<C>()?.clone(), 
-            entity.get::<D>()?.clone())
+            A::get(entity)?.clone(), 
+            B::get(entity)?.clone(), 
+            C::get(entity)?.clone(), 
+            D::get(entity)?.clone())
         )
     }
 }
@@ -71,11 +75,11 @@ impl <A: Component, B: Component, C: Component, D: Component> Component for (A, 
 impl <A: Component, B: Component, C: Component, D: Component, E: Component> Component for (A, B, C, D, E) {
     fn get(entity: &Entity) -> Option<(A, B, C, D, E)> {
         Some((
-            entity.get::<A>()?.clone(), 
-            entity.get::<B>()?.clone(), 
-            entity.get::<C>()?.clone(), 
-            entity.get::<D>()?.clone(),
-            entity.get::<E>()?.clone())
+            A::get(entity)?.clone(), 
+            B::get(entity)?.clone(), 
+            C::get(entity)?.clone(), 
+            D::get(entity)?.clone(),
+            E::get(entity)?.clone())
         )
     }
 }
@@ -83,19 +87,27 @@ impl <A: Component, B: Component, C: Component, D: Component, E: Component> Comp
 impl <A: Component, B: Component, C: Component, D: Component, E: Component, F: Component> Component for (A, B, C, D, E, F) {
     fn get(entity: &Entity) -> Option<(A, B, C, D, E, F)> {
         Some((
-            entity.get::<A>()?.clone(), 
-            entity.get::<B>()?.clone(), 
-            entity.get::<C>()?.clone(), 
-            entity.get::<D>()?.clone(),
-            entity.get::<E>()?.clone(),
-            entity.get::<F>()?.clone())
+            A::get(entity)?.clone(), 
+            B::get(entity)?.clone(), 
+            C::get(entity)?.clone(), 
+            D::get(entity)?.clone(),
+            E::get(entity)?.clone(),
+            F::get(entity)?.clone())
         )
+    }
+}
+
+impl <A: Variable, B: Variable> Variable for (A, B) {
+    fn set(self, entity: &mut Entity) {
+        let (a, b) = self;
+        a.set(entity);
+        b.set(entity);
     }
 }
 
 impl <T: Component> Component for Option<T> {
     fn get(entity: &Entity) -> Option<Option<T>> {
-        Some(entity.get::<T>().map(|component| component.clone()))
+        Some(T::get(entity).map(|component| component.clone()))
     }
 }
 
@@ -107,7 +119,7 @@ enum Not<T> {
 
 impl <T: Component> Component for Not<T> {
     fn get(entity: &Entity) -> Option<Not<T>> {
-        if entity.get::<T>().is_none() { Some(Not::Not()) } else { None }
+        if T::get(entity).is_none() { Some(Not::Not()) } else { None }
     }
 }
 
@@ -178,7 +190,7 @@ impl Entities {
         for entity in self.entities.values_mut() {
             if let Some(i) = T::get(entity) {
                 let val = f(i);
-                entity.set(val)  
+                val.set(entity);  
             } 
         }
     }
@@ -214,13 +226,25 @@ mod tests {
         }    
     }
 
-    impl Variable for Count {}
-    impl Variable for Score {}
-    impl Variable for Name {}
+    impl Variable for Count {
+        fn set(self, entity: &mut Entity) {
+            entity.set(self);
+        }
+    }
+    impl Variable for Score {
+        fn set(self, entity: &mut Entity) {
+            entity.set(self);
+        }
+    }
+    impl Variable for Name {
+        fn set(self, entity: &mut Entity) {
+            entity.set(self);
+        }
+    }
 
     #[test]
     pub fn fetches_value_by_type() {
-        let mut entity = Entity::new(1);
+        let mut entity = Entity { data: HashMap::new() };
         entity.set(Count(123));
         entity.set(Name("Hello"));
 
@@ -230,19 +254,10 @@ mod tests {
 
     #[test]
     pub fn returns_empty_when_no_value_provided() {
-        let mut entity = Entity::new(1);
+        let mut entity = Entity { data: HashMap::new() };
         entity.set(Score(123));
         let count : Option<Count> = Component::get(&entity);
         assert_eq!(None, count)
-    }
-
-    #[test]
-    pub fn can_remove_values_from_entity() {
-        let mut entity = Entity::new(1);
-        entity.set(Count(123));
-        assert_eq!(Some(Count(123)), Component::get(&entity));
-        entity.remove::<Count>();
-        assert_eq!(None, Count::get(&entity));
     }
 
     #[test]
@@ -255,17 +270,6 @@ mod tests {
 
         assert_eq!(set([Count(123), Count(456)]), set_(entities.collect()));
         assert_eq!(set([Score(123), Score(456)]), set_(entities.collect()));
-    }
-
-    #[test]
-    pub fn can_fold_entities() {
-        let mut entities = Entities::new();
-
-        entities.spawn(entity().with(Count(123)));
-        entities.spawn(entity().with(Count(456)).with(Score(123)));
-        entities.spawn(entity().with(Score(456)));
-
-        assert_eq!(Score(579), entities.fold(Score(0), |Score(a), Score(b)| Score(a + b)));
     }
 
     #[test]
@@ -290,27 +294,20 @@ mod tests {
         entities.spawn(entity().with(Count(456)).with(Score(123)));
         entities.spawn(entity().with(Score(456)));
 
-        entities.apply_2(|Count(c), Score(s)| Count(c + s));
+        entities.apply(|(Count(c), Score(s))| Count(c + s));
 
         assert_eq!(set([Count(123), Count(579)]), set_(entities.collect()));
     }
 
     #[test]
-    pub fn can_modify_entities_with_arbitrary_complexity() {
+    pub fn can_modify_entities_with_multiple_new_properties_simultaneously() {
         let mut entities = Entities::new();
 
         entities.spawn(entity().with(Count(123)));
         entities.spawn(entity().with(Count(456)).with(Score(123)));
         entities.spawn(entity().with(Score(456)));
 
-        entities.for_each_mut(|entity| {
-            if let (Some(Count(c)), Some(Score(s))) = (entity.get(), entity.get()) { 
-                let new_count = Count(c + s); 
-                let new_score = Score(c - s);
-                entity.set(new_count);
-                entity.set(new_score);
-            }
-        });
+        entities.apply(|(Count(c), Score(s))| { (Count(c + s), Score(c - s)) });
 
         assert_eq!(set([Count(123), Count(579)]), set_(entities.collect()));
         assert_eq!(set([Score(333), Score(456)]), set_(entities.collect()));
