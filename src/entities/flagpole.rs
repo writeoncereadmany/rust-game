@@ -17,12 +17,12 @@ pub struct Flagpole;
 
 pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
     let animation_cycle = AnimationCycle(vec!(
-        (0.5, Sprite::new(0, 1, 0.5)), 
-        (1.0, Sprite::new(1, 1, 0.5)))); 
+        (0.5, Sprite::new(6, 7, 0.5)), 
+        (1.0, Sprite::new(7, 7, 0.5)))); 
     entities.spawn(entity()
         .with(Flagpole)
         .with(Position(x, y))
-        .with(Sprite::new(0, 1, 0.5))
+        .with(Sprite::new(6, 7, 0.5))
         .with(animation_cycle)
         .with(Period(0.2))
         .with(Phase(0.0))

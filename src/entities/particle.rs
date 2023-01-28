@@ -11,10 +11,10 @@ use entity::{ Entities, entity };
 pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
     let spangle_id = entities.spawn(entity()
         .with(Position(x, y))
-        .with(Sprite::new(0, 4, 0.5))
+        .with(Sprite::new(0, 7, 0.5))
         .with(Period(0.45))
         .with(Phase(0.0))
-        .with(AnimationCycle(vec![(0.33, Sprite::new(0, 4, 0.5)), (0.66, Sprite::new(1, 4, 0.5)), (1.0, Sprite::new(0, 4, 0.5))]))
+        .with(AnimationCycle(vec![(0.33, Sprite::new(0, 7, 0.5)), (0.66, Sprite::new(1, 7, 0.5)), (1.0, Sprite::new(0, 7, 0.5))]))
     );
 
     events.schedule(Duration::from_millis(450), Destroy(spangle_id));

@@ -19,6 +19,7 @@ const VEL_CAP: f64 = 12.0;
 const WALLJUMP_DY: f64 = 10.0;
 const WALLJUMP_DX: f64 = 10.0;
 const WALL_STICK: f64 = 0.1;
+const MAX_WALL_FALL_SPEED: f64 = -8.0;
 const JUMP_SPEED: f64 = 15.0;
 const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
@@ -33,6 +34,7 @@ const UNITS_PER_FRAME: f64 = 1.0;
 const RUN_CYCLE : [(i32, i32); 4] = [(1, 1), (2, 1), (3, 1), (2, 1)];
 const ASCENDING : (i32, i32) = (2, 0);
 const DESCENDING : (i32, i32) = (3, 0);
+const WALL_DRAGGING : (i32, i32) = (1, 0);
 const STANDING: (i32, i32) = (0, 1);
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -118,10 +120,12 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
 }
 
 fn animate(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(_px, py), panda_type ) | {
+    entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(px, py), panda_type ) | {
         let tile = if py == 0.0 {
             if dy > 0.0 { 
                 ASCENDING
+            } else if px != 0.0 {
+                WALL_DRAGGING
             } else {
                 DESCENDING
             }
@@ -131,7 +135,8 @@ fn animate(entities: &mut Entities, _dt: &Duration) {
             let frame: usize = (x / UNITS_PER_FRAME) as usize % RUN_CYCLE.len();
             RUN_CYCLE[frame]
         };
-        let flip_x = facing == Sign::NEGATIVE;
+        let mut flip_x = facing == Sign::NEGATIVE;
+        if tile == WALL_DRAGGING { flip_x = !flip_x }
         offset_sprite(tile, &panda_type, flip_x)
     });
 }
@@ -219,8 +224,8 @@ fn translate(entities: &mut Entities, _dt: &Duration) {
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
     entities.apply(|(Velocity(dx, dy), LastPush(px, _py))| {
         match px.sign() {
-            Sign::POSITIVE => Velocity(dx -WALL_STICK, dy),
-            Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy),
+            Sign::POSITIVE => Velocity(dx - WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
+            Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
             Sign::ZERO => Velocity(dx, dy)
         }
     })
