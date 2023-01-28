@@ -159,6 +159,16 @@ impl Entities {
         }
     }
 
+    pub fn for_each_pair<A: Component, B: Component>(&self, mut f: impl FnMut(&A, &B)) {
+        let firsts = self.collect::<A>();
+        let seconds = self.collect::<B>();
+        for first in &firsts {
+            for second in &seconds {
+                f(first, second);
+            }
+        }
+    }
+
     pub fn collect<T: Component>(&self) -> Vec<T> {
         self.entities.values().flat_map(|entity| T::get(entity)).collect()
     }
