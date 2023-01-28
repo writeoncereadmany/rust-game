@@ -289,33 +289,33 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
 fn item_collisions(entities: &Entities, events: &mut Events) {
     for (Hero, Mesh(hero_mesh)) in entities.collect() {
 
-        for (Coin, Id(id), Position(x, y), Mesh(mesh)) in entities.collect() {
+        for (Coin, Id(id), Mesh(mesh)) in entities.collect() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(CoinCollected { x, y, id });
+                events.fire(CoinCollected { id });
             }
         }
 
-        for (Flagpole, Mesh(mesh), Position(x, y), Id(id)) in entities.collect() {
+        for (Flagpole, Mesh(mesh), Id(id)) in entities.collect() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(FlagpoleCollected { x, y, id });
+                events.fire(FlagpoleCollected { id });
             }
         }
 
-        for (Bell, Id(id), Position(x, y), Mesh(mesh)) in entities.collect() {
+        for (Bell, Id(id), Mesh(mesh)) in entities.collect() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(BellCollected { x, y, id });
+                events.fire(BellCollected { id });
             }
         }
 
-        for (Key, Id(id), Position(x, y), Mesh(mesh)) in entities.collect() {
+        for (Key, Id(id), Mesh(mesh)) in entities.collect() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(KeyCollected { x, y, id });
+                events.fire(KeyCollected { id });
             }
         }
 
-        for (Chest, Id(id), Position(x, y), Mesh(mesh)) in entities.collect() {
+        for (Chest, Id(id), Mesh(mesh)) in entities.collect() {
             if hero_mesh.bbox().touches(&mesh.bbox()) {
-                events.fire(ChestCollected { x, y, id });
+                events.fire(ChestCollected { id });
             }
         }
     }

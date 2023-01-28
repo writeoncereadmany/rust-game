@@ -3,20 +3,20 @@ use component_derive::Event;
 use crate::events::EventTrait;
 
 #[derive(Event)]
-pub struct CoinCollected { pub x: f64, pub y: f64, pub id: u64} 
+pub struct CoinCollected { pub id: u64} 
 
 #[derive(Event)]
-pub struct BellCollected { pub x: f64, pub y: f64, pub id: u64 }
+pub struct BellCollected { pub id: u64 }
 
 
 #[derive(Event)]
-pub struct KeyCollected { pub x: f64, pub y: f64, pub id: u64 }
+pub struct KeyCollected { pub id: u64 }
 
 #[derive(Event)]
-pub struct ChestCollected { pub x: f64, pub y: f64, pub id: u64 } 
+pub struct ChestCollected { pub id: u64 } 
 
 #[derive(Event)]
-pub struct FlagpoleCollected { pub x: f64, pub y: f64, pub id: u64 }
+pub struct FlagpoleCollected { pub id: u64 }
 
 #[derive(Event)]
 pub struct TimeLimitExpired;

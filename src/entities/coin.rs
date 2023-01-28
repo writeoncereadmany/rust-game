@@ -37,7 +37,7 @@ fn phase_offset(x: f64, y: f64) -> f64 {
     x * 0.8 + y * 0.4
 }
 
-pub fn collect_coin(&CoinCollected { x, y, id }: &CoinCollected, entities: &mut Entities, events: &mut Events)
+pub fn collect_coin(&CoinCollected { id }: &CoinCollected, entities: &mut Entities, events: &mut Events)
 {
     if let Some(Position(x, y)) = entities.delete(&id)
     {

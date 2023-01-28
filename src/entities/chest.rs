@@ -41,7 +41,7 @@ pub fn open_chest(&OpenChest { x, y, id }: &OpenChest, entities: &mut Entities) 
     }
 }
 
-pub fn collect_chest(&ChestCollected { x, y, id }: &ChestCollected, entities: &mut Entities, events: &mut Events) {
+pub fn collect_chest(&ChestCollected { id }: &ChestCollected, entities: &mut Entities, events: &mut Events) {
     if let Some(Position(x, y)) = entities.delete(&id)
     {
         spawn_spangle(x, y, entities, events);

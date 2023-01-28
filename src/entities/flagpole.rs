@@ -36,7 +36,7 @@ pub fn spawn_empty_flagpole(x: f64, y: f64, entities: &mut Entities) {
         .with(Sprite::new(5, 7, 0.5)));
 }
 
-pub fn collect_flag(&FlagpoleCollected { x, y, id }: &FlagpoleCollected, entities: &mut Entities, events: &mut Events)
+pub fn collect_flag(&FlagpoleCollected { id }: &FlagpoleCollected, entities: &mut Entities, events: &mut Events)
 {
     if let Some(Position(x, y)) = entities.delete(&id)
     {

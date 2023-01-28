@@ -24,7 +24,7 @@ pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
     );
 }
 
-pub fn collect_key(&KeyCollected { x, y, id }: &KeyCollected, entities: &mut Entities, events: &mut Events) {
+pub fn collect_key(&KeyCollected { id }: &KeyCollected, entities: &mut Entities, events: &mut Events) {
     if let Some(Position(x, y)) = entities.delete(&id)
     {
         spawn_spangle(x, y, entities, events);
