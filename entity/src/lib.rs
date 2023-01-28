@@ -112,25 +112,16 @@ impl <T: Component> Component for Not<T> {
 }
 
 pub struct Entity {
-    pub id: u64,
     data: HashMap<TypeId, Box<dyn Any>>,
 }
 
 impl Entity {
-    pub fn new(id: u64) -> Self {
-        Entity { id, data: HashMap::new() }
-    }
-
     pub fn get<T: Component>(&self) -> Option<&T> {
         self.data.get(&TypeId::of::<T>())?.downcast_ref()
     }
 
     pub fn set<T: Variable>(&mut self, value: T) {
         self.data.insert(TypeId::of::<T>(), Box::new(value));
-    }
-
-    pub fn remove<T: Variable>(&mut self) {
-        self.data.remove(&TypeId::of::<T>());
     }
 }
 
@@ -146,7 +137,7 @@ impl Entities {
 
     pub fn spawn(&mut self, builder: EntityBuilder) -> u64 {
         let id = self.next_id;
-        let entity = Entity { id, data: builder.with(Id(id)).data };
+        let entity = Entity { data: builder.with(Id(id)).data };
         self.entities.insert(id, entity);
 
         self.next_id += 1;
