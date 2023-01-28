@@ -201,18 +201,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
         renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 12.0, 14.0);
 
-        self.entities.for_each(|e| {
-            if let (Some(Position(x, y)), Some(sprite)) = (e.get(), e.get())
-            {
-                renderer.draw_sprite(sprite, *x, *y);
-            }
+        self.entities.for_each(|(Position(x, y), sprite)| {
+            renderer.draw_sprite(&sprite, x, y);
         });
 
-        self.entities.for_each(|e| {
-            if let (Some(Position(x, y)), Some(text)) = (e.get(), e.get())
-            {
-                renderer.draw_text(text, *x, *y)
-            }
+        self.entities.for_each(|(Position(x, y), text)| {
+            renderer.draw_text(&text, x, y)
         });
 
         Ok(())

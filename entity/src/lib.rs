@@ -158,33 +158,18 @@ impl Entities {
         self.entities.remove(id)
     }
 
-    pub fn for_each(&self, mut f: impl FnMut(&Entity)) 
+    pub fn for_each<T: Component>(&self, mut f: impl FnMut(T)) 
     {
         for entity in self.entities.values() {
-            f(entity);
-        }
-    }
-
-    pub fn for_each_mut(&mut self, mut f: impl FnMut(&mut Entity)) 
-    {
-        for entity in self.entities.values_mut() {
-            f(entity);
+            if let Some(component) = T::get(entity)
+            {
+                f(component);
+            }
         }
     }
 
     pub fn collect<T: Component>(&self) -> Vec<T> {
         self.entities.values().flat_map(|entity| T::get(entity)).collect()
-    }
-
-    pub fn fold<T: Component, R>(&self, initial: R, f: impl Fn(R, T) -> R) -> R 
-    {
-        let mut accumulated = initial;
-        for entity in self.entities.values() {
-            if let Some(next) = T::get(entity) {
-                accumulated = f(accumulated, next);
-            }
-        }
-        accumulated
     }
 
     pub fn apply<T: Component, O: Variable>(&mut self, mut f: impl FnMut(T) -> O) 
