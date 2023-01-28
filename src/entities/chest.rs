@@ -30,17 +30,21 @@ pub fn open_chests(entities: &mut Entities, events: &mut Events) {
 }
 
 pub fn open_chest(&OpenChest { x, y, id }: &OpenChest, entities: &mut Entities) {
-    entities.delete(&id);
-    entities.spawn(entity()
-        .with(Chest)
-        .with(Position(x, y))
-        .with(Sprite::new(3, 7, 0.5))
-        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
-    );
+    if let Some(Position(x, y)) = entities.delete(&id)
+    {
+        entities.spawn(entity()
+            .with(Chest)
+            .with(Position(x, y))
+            .with(Sprite::new(3, 7, 0.5))
+            .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+        );
+    }
 }
 
 pub fn collect_chest(&ChestCollected { x, y, id }: &ChestCollected, entities: &mut Entities, events: &mut Events) {
-    entities.delete(&id);
-    spawn_spangle(x, y, entities, events);
-    spawn_text(x + 0.5, y + 0.5, "100", entities, events);
+    if let Some(Position(x, y)) = entities.delete(&id)
+    {
+        spawn_spangle(x, y, entities, events);
+        spawn_text(x + 0.5, y + 0.5, "100", entities, events);    
+    }
 }

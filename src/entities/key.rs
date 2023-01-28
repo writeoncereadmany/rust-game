@@ -25,12 +25,14 @@ pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
 }
 
 pub fn collect_key(&KeyCollected { x, y, id }: &KeyCollected, entities: &mut Entities, events: &mut Events) {
-    entities.delete(&id);
-    spawn_spangle(x, y, entities, events);
-    events.fire(PlayTune(vec![
-        (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-        (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-        (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-    ]));
-    open_chests(entities, events);
+    if let Some(Position(x, y)) = entities.delete(&id)
+    {
+        spawn_spangle(x, y, entities, events);
+        events.fire(PlayTune(vec![
+            (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+            (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+        ]));
+        open_chests(entities, events);    
+    }
 }

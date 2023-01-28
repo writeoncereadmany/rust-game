@@ -216,7 +216,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         hero_events(&mut self.entities, event, events);
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
-        event.apply(|Destroy(id)| self.entities.delete(id));
+        event.apply(|Destroy(id)| self.entities.delete::<()>(id));
         event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, &mut self.entities));
         event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, &mut self.entities));
         event.apply(|&SpawnParticle(x, y)| spawn_spangle(x, y, &mut self.entities, events));

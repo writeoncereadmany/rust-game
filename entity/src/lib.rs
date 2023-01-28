@@ -154,8 +154,8 @@ impl Entities {
         id
     }
 
-    pub fn delete(&mut self, id: &u64) -> Option<Entity> {
-        self.entities.remove(id)
+    pub fn delete<T: Component>(&mut self, id: &u64) -> Option<T> {
+        T::get(&self.entities.remove(id)?)
     }
 
     pub fn for_each<T: Component>(&self, mut f: impl FnMut(T)) 
