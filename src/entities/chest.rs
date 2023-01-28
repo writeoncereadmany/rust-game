@@ -13,7 +13,7 @@ use super::particle::{spawn_spangle, spawn_text};
 pub struct Chest;
 
 #[derive(Event)]
-pub struct OpenChest { x: f64, y: f64, id: u64 }
+pub struct OpenChest { id: u64 }
 
 pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
@@ -24,12 +24,12 @@ pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
 }
 
 pub fn open_chests(entities: &mut Entities, events: &mut Events) {
-    entities.apply(|(Chest, Position(x, y), Id(id))| {
-        events.fire(OpenChest { x, y, id });
+    entities.apply(|(Chest, Id(id))| {
+        events.fire(OpenChest { id });
     });
 }
 
-pub fn open_chest(&OpenChest { x, y, id }: &OpenChest, entities: &mut Entities) {
+pub fn open_chest(&OpenChest { id }: &OpenChest, entities: &mut Entities) {
     if let Some(Position(x, y)) = entities.delete(&id)
     {
         entities.spawn(entity()
