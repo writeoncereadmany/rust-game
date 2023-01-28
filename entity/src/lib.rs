@@ -1,5 +1,5 @@
 use core::any::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
 pub trait Component: Any + Clone + Sized {
     fn get(entity : &Entity) -> Option<Self>;
@@ -112,14 +112,11 @@ impl <T: Component> Component for Option<T> {
 }
 
 #[derive(Clone)]
-enum Not<T> {
-    Not(),
-    _Is(T)
-}
+struct Not<T>(PhantomData<T>);
 
 impl <T: Component> Component for Not<T> {
     fn get(entity: &Entity) -> Option<Not<T>> {
-        if T::get(entity).is_none() { Some(Not::Not()) } else { None }
+        if T::get(entity).is_none() { Some(Not(PhantomData)) } else { None }
     }
 }
 
@@ -311,6 +308,32 @@ mod tests {
 
         assert_eq!(set([Count(123), Count(579)]), set_(entities.collect()));
         assert_eq!(set([Score(333), Score(456)]), set_(entities.collect()));
+    }
+
+    #[test]
+    pub fn can_update_entities_excluding_those_with_a_property() {
+        let mut entities = Entities::new();
+
+        entities.spawn(entity().with(Count(123)));
+        entities.spawn(entity().with(Count(456)).with(Score(123)));
+
+        entities.apply(|(Count(c), Not::<Score>(_))| { Count(c + 200) });
+
+        assert_eq!(set([Count(323), Count(456)]), set_(entities.collect()));
+    }
+
+    #[test]
+    pub fn can_update_entitie_with_optional_properties() {
+        let mut entities = Entities::new();
+
+        entities.spawn(entity().with(Count(123)));
+        entities.spawn(entity().with(Count(456)).with(Score(123)));
+
+        entities.apply(|(Count(c), maybeScore)| {
+            if let Some(Score(s)) = maybeScore { Count(c + s) } else { Count(c + 200) }
+        });
+
+        assert_eq!(set([Count(323), Count(579)]), set_(entities.collect()));
     }
 
 
