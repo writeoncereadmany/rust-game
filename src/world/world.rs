@@ -17,6 +17,7 @@ use crate::entities::key::*;
 use crate::entities::coin::*;
 use crate::entities::timer::*;
 use crate::entities::hero::*;
+use crate::entities::pickup::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
 use crate::map::Map;
@@ -224,12 +225,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|coin| { collect_coin(coin, &mut self.entities, events) });
         event.apply(|bell| { collect_bell(bell, &mut self.entities, events) });
         event.apply(|key| { collect_key(key, &mut self.entities, events) });
         event.apply(|chest| { open_chest(chest, &mut self.entities, events)});
         event.apply(|ruby| { collect_ruby(ruby, &mut self.entities, events) });
         event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
+        event.apply(|pickup| { collect_pickup(pickup, &mut self.entities, events)});
 
         Ok(())
     }
@@ -315,6 +316,12 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Ruby, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(RubyCollected { id: *id });
+        }
+    });
+
+    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Pickup, Id(id), Mesh(mesh))| {
+        if hero_mesh.bbox().touches(&mesh.bbox()) {
+            events.fire(PickupCollected(*id));
         }
     });
 }

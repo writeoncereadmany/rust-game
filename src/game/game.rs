@@ -3,6 +3,7 @@ use std::time::Duration;
 use component_derive::Event;
 
 use crate::app::assets::Assets;
+use crate::entities::pickup::Score;
 use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
 use crate::game_loop::*;
@@ -54,6 +55,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
 
         event.apply(| RubyCollected { .. }| {
             self.score_this_level += 100;
+        });
+
+        event.apply(| score | {
+            match score {
+                Score::Points(p) => self.score_this_level += *p,
+                Score::Double => self.score_this_level *= 2
+            }
         });
 
 
