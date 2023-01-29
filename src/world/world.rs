@@ -226,7 +226,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|coin| { collect_coin(coin, &mut self.entities, events) });
         event.apply(|bell| { collect_bell(bell, &mut self.entities, events) });
         event.apply(|key| { collect_key(key, &mut self.entities, events) });
-        event.apply(|chest| { open_chest(chest, &mut self.entities) });
+        event.apply(|chest| { open_chest(chest, &mut self.entities, events)});
         event.apply(|chest| { collect_chest(chest, &mut self.entities, events) });
         event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
 
@@ -311,7 +311,7 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
         }
     });
 
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Chest, Id(id), Mesh(mesh))| {
+    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Ruby, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(ChestCollected { id: *id });
         }

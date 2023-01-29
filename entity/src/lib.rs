@@ -1,4 +1,5 @@
 use core::any::*;
+use itertools::Itertools;
 use std::{collections::HashMap, marker::PhantomData};
 
 pub trait Component: Any + Clone + Sized {
@@ -114,12 +115,21 @@ impl <T: Component> Component for Option<T> {
 #[derive(Clone)]
 struct Not<T>(PhantomData<T>);
 
+fn not<T>() -> Not<T> {
+    Not(PhantomData)
+}
+
 impl <T: Component> Component for Not<T> {
     fn get(entity: &Entity) -> Option<Not<T>> {
         if T::get(entity).is_none() { Some(Not(PhantomData)) } else { None }
     }
 }
 
+impl <T: Variable> Variable for Not<T> {
+    fn set(self, entity: &mut Entity) {
+        entity.remove::<T>();
+    }
+}
 pub struct Entity {
     data: HashMap<TypeId, Box<dyn Any>>,
 }
@@ -131,6 +141,10 @@ impl Entity {
 
     pub fn set<T: Variable>(&mut self, value: T) {
         self.data.insert(TypeId::of::<T>(), Box::new(value));
+    }
+
+    pub fn remove<T: Variable>(&mut self) {
+        self.data.remove(&TypeId::of::<T>());
     }
 }
 
@@ -158,22 +172,21 @@ impl Entities {
         T::get(&self.entities.remove(id)?)
     }
 
-    pub fn for_each<T: Component>(&self, mut f: impl FnMut(T)) 
-    {
-        for entity in self.entities.values() {
-            if let Some(component) = T::get(entity)
-            {
-                f(component);
-            }
-        }
-    }
-
     pub fn for_each_pair<A: Component, B: Component>(&self, mut f: impl FnMut(&A, &B)) {
         let firsts = self.collect::<A>();
         let seconds = self.collect::<B>();
         for first in &firsts {
             for second in &seconds {
                 f(first, second);
+            }
+        }
+    }
+
+    pub fn for_each_iso_pair<A: Component>(&self, mut f: impl FnMut(&A, &A)) {
+        let items = self.collect();
+        for pair in items.iter().combinations(2) {
+            if let &[a, b] = pair.as_slice() {
+                f(a, b);
             }
         }
     }
@@ -189,6 +202,16 @@ impl Entities {
                 let val = f(i);
                 val.set(entity);  
             } 
+        }
+    }
+
+    pub fn for_each<T: Component>(&self, mut f: impl FnMut(T)) 
+    {
+        for entity in self.entities.values() {
+            if let Some(component) = T::get(entity)
+            {
+                f(component);
+            }
         }
     }
 }
@@ -329,11 +352,38 @@ mod tests {
         entities.spawn(entity().with(Count(123)));
         entities.spawn(entity().with(Count(456)).with(Score(123)));
 
-        entities.apply(|(Count(c), maybeScore)| {
-            if let Some(Score(s)) = maybeScore { Count(c + s) } else { Count(c + 200) }
+        entities.apply(|(Count(c), maybe_score)| {
+            if let Some(Score(s)) = maybe_score { Count(c + s) } else { Count(c + 200) }
         });
 
         assert_eq!(set([Count(323), Count(579)]), set_(entities.collect()));
+    }
+
+    #[test]
+    pub fn can_affect_interactions_between_objects_of_the_same_type() {
+        let mut entities = Entities::new();
+
+        entities.spawn(entity().with(Count(123)));
+        entities.spawn(entity().with(Count(100)));
+        entities.spawn(entity().with(Count(399)));
+        
+        let mut sums: Vec<u64> = Vec::new();
+
+        entities.for_each_iso_pair(|Count(a), Count(b)| { sums.push(a + b)});
+
+        assert_eq!(set([223, 499, 522]), set_(sums));
+    }
+
+    #[test]
+    pub fn can_remove_properties_by_updating_with_not() {
+        let mut entities = Entities::new();
+
+        entities.spawn(entity().with(Count(123)));
+        entities.spawn(entity().with(Count(456)).with(Score(123)));
+
+        entities.apply(|(Count(_), Score(_))| { not::<Count>() });
+
+        assert_eq!(set([Count(123)]), set_(entities.collect()));
     }
 
 
