@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use entity::{ entity, Component, Entities };
+use entity::{ entity, Entities };
 
 use component_derive::Constant;
 

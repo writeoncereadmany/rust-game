@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use component_derive::Constant;
-use entity::{ entity, Component, Entities };
+use entity::{ entity, Entities };
 
 use crate::app::events::*;
 use crate::audio::audio::*;

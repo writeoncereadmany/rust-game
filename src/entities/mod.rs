@@ -6,4 +6,5 @@ pub mod components;
 pub mod flagpole;
 pub mod hero;
 pub mod particle;
+pub mod pickup;
 pub mod timer;

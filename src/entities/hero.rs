@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use component_derive::{ Event, Constant, Variable };
-use entity::{ entity, Entities, Component, Variable };
+use entity::{ entity, Entities };
 
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::events::*;

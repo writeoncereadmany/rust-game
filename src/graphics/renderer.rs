@@ -6,7 +6,6 @@ use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureC
 use sdl2::video::{WindowContext};
 
 use component_derive::{ Variable };
-use entity::{ Component, Variable };
 
 use crate::fps_counter::FpsCounter;
 use crate::map::Map;

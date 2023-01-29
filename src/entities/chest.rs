@@ -1,6 +1,6 @@
 use std::time::Duration;
 use component_derive::{ Constant, Event };
-use entity::{ entity, Component, Entities, not };
+use entity::{ entity, Entities, not };
 
 use entity::Id;
 use crate::graphics::sprite::Sprite;
