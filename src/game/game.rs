@@ -52,7 +52,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             self.score_this_level *= 2;
         });
 
-        event.apply(| ChestCollected { .. }| {
+        event.apply(| RubyCollected { .. }| {
             self.score_this_level += 100;
         });
 

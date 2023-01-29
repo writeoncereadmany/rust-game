@@ -12,6 +12,9 @@ pub fn age(entities: &mut Entities, dt: &Duration) {
     entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
 }
 
+#[derive(Clone, Variable)]
+pub struct Gravity;
+
 #[derive(Clone, Constant)]
 pub struct Period(pub f64);
 

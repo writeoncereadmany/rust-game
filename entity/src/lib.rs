@@ -7,6 +7,7 @@ pub trait Component: Any + Clone + Sized {
  }
 pub trait Variable: Component { 
     fn set(self, entity : &mut Entity);
+    fn remove(entity: &mut Entity);
 }
 
 #[derive(Clone)]
@@ -26,6 +27,7 @@ impl Component for () {
 }
 impl Variable for () {
     fn set(self, _entity: &mut Entity) { }
+    fn remove(_entity: &mut Entity) { }
 }
 
 pub struct EntityBuilder {
@@ -104,6 +106,40 @@ impl <A: Variable, B: Variable> Variable for (A, B) {
         a.set(entity);
         b.set(entity);
     }
+    fn remove(entity: &mut Entity) {
+        A::remove(entity);
+        B::remove(entity)
+    }
+}
+
+impl <A: Variable, B: Variable, C: Variable> Variable for (A, B, C) {
+    fn set(self, entity: &mut Entity) {
+        let (a, b, c) = self;
+        a.set(entity);
+        b.set(entity);
+        c.set(entity);
+    }
+    fn remove(entity: &mut Entity) {
+        A::remove(entity);
+        B::remove(entity);
+        C::remove(entity);
+    }
+}
+
+impl <A: Variable, B: Variable, C: Variable, D: Variable> Variable for (A, B, C, D) {
+    fn set(self, entity: &mut Entity) {
+        let (a, b, c, d) = self;
+        a.set(entity);
+        b.set(entity);
+        c.set(entity);
+        d.set(entity)
+    }
+    fn remove(entity: &mut Entity) {
+        A::remove(entity);
+        B::remove(entity);
+        C::remove(entity);
+        D::remove(entity);
+    }
 }
 
 impl <T: Component> Component for Option<T> {
@@ -112,10 +148,24 @@ impl <T: Component> Component for Option<T> {
     }
 }
 
+impl <T: Variable> Variable for Option<T> {
+    fn set(self, entity: &mut Entity) {
+        match self {
+            Some(t) => t.set(entity),
+            None => {
+                T::remove(entity)
+            }
+        }
+    }
+    fn remove(entity: &mut Entity) {
+        T::remove(entity);
+    }
+}
+  
 #[derive(Clone)]
-struct Not<T>(PhantomData<T>);
+pub struct Not<T>(pub PhantomData<T>);
 
-fn not<T>() -> Not<T> {
+pub fn not<T>() -> Not<T> {
     Not(PhantomData)
 }
 
@@ -129,6 +179,7 @@ impl <T: Variable> Variable for Not<T> {
     fn set(self, entity: &mut Entity) {
         entity.remove::<T>();
     }
+    fn remove(_entity: &mut Entity) {} // meaningless
 }
 pub struct Entity {
     data: HashMap<TypeId, Box<dyn Any>>,
@@ -193,6 +244,16 @@ impl Entities {
 
     pub fn collect<T: Component>(&self) -> Vec<T> {
         self.entities.values().flat_map(|entity| T::get(entity)).collect()
+    }
+
+    pub fn apply_to<T: Component, O: Variable>(&mut self, id: &u64, mut f: impl FnMut(T) -> O)
+    {
+        if let Some(entity) = self.entities.get_mut(id) {
+            if let Some(i) = T::get(entity) {
+                let val = f(i);
+                val.set(entity);  
+            } 
+        }
     }
 
     pub fn apply<T: Component, O: Variable>(&mut self, mut f: impl FnMut(T) -> O) 

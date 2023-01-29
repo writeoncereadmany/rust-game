@@ -28,6 +28,9 @@ pub fn derive_variable(input: TokenStream) -> TokenStream {
             fn set(self, entity: &mut entity::Entity) {
                 entity.set(self)
             }
+            fn remove(entity: &mut entity::Entity) {
+                entity.remove::<#ident>()
+            }
         }
     };
     output.into()

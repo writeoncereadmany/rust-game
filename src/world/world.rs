@@ -214,6 +214,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         hero_events(&mut self.entities, event, events);
+        update_ruby(event, &mut self.entities, events);
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete::<()>(id));
@@ -227,7 +228,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|bell| { collect_bell(bell, &mut self.entities, events) });
         event.apply(|key| { collect_key(key, &mut self.entities, events) });
         event.apply(|chest| { open_chest(chest, &mut self.entities, events)});
-        event.apply(|chest| { collect_chest(chest, &mut self.entities, events) });
+        event.apply(|ruby| { collect_ruby(ruby, &mut self.entities, events) });
         event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
 
         Ok(())
@@ -283,7 +284,7 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
             if py != 0.0 { 0.0 } else { dy },
         )
     );
-    entities.apply(|(Hero, Position(x, y), ReferenceMesh(mesh))| Mesh(mesh.translate(x, y)));
+    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| Mesh(mesh.translate(x, y)));
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
@@ -313,7 +314,7 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
 
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Ruby, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(ChestCollected { id: *id });
+            events.fire(RubyCollected { id: *id });
         }
     });
 }

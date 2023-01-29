@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use component_derive::{ Event, Constant, Variable };
-use entity::{ entity, Entities, Component, Variable };
+use entity::{ entity, Entities, Component, Variable, Not, not };
 
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::events::*;
@@ -53,9 +53,6 @@ pub enum PandaType {
 
 #[derive(Clone, Constant)]
 pub struct Hero;
-
-#[derive(Clone, Constant)]
-pub struct Gravity;
 
 #[derive(Clone, Variable)]
 pub struct MovingX(pub Sign);

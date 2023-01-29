@@ -13,7 +13,7 @@ pub struct BellCollected { pub id: u64 }
 pub struct KeyCollected { pub id: u64 }
 
 #[derive(Event)]
-pub struct ChestCollected { pub id: u64 } 
+pub struct RubyCollected { pub id: u64 } 
 
 #[derive(Event)]
 pub struct FlagpoleCollected { pub id: u64 }
