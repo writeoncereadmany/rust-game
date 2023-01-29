@@ -65,7 +65,7 @@ pub fn open_chest(&OpenChest { id }: &OpenChest, entities: &mut Entities, events
 struct ResetRuby(u64);
 
 pub fn update_ruby(event: &Event, entities: &mut Entities, events: &mut Events) {
-    event.apply(|_dt : &Duration| entities.apply(|(Position(x, y), Floor(fy), Id(id))| {
+    event.apply(|_dt : &Duration| entities.apply(|(Position(_, y), Floor(fy), Id(id))| {
         if y < fy {
             events.fire(ResetRuby(id))
         }
