@@ -226,7 +226,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
         event.apply(|pickup| { collect_pickup(pickup, &mut self.entities, events)});
 
         Ok(())
@@ -286,13 +285,6 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
-
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Flagpole, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(FlagpoleCollected { id: *id });
-        }
-    });
-
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Pickup, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(PickupCollected(*id));
