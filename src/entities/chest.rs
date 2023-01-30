@@ -8,15 +8,10 @@ use crate::events::{ EventTrait, Events, Event };
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::app::events::*;
 use super::components::*;
-use super::particle::{spawn_spangle, spawn_text};
+use super::pickup::*;
 
 #[derive(Clone, Constant)]
 pub struct Chest;
-
-
-#[derive(Clone, Constant)]
-pub struct Ruby;
-
 
 #[derive(Clone, Constant)]
 pub struct Floor(f64);
@@ -48,12 +43,15 @@ pub fn open_chest(&OpenChest { id }: &OpenChest, entities: &mut Entities, events
         );
 
         entities.spawn(entity()
-            .with(Ruby)
+            .with(Pickup)
             .with(Position(x, y + 0.1))
             .with(Velocity(0.0, 20.0))
             .with(Gravity)
             .with(Floor(y))
             .with(Sprite::new(3, 8, 0.75))
+            .with(OnPickupScore(Score::Points(100)))
+            .with(OnPickupEffect::Sparkles)
+            .with(OnPickupText("100"))
             .with(ReferenceMesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![])))
         );
 
@@ -71,13 +69,4 @@ pub fn update_ruby(event: &Event, entities: &mut Entities, events: &mut Events) 
         }
     }));
     event.apply(|ResetRuby(id)| entities.apply_to(id, |(Position(x, _), Floor(fy))| (Position(x, fy), not::<Gravity>(), not::<Velocity>(), not::<Translation>())));
-}
-
-
-pub fn collect_ruby(&RubyCollected { id }: &RubyCollected, entities: &mut Entities, events: &mut Events) {
-    if let Some(Position(x, y)) = entities.delete(&id)
-    {
-        spawn_spangle(x, y, entities, events);
-        spawn_text(x + 0.5, y + 1.0, "100", entities, events);    
-    }
 }

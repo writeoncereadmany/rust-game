@@ -45,25 +45,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         self.controller.on_event(event, &mut events);
         
-        event.apply(|CoinCollected { .. }| {
-            self.score_this_level += 5;
-        });
-
-        event.apply(|BellCollected { .. }| {
-            self.score_this_level *= 2;
-        });
-
-        event.apply(| RubyCollected { .. }| {
-            self.score_this_level += 100;
-        });
-
         event.apply(| score | {
             match score {
                 Score::Points(p) => self.score_this_level += *p,
                 Score::Double => self.score_this_level *= 2
             }
         });
-
 
         event.apply(|TimeLimitExpired| {
             self.world = World::new(

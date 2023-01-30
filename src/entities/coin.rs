@@ -3,13 +3,10 @@ use std::time::Duration;
 use component_derive::Constant;
 use entity::{ entity, Entities, };
 
-use crate::app::events::*;
 use crate::audio::audio::*;
-use crate::events::Events;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
-use super::particle::spawn_spangle;
 use super::pickup::*;
 
 #[derive(Clone, Constant)]

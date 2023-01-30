@@ -225,10 +225,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|bell| { collect_bell(bell, &mut self.entities, events) });
         event.apply(|key| { collect_key(key, &mut self.entities, events) });
         event.apply(|chest| { open_chest(chest, &mut self.entities, events)});
-        event.apply(|ruby| { collect_ruby(ruby, &mut self.entities, events) });
         event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
         event.apply(|pickup| { collect_pickup(pickup, &mut self.entities, events)});
 
@@ -289,11 +287,6 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Coin, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(CoinCollected { id: *id });
-        }
-    });
 
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Flagpole, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
@@ -301,21 +294,9 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
         }
     });
 
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Bell, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(BellCollected { id: *id });
-        }
-    });
-
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Key, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(KeyCollected { id: *id });
-        }
-    });
-
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Ruby, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(RubyCollected { id: *id });
         }
     });
 
