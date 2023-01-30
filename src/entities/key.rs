@@ -1,38 +1,28 @@
 use std::time::Duration;
 
-use component_derive::Constant;
 use entity::{ entity, Entities };
 
-use crate::app::events::*;
 use crate::audio::audio::*;
 use crate::graphics::sprite::Sprite;
-use crate::events::Events;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
-use super::chest::*;
-use super::particle::spawn_spangle;
-
-#[derive(Clone, Constant)]
-pub struct Key;
+use super::pickup::OnPickupDo;
+use super::pickup::OnPickupEffect;
+use super::pickup::OnPickupTune;
+use super::pickup::Pickup;
 
 pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
-        .with(Key)
+        .with(Pickup)
         .with(Position(x, y))
         .with(Sprite::new(4, 7, 0.5))
-        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
-    );
-}
-
-pub fn collect_key(&KeyCollected { id }: &KeyCollected, entities: &mut Entities, events: &mut Events) {
-    if let Some(Position(x, y)) = entities.delete(&id)
-    {
-        spawn_spangle(x, y, entities, events);
-        events.fire(PlayTune(vec![
+        .with(OnPickupEffect::Sparkles)
+        .with(OnPickupTune(vec![
             (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
             (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
             (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-        ]));
-        open_chests(entities, events);    
-    }
+        ]))
+        .with(OnPickupDo::OpenChests)
+        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+    );
 }

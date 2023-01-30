@@ -3,7 +3,6 @@ use std::time::Duration;
 use component_derive::Event;
 
 use crate::app::assets::Assets;
-use crate::entities::pickup::Score;
 use crate::graphics::renderer::{ Renderer, Text, align };
 use crate::world::world::World;
 use crate::game_loop::*;

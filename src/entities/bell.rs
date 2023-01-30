@@ -20,7 +20,7 @@ pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("x2"))
-        .with(OnPickupScore(Score::Double))
+        .with(OnPickupDo::DoubleScore)
         .with(OnPickupTune(vec![
             (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
             (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),

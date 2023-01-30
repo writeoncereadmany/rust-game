@@ -1,6 +1,7 @@
 use std::time::Duration;
 use std::collections::HashSet;
 
+use entity::not;
 use image::{ Rgb, RgbImage };
 
 use component_derive::Event;
@@ -215,7 +216,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         hero_events(&mut self.entities, event, events);
-        update_ruby(event, &mut self.entities, events);
+        chest_events(event, &mut self.entities, events);
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete::<()>(id));
@@ -225,8 +226,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
         event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
         event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
         event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|key| { collect_key(key, &mut self.entities, events) });
-        event.apply(|chest| { open_chest(chest, &mut self.entities, events)});
         event.apply(|flagpole| { collect_flag(flagpole, &mut self.entities, events) });
         event.apply(|pickup| { collect_pickup(pickup, &mut self.entities, events)});
 
@@ -271,7 +270,7 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
                 }
             }
         }
-        LastPush(tot_x_push, tot_y_push)
+        (LastPush(tot_x_push, tot_y_push), not::<Translation>())
     });
 
     entities.apply(|(Hero, Position(x, y), LastPush(px, py))| {
@@ -291,12 +290,6 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Flagpole, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(FlagpoleCollected { id: *id });
-        }
-    });
-
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Key, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
-            events.fire(KeyCollected { id: *id });
         }
     });
 
