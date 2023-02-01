@@ -219,7 +219,7 @@ fn translate(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Velocity(dx, dy), LastPush(px, _py))| {
+    entities.apply(|(Hero, Velocity(dx, dy), LastPush(px, _py))| {
         match px.sign() {
             Sign::POSITIVE => Velocity(dx - WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
             Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
@@ -250,7 +250,7 @@ fn facing(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn clamp(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Velocity(dx, dy), MovingX(x_input))| {
+    entities.apply(|(Hero, Velocity(dx, dy), MovingX(x_input))| {
         if x_input == Sign::ZERO && dx.abs() < STOPPING_SPEED {
             Velocity(0.0, dy)
         } else {
@@ -272,7 +272,7 @@ fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sp
 }
 
 fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
-    entities.apply(|CoyoteTime(direction, _ct)| {
+    entities.apply(|(Hero, CoyoteTime(direction, _ct))| {
         if direction != JumpDirection::NONE {
             events.fire(Jumped(direction));
             Prejump(0.0)
@@ -283,7 +283,7 @@ fn jump(entities: &mut Entities, events: &mut Events, _event: &ButtonPress) {
 }
 
 fn on_jump(entities: &mut Entities, Jumped(direction): &Jumped) {
-    entities.apply(|Velocity(dx, dy)| {
+    entities.apply(|(Hero, Velocity(dx, dy))| {
         match direction {
             JumpDirection::UP => Velocity(dx, JUMP_SPEED),
             JumpDirection::RIGHT => Velocity(WALLJUMP_DX, WALLJUMP_DY),

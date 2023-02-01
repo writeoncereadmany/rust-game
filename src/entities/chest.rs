@@ -13,14 +13,8 @@ use super::pickup::*;
 #[derive(Clone, Constant)]
 pub struct Chest;
 
-#[derive(Clone, Constant)]
-pub struct Floor(f64);
-
 #[derive(Event)]
 pub struct OpenChest { id: u64 }
-
-#[derive(Event)]
-struct RubyGrounded(u64);
 
 pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
@@ -46,7 +40,6 @@ pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {
         .with(Position(x, y + 0.1))
         .with(Velocity(0.0, 20.0))
         .with(Gravity)
-        .with(Floor(y))
         .with(Sprite::new(3, 8, 0.75))
         .with(OnPickupDo::Score(100))
         .with(OnPickupEffect::Sparkles)
@@ -69,12 +62,6 @@ pub fn open_chest(OpenChest { id } : &OpenChest, entities: &mut Entities, events
 }
 
 pub fn chest_events(event: &Event, entities: &mut Entities, events: &mut Events) {
-    event.apply(|_dt : &Duration| entities.apply(|(Position(_, y), Floor(fy), Id(id))| {
-        if y < fy {
-            events.fire(RubyGrounded(id))
-        }
-    }));
-    event.apply(|RubyGrounded(id)| entities.apply_to(id, |(Position(x, _), Floor(fy))| (Position(x, fy), not::<Gravity>(), not::<Velocity>())));
     event.apply(|key| open_chests(key, entities, events));
     event.apply(|chest| open_chest(chest, entities, events));
 }
