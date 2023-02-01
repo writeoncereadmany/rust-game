@@ -19,6 +19,7 @@ use crate::entities::coin::*;
 use crate::entities::timer::*;
 use crate::entities::hero::*;
 use crate::entities::pickup::*;
+use crate::entities::lockbox::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
 use crate::map::Map;
@@ -85,6 +86,8 @@ impl World {
         for (x, y) in pixels(image, &Rgb([255,0,255])) { spawn_bell(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([0,255,255])) { spawn_key(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255,127,0])) { spawn_chest(x as f64, y as f64, &mut entities); }
+        for (x, y) in pixels(image, &Rgb([127,0,255])) { spawn_lockbox(x as f64, y as f64, &mut entities); }
+
 
 
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
@@ -217,6 +220,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         hero_events(&mut self.entities, event, events);
         chest_events(event, &mut self.entities, events);
+        lockbox_events(event, &mut self.entities, events);
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         event.apply(|Destroy(id)| self.entities.delete::<()>(id));

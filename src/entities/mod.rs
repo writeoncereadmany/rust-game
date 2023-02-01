@@ -8,3 +8,4 @@ pub mod hero;
 pub mod particle;
 pub mod pickup;
 pub mod timer;
+pub mod lockbox;
