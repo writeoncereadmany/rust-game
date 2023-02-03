@@ -38,6 +38,12 @@ pub struct ReferenceMesh(pub ConvexMesh);
 #[derive(Clone, Variable)]
 pub struct Mesh(pub ConvexMesh);
 
+#[derive(Clone, Constant)]
+pub struct Obstacle;
+
+#[derive(Clone, Constant)]
+pub struct Collidable;
+
 pub fn next_frame(phase: f64, AnimationCycle(frames): &AnimationCycle) -> Sprite {
     let phase = phase % 1.0;
     for (frame_limit, sprite) in frames {

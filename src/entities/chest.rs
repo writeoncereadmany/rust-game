@@ -37,6 +37,7 @@ pub fn spawn_open_chest(x: f64, y: f64, entities: &mut Entities, events: &mut Ev
 pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Pickup)
+        .with(Collidable)
         .with(Position(x, y + 0.1))
         .with(Velocity(0.0, 20.0))
         .with(Gravity)

@@ -223,37 +223,8 @@ impl Entities {
         T::get(&self.entities.remove(id)?)
     }
 
-    pub fn for_each_pair<A: Component, B: Component>(&self, mut f: impl FnMut(&A, &B)) {
-        let firsts = self.collect::<A>();
-        let seconds = self.collect::<B>();
-        for first in &firsts {
-            for second in &seconds {
-                f(first, second);
-            }
-        }
-    }
-
-    pub fn for_each_iso_pair<A: Component>(&self, mut f: impl FnMut(&A, &A)) {
-        let items = self.collect();
-        for pair in items.iter().combinations(2) {
-            if let &[a, b] = pair.as_slice() {
-                f(a, b);
-            }
-        }
-    }
-
     pub fn collect<T: Component>(&self) -> Vec<T> {
         self.entities.values().flat_map(|entity| T::get(entity)).collect()
-    }
-
-    pub fn apply_to<T: Component, O: Variable>(&mut self, id: &u64, mut f: impl FnMut(T) -> O)
-    {
-        if let Some(entity) = self.entities.get_mut(id) {
-            if let Some(i) = T::get(entity) {
-                let val = f(i);
-                val.set(entity);  
-            } 
-        }
     }
 
     pub fn apply<T: Component, O: Variable>(&mut self, mut f: impl FnMut(T) -> O) 
@@ -275,6 +246,26 @@ impl Entities {
             }
         }
     }
+
+    pub fn for_each_pair<A: Component, B: Component>(&self, mut f: impl FnMut(&A, &B)) {
+        let firsts = self.collect::<A>();
+        let seconds = self.collect::<B>();
+        for first in &firsts {
+            for second in &seconds {
+                f(first, second);
+            }
+        }
+    }
+
+    pub fn for_each_iso_pair<A: Component>(&self, mut f: impl FnMut(&A, &A)) {
+        let items = self.collect();
+        for pair in items.iter().combinations(2) {
+            if let &[a, b] = pair.as_slice() {
+                f(a, b);
+            }
+        }
+    }
+
 }
 
 #[cfg(test)]

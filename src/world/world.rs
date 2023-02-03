@@ -254,11 +254,28 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 const TRANSLATE_EPSILON: f64 = 0.01;
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
-    entities.apply(|(Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
+    let obstacles = entities.collect::<(Obstacle, Mesh)>();
+    entities.apply(|(Collidable, Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
         for (_pos, t) in map.overlapping(&updated_mesh.bbox()) {
             let push = t.mesh.push(&updated_mesh);
+            match push {
+                None => {},
+                Some((x, y)) => {
+                    if x != 0.0 && dx != 0.0 && x.signum() == -dx.signum() && x.abs() <= (tx.abs() + TRANSLATE_EPSILON) {
+                        updated_mesh = updated_mesh.translate(x, 0.0);
+                        tot_x_push += x;
+                    }
+                    if y != 0.0 && dy != 0.0 && y.signum() == -dy.signum() && y.abs() <= (ty.abs() + TRANSLATE_EPSILON) {
+                        updated_mesh = updated_mesh.translate(0.0, y);
+                        tot_y_push += y;
+                    }
+                }
+            }
+        }
+        for (Obstacle, Mesh(mesh)) in &obstacles {
+            let push = mesh.push(&updated_mesh);
             match push {
                 None => {},
                 Some((x, y)) => {
