@@ -230,11 +230,15 @@ fn translate(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Hero, Velocity(dx, dy), LastPush(px, _py))| {
-        match px.sign() {
-            Sign::POSITIVE => Velocity(dx - WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
-            Sign::NEGATIVE => Velocity(dx + WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
-            Sign::ZERO => Velocity(dx, dy)
+    entities.apply(|(Hero, Velocity(dx, dy), MovingX(x_input), LastPush(px, _py))| {
+        match (px.sign(), x_input) {
+            (Sign::POSITIVE, Sign::NEGATIVE) => Velocity(dx - WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
+            (Sign::POSITIVE, Sign::ZERO) => Velocity(dx - WALL_STICK, dy),
+
+            (Sign::NEGATIVE, Sign::POSITIVE) => Velocity(dx + WALL_STICK, dy.max(MAX_WALL_FALL_SPEED)),
+            (Sign::NEGATIVE, Sign::ZERO) => Velocity(dx + WALL_STICK, dy),
+
+            _otherwise => Velocity(dx, dy)
         }
     })
 }

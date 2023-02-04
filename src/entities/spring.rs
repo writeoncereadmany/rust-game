@@ -55,13 +55,17 @@ pub fn spring_events(event: &Event, entities: &mut Entities, _events: &mut Event
 
 fn animate_spring(last_trigger: Option<SinceLastTrigger>) -> Sprite {
     if let Some(SinceLastTrigger(t)) = last_trigger {
-        if t < 0.1 {
+        if t < 0.05 {
             SPRING_MID
-        } else if t < 0.45 {
+        } else if t < 0.15 {
+            SPRING_UP
+        } else if t < 0.3 {
+            SPRING_MID
+        } else if t < 0.5 {
             SPRING_UP
         } else {
             SPRING_MID
-        } 
+        }
     } else {
         SPRING_DOWN
     }
