@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use component_derive::Constant;
 use entity::{ entity, Entities };
 
 use crate::audio::audio::*;
@@ -8,9 +7,6 @@ use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::pickup::*;
-
-#[derive(Clone, Constant)]
-pub struct Bell;
 
 pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()

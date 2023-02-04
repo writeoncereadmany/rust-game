@@ -7,6 +7,7 @@ pub mod flagpole;
 pub mod hero;
 pub mod particle;
 pub mod pickup;
+pub mod spring;
 pub mod timer;
 pub mod lockbox;
 

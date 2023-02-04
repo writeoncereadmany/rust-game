@@ -10,6 +10,7 @@ use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::audio::audio::*;
 use crate::entities::entity_events;
+use crate::entities::spring::spawn_spring;
 use crate::shapes::push::Push;
 use crate::entities::flagpole::*;
 use crate::entities::bell::*;
@@ -81,7 +82,7 @@ impl World {
         for (x, y) in pixels(image, &Rgb([0,255,255])) { spawn_key(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([255,127,0])) { spawn_chest(x as f64, y as f64, &mut entities); }
         for (x, y) in pixels(image, &Rgb([127,0,255])) { spawn_lockbox(x as f64, y as f64, &mut entities); }
-
+        for (x, y) in pixels(image, &Rgb([255,0,127])) { spawn_spring(x as f64, y as f64, &mut entities); }
 
 
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
