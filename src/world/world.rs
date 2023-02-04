@@ -4,12 +4,12 @@ use std::collections::HashSet;
 use entity::not;
 use image::{ Rgb, RgbImage };
 
-use component_derive::Event;
 use entity::{ Id, Entities };
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::audio::audio::*;
+use crate::entities::entity_events;
 use crate::shapes::push::Push;
 use crate::entities::flagpole::*;
 use crate::entities::bell::*;
@@ -34,12 +34,6 @@ pub enum Tile {
     STONE((i32, i32)),
     LEDGE((i32, i32))
 }
-
-#[derive(Event)]
-struct SpawnHero(f64, f64, PandaType);
-
-#[derive(Event)]
-struct SpawnTimer(f64, f64);
 
 impl Tiled for Tile {
     fn tile(&self) -> (i32, i32) {
@@ -218,20 +212,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     }
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
-        hero_events(&mut self.entities, event, events);
-        chest_events(event, &mut self.entities, events);
-        lockbox_events(event, &mut self.entities, events);
+        entity_events(event, &mut self.entities, events);
         event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
-        event.apply(|Destroy(id)| self.entities.delete::<()>(id));
-        event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, &mut self.entities));
-        event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, &mut self.entities));
-        event.apply(|&SpawnParticle(x, y)| spawn_spangle(x, y, &mut self.entities, events));
-        event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, &mut self.entities, events));
-        event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, &mut self.entities, events));
-        event.apply(|&SpawnFlashBulb(x, y)| spawn_flashbulb(x, y, &mut self.entities, events));
-        event.apply(|pickup| { collect_pickup(pickup, &mut self.entities, events)});
-
         Ok(())
     }
 }
@@ -254,7 +237,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 const TRANSLATE_EPSILON: f64 = 0.01;
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
-    let obstacles = entities.collect::<(Obstacle, Mesh)>();
+    let collidables = entities.collect::<(Obstacle, Mesh)>();
     entities.apply(|(Collidable, Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
@@ -274,7 +257,7 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
                 }
             }
         }
-        for (Obstacle, Mesh(mesh)) in &obstacles {
+        for (Obstacle, Mesh(mesh)) in &collidables {
             let push = mesh.push(&updated_mesh);
             match push {
                 None => {},

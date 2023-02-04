@@ -1,6 +1,6 @@
 use component_derive::Event;
 
-use crate::events::EventTrait;
+use crate::{events::EventTrait, entities::hero::PandaType};
 
 #[derive(Event)]
 pub struct FlagpoleCollected { pub id: u64 }
@@ -28,6 +28,13 @@ pub struct SpawnBulb(pub f64, pub f64);
 
 #[derive(Event)]
 pub struct SpawnFlashBulb(pub f64, pub f64);
+
+#[derive(Event)]
+pub struct SpawnHero(pub f64, pub f64, pub PandaType);
+
+#[derive(Event)]
+pub struct SpawnTimer(pub f64, pub f64);
+
 
 #[derive(Clone, Event)]
 pub enum Score {

@@ -3,6 +3,7 @@ use std::time::Duration;
 use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities };
 
+use crate::app::events::SpawnHero;
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::events::*;
 use crate::graphics::sprite::Sprite;
@@ -100,6 +101,7 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|buttonpress| jump(entities, events, buttonpress));
     event.apply(|jump| on_jump(entities, jump));
     event.apply(|dt| update_hero(entities, dt, events));
+    event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, entities));
 }
 
 fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
