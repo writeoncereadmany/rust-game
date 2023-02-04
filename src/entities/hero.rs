@@ -3,7 +3,7 @@ use std::time::Duration;
 use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities };
 
-use crate::app::events::SpawnHero;
+use crate::app::events::{SpawnHero, Interaction};
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::events::*;
 use crate::graphics::sprite::Sprite;
@@ -22,6 +22,7 @@ const WALLJUMP_DX: f64 = 10.0;
 const WALL_STICK: f64 = 0.1;
 const MAX_WALL_FALL_SPEED: f64 = -8.0;
 const JUMP_SPEED: f64 = 15.0;
+const SPRING_BOUNCE_SPEED: f64 = 45.0;
 const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.2;
@@ -102,6 +103,13 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|jump| on_jump(entities, jump));
     event.apply(|dt| update_hero(entities, dt, events));
     event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, entities));
+    event.apply(|&Interaction { hero_id, interaction_type, .. }| { handle_interaction(hero_id, interaction_type, entities)});
+}
+
+fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut Entities) {
+    if interaction_type == Interacts::Spring {
+        entities.apply_to(&hero_id, |(Hero, Velocity(dx, _dy))| { Velocity(dx, SPRING_BOUNCE_SPEED)});
+    }
 }
 
 fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
