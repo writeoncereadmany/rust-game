@@ -27,7 +27,7 @@ pub fn spawn_spring(x: f64, y: f64, entities: &mut Entities) {
         .with(Spring)
         .with(Position(x, y))
         .with(Interacts::Spring)
-        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 0.2), (0.0, 0.2)], vec![]).translate(x, y)))
+        .with(Mesh(ConvexMesh::new(vec![(0.3, 0.0), (0.7, 0.0), (0.7, 0.2), (0.3, 0.2)], vec![]).translate(x, y)))
         .with(SPRING_DOWN)
     );
 }
