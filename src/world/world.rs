@@ -223,7 +223,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
-    age(&mut world.entities, dt);
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
     map_collisions(&mut world.entities, &world.map);
@@ -293,6 +292,15 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
     entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Pickup, Id(id), Mesh(mesh))| {
         if hero_mesh.bbox().touches(&mesh.bbox()) {
             events.fire(PickupCollected(*id));
+        }
+    });
+
+    entities.for_each_pair(|(Hero, Id(hero_id), Mesh(hero_mesh)), (interaction_type, Id(other_id), Mesh(other_mesh))| {
+        if hero_mesh.bbox().touches(&other_mesh.bbox()) {
+            events.fire(Interaction { 
+                hero_id: *hero_id, 
+                other_id: *other_id, 
+                interaction_type: *interaction_type });
         }
     });
 }

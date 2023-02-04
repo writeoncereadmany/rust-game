@@ -5,12 +5,6 @@ use crate::shapes::convex_mesh::ConvexMesh;
 use crate::graphics::sprite::Sprite;
 use entity::*;
 
-#[derive(Clone, Variable)]
-pub struct Age(pub f64);
-
-pub fn age(entities: &mut Entities, dt: &Duration) {
-    entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
-}
 
 #[derive(Clone, Variable)]
 pub struct Gravity;
@@ -40,6 +34,11 @@ pub struct Mesh(pub ConvexMesh);
 
 #[derive(Clone, Constant)]
 pub struct Obstacle;
+
+#[derive(Clone, Copy, Constant, PartialEq, Eq)]
+pub enum Interacts {
+    Spring
+}
 
 #[derive(Clone, Constant)]
 pub struct Collidable;

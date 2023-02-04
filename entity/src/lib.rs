@@ -237,6 +237,17 @@ impl Entities {
         }
     }
 
+
+    pub fn apply_to<T: Component, O: Variable>(&mut self, id: &u64, mut f: impl FnMut(T) -> O) 
+    {
+        if let Some(entity) = self.entities.get_mut(id) {
+            if let Some(i) = T::get(entity) {
+                let val = f(i);
+                val.set(entity);  
+            } 
+        }
+    }
+
     pub fn for_each<T: Component>(&self, mut f: impl FnMut(T)) 
     {
         for entity in self.entities.values() {

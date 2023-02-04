@@ -21,6 +21,7 @@ use self::hero::hero_events;
 use self::lockbox::lockbox_events;
 use self::particle::*;
 use self::pickup::collect_pickup;
+use self::spring::spring_events;
 use self::timer::spawn_timer;
 
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
@@ -29,6 +30,7 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
     chest_events(event, entities, events);
     lockbox_events(event, entities, events);
     spawn_events(event, entities, events);
+    spring_events(event, entities, events);
     event.apply(|Destroy(id)| entities.delete::<()>(id));
     event.apply(|pickup| { collect_pickup(pickup, entities, events)});
 }
