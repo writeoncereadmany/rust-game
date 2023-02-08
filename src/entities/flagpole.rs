@@ -3,6 +3,7 @@ use std::time::Duration;
 use entity::{ entity, Entities };
 
 use crate::audio::audio::*;
+use crate::audio::instrument::BELL;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::graphics::sprite::Sprite;
 
@@ -26,19 +27,19 @@ pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
         .with(Period(0.2))
         .with(Phase(0.0))
         .with(OnPickupTune(vec![
-            (Duration::from_millis(0), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-            (Duration::from_millis(30), Note::Wave { pitch: Bb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(60), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(90), Note::Wave { pitch: C * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(120), Note::Wave { pitch: Db * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(150), Note::Wave { pitch: D * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(180), Note::Wave { pitch: Eb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(210), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(240), Note::Wave { pitch: F * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(270), Note::Wave { pitch: Gb * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(300), Note::Wave { pitch: G * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(330), Note::Wave { pitch: Ab * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(360), Note::Wave { pitch: A * 4.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(0), BELL.note(A, 3, 0.0)),
+            (Duration::from_millis(30), BELL.note(Bb, 3, 0.0)),
+            (Duration::from_millis(60), BELL.note(B, 3, 0.0)),
+            (Duration::from_millis(90), BELL.note(C, 3, 0.0)),
+            (Duration::from_millis(120), BELL.note(Db, 3, 0.0)),
+            (Duration::from_millis(150), BELL.note(D, 3, 0.0)),
+            (Duration::from_millis(180), BELL.note(Eb, 3, 0.0)),
+            (Duration::from_millis(210), BELL.note(E, 3, 0.0)),
+            (Duration::from_millis(240), BELL.note(F, 3, 0.0)),
+            (Duration::from_millis(270), BELL.note(Gb, 3, 0.0)),
+            (Duration::from_millis(300), BELL.note(G, 3, 0.0)),
+            (Duration::from_millis(330), BELL.note(Ab, 4, 0.0)),
+            (Duration::from_millis(360), BELL.note(A, 4, 0.0)),
         ]))
         .with(OnPickupDo::CompleteLevel)
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))

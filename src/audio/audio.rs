@@ -28,7 +28,7 @@ pub const Fs: f32 = 369.994;
 pub const Gb: f32 = Fs;
 pub const G: f32 = 391.995;
 pub const Gs: f32 = 415.305;
-pub const Ab: f32 = Gs;
+pub const Ab: f32 = Gs / 2.0;
 
 #[derive(Event)]
 pub struct PlayTune(pub Vec<(Duration, Note)>);

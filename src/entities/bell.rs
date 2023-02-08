@@ -3,6 +3,7 @@ use std::time::Duration;
 use entity::{ entity, Entities };
 
 use crate::audio::audio::*;
+use crate::audio::instrument::BELL;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
@@ -18,9 +19,9 @@ pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
         .with(OnPickupText("x2"))
         .with(OnPickupDo::DoubleScore)
         .with(OnPickupTune(vec![
-            (Duration::from_millis(0), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
-            (Duration::from_millis(60), Note::Wave { pitch: E * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(120), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.3, 0.0)]) }),
+            (Duration::from_millis(0), BELL.note(B, 2, 0.0)),
+            (Duration::from_millis(60), BELL.note(E, 2, 0.0)),
+            (Duration::from_millis(120), BELL.note(B, 2, 0.0)),
         ]))
     );
 }
