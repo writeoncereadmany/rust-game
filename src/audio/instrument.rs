@@ -1,4 +1,4 @@
-use super::audio::{Note, EnvSpec, Waveform, A, G};
+use super::audio::*;
 
 pub const BELL : Instrument = Instrument { waveform: Waveform::Triangle(0.5), enveloper: Enveloper::Decay { decay: 0.5, volume: 0.25 }};
 pub const FLUTE: Instrument = Instrument { waveform: Waveform::Sine, enveloper: Enveloper::ADSR { attack: 0.1, decay: 0.2, release: 0.3, peak: 0.25, sustained: 0.15 }};
