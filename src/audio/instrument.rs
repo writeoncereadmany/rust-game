@@ -1,0 +1,45 @@
+use super::audio::{Note, EnvSpec};
+
+pub const BELL : Instrument = Instrument { enveloper: Enveloper::Decay { decay: 0.5, volume: 0.25 }};
+pub const FLUTE: Instrument = Instrument { enveloper: Enveloper::ADSR { attack: 0.1, decay: 0.2, release: 0.3, peak: 0.25, sustained: 0.15 }};
+
+pub struct Instrument {
+    enveloper: Enveloper
+}
+
+pub enum Enveloper {
+    Decay { decay: f32, volume: f32 },
+    ADSR { attack: f32, decay: f32, release: f32, peak: f32, sustained: f32 }
+}
+
+impl Enveloper {
+    fn envelope(&self, duration: f32) -> EnvSpec {
+        match self {
+            &Enveloper::ADSR { attack, decay, release, peak, sustained } => {
+                let sustain = (duration - (attack + decay)).min(0.0);
+
+                EnvSpec::vols(vec![
+                (0.0, 0.0),
+                (attack, peak),
+                (decay, sustained),
+                (sustain, sustained),
+                (release, 0.0)
+            ])},
+            &Enveloper::Decay { decay, volume } => {
+                EnvSpec::vols(vec![
+                    (0.0, volume),
+                    (decay, 0.0)
+                ])
+            }
+        }
+    }
+}
+
+impl Instrument {
+    pub fn note(&self, pitch: f32, octave: i32, duration: f32) ->  Note {
+        // A as defined in audio.rs is A3, and so on from there, so normalise to that:
+        let normalised_octave = octave - 2;
+        let octaved_pitch = (2.0_f32).powf(normalised_octave as f32) * pitch;
+        Note::Wave { pitch: octaved_pitch, envelope: self.enveloper.envelope(duration) }
+    }
+}
