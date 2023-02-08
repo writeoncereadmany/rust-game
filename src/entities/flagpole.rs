@@ -3,7 +3,7 @@ use std::time::Duration;
 use entity::{ entity, Entities };
 
 use crate::audio::audio::*;
-use crate::audio::instrument::BELL;
+use crate::audio::instrument::*;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::graphics::sprite::Sprite;
 
@@ -27,19 +27,19 @@ pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
         .with(Period(0.2))
         .with(Phase(0.0))
         .with(OnPickupTune(vec![
-            (Duration::from_millis(0), BELL.note(A, 3, 0.0)),
-            (Duration::from_millis(30), BELL.note(Bb, 3, 0.0)),
-            (Duration::from_millis(60), BELL.note(B, 3, 0.0)),
-            (Duration::from_millis(90), BELL.note(C, 3, 0.0)),
-            (Duration::from_millis(120), BELL.note(Db, 3, 0.0)),
-            (Duration::from_millis(150), BELL.note(D, 3, 0.0)),
-            (Duration::from_millis(180), BELL.note(Eb, 3, 0.0)),
-            (Duration::from_millis(210), BELL.note(E, 3, 0.0)),
-            (Duration::from_millis(240), BELL.note(F, 3, 0.0)),
-            (Duration::from_millis(270), BELL.note(Gb, 3, 0.0)),
-            (Duration::from_millis(300), BELL.note(G, 3, 0.0)),
-            (Duration::from_millis(330), BELL.note(Ab, 4, 0.0)),
-            (Duration::from_millis(360), BELL.note(A, 4, 0.0)),
+            (Duration::from_millis(0), FLUTE.note(A, 3, 0.1)),
+            (Duration::from_millis(30), FLUTE.note(Bb, 3, 0.1)),
+            (Duration::from_millis(60), FLUTE.note(B, 3, 0.1)),
+            (Duration::from_millis(90), FLUTE.note(C, 3, 0.1)),
+            (Duration::from_millis(120), FLUTE.note(Db, 3, 0.1)),
+            (Duration::from_millis(150), FLUTE.note(D, 3, 0.1)),
+            (Duration::from_millis(180), FLUTE.note(Eb, 3, 0.1)),
+            (Duration::from_millis(210), FLUTE.note(E, 3, 0.1)),
+            (Duration::from_millis(240), FLUTE.note(F, 3, 0.1)),
+            (Duration::from_millis(270), FLUTE.note(Gb, 3, 0.1)),
+            (Duration::from_millis(300), FLUTE.note(G, 3, 0.1)),
+            (Duration::from_millis(330), FLUTE.note(Ab, 4, 0.1)),
+            (Duration::from_millis(360), FLUTE.note(A, 4, 0.1)),
         ]))
         .with(OnPickupDo::CompleteLevel)
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
