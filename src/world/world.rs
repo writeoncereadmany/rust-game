@@ -9,6 +9,7 @@ use entity::{ Id, Entities };
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::audio::audio::*;
+use crate::audio::instrument::OBOE;
 use crate::entities::entity_events;
 use crate::entities::spring::spawn_spring;
 use crate::shapes::push::Push;
@@ -99,14 +100,14 @@ impl World {
         events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
 
         events.fire(PlayTune(vec![
-            (Duration::from_millis(0), Note::Wave { pitch: C, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(150), Note::Wave { pitch: D, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(300), Note::Wave { pitch: E, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(450), Note::Wave { pitch: F, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(600), Note::Wave { pitch: G, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(750), Note::Wave { pitch: A * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(900), Note::Wave { pitch: B * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
-            (Duration::from_millis(1050), Note::Wave { pitch: C * 2.0, envelope: EnvSpec::vols(vec![(0.0, 0.25), (0.5, 0.0)]) }),
+            (Duration::from_millis(0), OBOE.note(C, 2, 0.15)),
+            (Duration::from_millis(150), OBOE.note(D, 2, 0.15)),
+            (Duration::from_millis(300), OBOE.note(E, 2, 0.15)),
+            (Duration::from_millis(450), OBOE.note(F, 2, 0.15)),
+            (Duration::from_millis(600), OBOE.note(G, 2, 0.15)),
+            (Duration::from_millis(750), OBOE.note(A, 3, 0.15)),
+            (Duration::from_millis(900), OBOE.note(B, 3, 0.15)),
+            (Duration::from_millis(1050), OBOE.note(C, 3, 0.15)),
         ]));
 
         World {

@@ -36,7 +36,7 @@ pub struct PlayTune(pub Vec<(Duration, Note)>);
 #[derive(Clone, Debug)]
 pub enum Note {
     Silence,
-    Wave { pitch: f32, envelope: EnvSpec },
+    Wave { pitch: f32, envelope: EnvSpec, waveform: Waveform },
     Noise { low: f32, high: f32, envelope: EnvSpec }
 }
 
@@ -283,7 +283,7 @@ impl AudioPlayer {
         };
     
         let channel = match note {
-            Note::Wave{ pitch, envelope } => {
+            Note::Wave{ pitch, envelope , waveform } => {
                 let envelope = envelope.for_frequency(freq);
                 Channel::Wave(Wave {
                     phase_inc: pitch / freq as f32,
@@ -312,7 +312,7 @@ impl AudioPlayer {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Waveform {
     Pulse(f32),
     Sine,
