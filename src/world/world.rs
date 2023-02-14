@@ -99,7 +99,7 @@ impl World {
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
 
-        events.fire(PlayTune(vec![
+        events.fire(PlayTune(3, vec![
             (Duration::from_millis(0), OBOE.note(C, 2, 0.15)),
             (Duration::from_millis(150), OBOE.note(D, 2, 0.15)),
             (Duration::from_millis(300), OBOE.note(E, 2, 0.15)),

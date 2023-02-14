@@ -31,7 +31,7 @@ pub const Gs: f32 = 415.305;
 pub const Ab: f32 = Gs / 2.0;
 
 #[derive(Event)]
-pub struct PlayTune(pub Vec<(Duration, Note)>);
+pub struct PlayTune(pub usize, pub Vec<(Duration, Note)>);
 
 #[derive(Clone, Debug)]
 pub enum Note {
@@ -143,8 +143,8 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
     Ok(audio_device)
 }
 
-pub fn play_tune(device: &mut AudioDevice<AudioPlayer>, PlayTune(tune): &PlayTune) {
-    device.lock().cue(tune);
+pub fn play_tune(device: &mut AudioDevice<AudioPlayer>, PlayTune(channel, tune): &PlayTune) {
+    device.lock().cue(*channel, tune);
 }
 
 struct Wave {
@@ -196,6 +196,8 @@ impl Channel {
 pub struct Cue {
     #[derivative(PartialOrd(compare_with="partial_reversed"), Ord(compare_with="reversed"))]
     start_at: u64,
+    #[derivative(PartialEq="ignore", PartialOrd="ignore", Ord="ignore")]
+    channel: usize,
     #[derivative(PartialEq="ignore", PartialOrd="ignore", Ord="ignore")]
     note: Note
 }
@@ -255,12 +257,12 @@ impl AudioCallback for AudioPlayer {
 
 impl AudioPlayer {
 
-    fn cue(&mut self, tune: &Vec<(Duration, Note)>) {
+    fn cue(&mut self, channel: usize, tune: &Vec<(Duration, Note)>) {
         self.queue.clear();
         for (delay, note) in tune {
             let cycles_before_start = (delay.as_secs_f64() * self.freq as f64) as u64;
             let start_at = cycles_before_start + self.cycles;
-            self.queue.push(Cue { start_at, note: note.clone() });
+            self.queue.push(Cue { start_at, channel, note: note.clone() });
         }
     }
 
@@ -344,10 +346,10 @@ mod tests {
     fn should_iterate_over_cues_in_increasing_time_order(){
         let mut heap = BinaryHeap::new();
 
-        heap.push(Cue { start_at: 1, note: Note::Silence });
-        heap.push(Cue { start_at: 2, note: Note::Silence });
-        heap.push(Cue { start_at: 3, note: Note::Silence });
-        heap.push(Cue { start_at: 4, note: Note::Silence });
+        heap.push(Cue { start_at: 1, channel: 0, note: Note::Silence });
+        heap.push(Cue { start_at: 2, channel: 0, note: Note::Silence });
+        heap.push(Cue { start_at: 3, channel: 0, note: Note::Silence });
+        heap.push(Cue { start_at: 4, channel: 0, note: Note::Silence });
 
         assert_eq!(heap.pop().unwrap().start_at, 1);
         assert_eq!(heap.pop().unwrap().start_at, 2);
