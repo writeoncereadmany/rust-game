@@ -134,7 +134,7 @@ pub fn initialise_audio(sdl_context: &sdl2::Sdl) -> Result<AudioDevice<AudioPlay
             freq: spec.freq,
             cycles: 0,
             queue: BinaryHeap::new(),
-            channel: Channel::Silence {}
+            channel: [Channel::Silence {}, Channel::Silence{}, Channel::Silence {}, Channel::Silence{}]
         }
     }).unwrap();
 
@@ -215,12 +215,12 @@ pub struct AudioPlayer {
     freq: i32,
     cycles: u64,
     queue: BinaryHeap<Cue>,
-    channel: Channel
+    channel: [Channel;4]
 }
 
 impl AudioPlayer {
-    fn set_channel(&mut self, channel: Channel) {
-        self.channel = channel;
+    fn set_channel(&mut self, channel: Channel, channel_no: usize) {
+        self.channel[channel_no] = channel;
     }
 }
 
@@ -234,19 +234,20 @@ impl AudioCallback for AudioPlayer {
                 self.play(&note);
             }
 
-            
-            match &self.channel {
-                Channel::Wave(Wave { phase, envelope, waveform, cycle, .. }) => {
-                    *x = waveform.amplitude(*phase) * envelope.volume(*cycle);
-                },
-                Channel::Silence {} => {
-                    *x = 0.0;
-                },
-                Channel::Noise(Noise { up, envelope, cycle , .. }) => {
-                    *x = if *up { envelope.volume(*cycle) } else { -envelope.volume(*cycle) }; 
+            *x = 0.0;
+
+            for channel in &mut self.channel {
+                match channel {
+                    Channel::Wave(Wave { phase, envelope, waveform, cycle, .. }) => {
+                        *x += waveform.amplitude(*phase) * envelope.volume(*cycle);
+                    },
+                    Channel::Silence {} => { },
+                    Channel::Noise(Noise { up, envelope, cycle , .. }) => {
+                        *x += if *up { envelope.volume(*cycle) } else { -envelope.volume(*cycle) }; 
+                    }
                 }
+                channel.next_cycle(&mut self.rng);
             }
-            self.channel.next_cycle(&mut self.rng);
             self.cycles += 1;
         }
     } 
@@ -277,7 +278,8 @@ impl AudioPlayer {
     fn play(&mut self, note: &Note) {
         let freq = self.freq;
 
-        let current_phase = match self.channel {
+        
+        let current_phase = match self.channel[0] {
             Channel::Wave(Wave { phase, ..}) => phase,
             _ => 0.0
         };
@@ -289,7 +291,7 @@ impl AudioPlayer {
                     phase_inc: pitch / freq as f32,
                     phase: current_phase,
                     envelope,
-                    waveform: Waveform::Triangle(0.5),
+                    waveform: *waveform,
                     cycle: 0,
                 })
             },
@@ -308,7 +310,7 @@ impl AudioPlayer {
             },
             Note::Silence => Channel::Silence
         };
-        self.set_channel(channel);
+        self.set_channel(channel, 0);
     }
 }
 
