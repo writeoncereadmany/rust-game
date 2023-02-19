@@ -5,6 +5,7 @@ pub const FLUTE: Instrument = Instrument { waveform: Waveform::Sine, enveloper: 
 pub const OBOE: Instrument = Instrument { waveform: Waveform::Pulse(0.5), enveloper: Enveloper::ADSR { attack: 0.15, decay: 0.15, release: 0.3, peak: 0.05, sustained: 0.03 }};
 pub const CYMBAL: Percussion = Percussion { low: A*2.0, high: A*8.0, enveloper: Enveloper::Decay { decay: 0.5, volume: 0.25 }};
 
+#[derive(Debug, PartialEq)]
 pub enum Enveloper {
     Decay { decay: f32, volume: f32 },
     ADSR { attack: f32, decay: f32, release: f32, peak: f32, sustained: f32 }
@@ -33,6 +34,7 @@ impl Enveloper {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Instrument {
     waveform: Waveform, 
     enveloper: Enveloper,

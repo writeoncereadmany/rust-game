@@ -30,10 +30,10 @@ pub const G: f32 = 391.995;
 pub const Gs: f32 = 415.305;
 pub const Ab: f32 = Gs / 2.0;
 
-#[derive(Event)]
+#[derive(Event, Debug, PartialEq)]
 pub struct PlayTune(pub usize, pub Vec<(Duration, Note)>);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Note {
     Silence,
     Wave { pitch: f32, envelope: EnvSpec, waveform: Waveform },
@@ -93,7 +93,7 @@ impl Envelope for Envelopes {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EnvSpec (Vec<(f32, f32)>);
 
 impl EnvSpec {
@@ -316,7 +316,7 @@ impl AudioPlayer {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Waveform {
     Pulse(f32),
     Sine,
