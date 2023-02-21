@@ -103,7 +103,7 @@ impl World {
 
         let tempo = Tempo::new(4, 120);
 
-        let tune = tempo.using(&BASS, 1)
+        let bassline = tempo.using(&BASS, 0)
             .play(1.0, 0.25, C, 0)
             .play(1.25, 0.25, G, 0)
             .play(1.5, 0.25, G, 0)
@@ -113,9 +113,35 @@ impl World {
             .play(2.75, 0.5, G, 0)
             .play(3.25, 0.25, C, 0)
             .play(3.5, 0.5, G, 0)
+            .play(4.0, 0.5, Bb, 0)
+            .play(4.5, 0.5, B, 0)
+            .bar(2)
+            .play(1.0, 0.25, C, 0)
+            .play(1.25, 0.25, G, 0)
+            .play(1.5, 0.25, G, 0)
+            .play(1.75, 0.25, C, 0)
+            .play(2.0, 0.5, G, 0)
+            .play(2.5, 0.25, C, 0)
+            .play(2.75, 0.5, G, 0)
+            .play(3.25, 0.25, C, 0)
+            .play(3.5, 0.5, G, 0)
+            .play(4.0, 0.5, Bb, 0)
+            .play(4.5, 0.5, B, 0)
             .build();
 
-        events.fire(tune);
+        let arpeggio = tempo.using(&OBOE, 1)
+            .play(1.0, 0.25, C, 3)
+            .play(1.25, 0.25, F, 3)
+            .play(1.5, 0.25, G, 3)
+            .play(1.75, 0.25, F, 3)
+            .play(2.0, 0.25, C, 4)
+            .play(2.25, 0.25, B, 4)
+            .play(2.5, 0.25, F, 4)
+            .play(2.75, 0.25, G, 4)
+            .build();
+
+        events.fire(bassline);
+        // events.fire(arpeggio);
 
         World {
             map,
