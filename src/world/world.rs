@@ -136,12 +136,31 @@ impl World {
             .play(1.75, 0.25, F, 3)
             .play(2.0, 0.25, C, 4)
             .play(2.25, 0.25, B, 4)
-            .play(2.5, 0.25, F, 4)
-            .play(2.75, 0.25, G, 4)
+            .play(2.5, 0.25, F, 3)
+            .play(2.75, 0.5, G, 3)
+            .play(3.25, 0.25, F, 3)
+            .play(3.5, 0.25, G, 3)
+            .play(3.75, 0.25, F, 3)
+            .play(4.0, 0.5, E, 3)
+            .play(4.5, 0.5, D, 3)
+            .bar(2)
+            .play(1.0, 0.25, C, 3)
+            .play(1.25, 0.25, F, 3)
+            .play(1.5, 0.25, G, 3)
+            .play(1.75, 0.25, F, 3)
+            .play(2.0, 0.25, C, 4)
+            .play(2.25, 0.25, B, 4)
+            .play(2.5, 0.25, F, 3)
+            .play(2.75, 0.5, G, 3)
+            .play(3.25, 0.25, F, 3)
+            .play(3.5, 0.25, G, 3)
+            .play(3.75, 0.25, F, 3)
+            .play(4.0, 0.5, E, 3)
+            .play(4.5, 0.5, D, 3)
             .build();
 
         events.fire(bassline);
-        // events.fire(arpeggio);
+        events.fire(arpeggio);
 
         World {
             map,

@@ -232,8 +232,8 @@ impl AudioCallback for AudioPlayer {
     fn callback(&mut self, out: &mut [f32]) {
         for x in out.iter_mut() {
 
-            if let Some(note) = self.due() {
-                self.play(&note);
+            while let Some((channel, note)) = self.due() {
+                self.play(channel, &note);
             }
 
             *x = 0.0;
@@ -258,7 +258,6 @@ impl AudioCallback for AudioPlayer {
 impl AudioPlayer {
 
     fn cue(&mut self, channel: usize, tune: &Vec<(Duration, Note)>) {
-        self.queue.clear();
         for (delay, note) in tune {
             let cycles_before_start = (delay.as_secs_f64() * self.freq as f64) as u64;
             let start_at = cycles_before_start + self.cycles;
@@ -266,18 +265,18 @@ impl AudioPlayer {
         }
     }
 
-    fn due(&mut self) -> Option<Note> {
+    fn due(&mut self) -> Option<(usize, Note)> {
         if match self.queue.peek() {
             Some(cue) if cue.start_at <= self.cycles => true,
             _otherwise => false
         } {
-            self.queue.pop().map(|cue| cue.note)
+            self.queue.pop().map(|cue| (cue.channel, cue.note))
         } else {
             Option::None
         }
     }
 
-    fn play(&mut self, note: &Note) {
+    fn play(&mut self, channel_no: usize, note: &Note) {
         let freq = self.freq;
 
         
@@ -312,7 +311,7 @@ impl AudioPlayer {
             },
             Note::Silence => Channel::Silence
         };
-        self.set_channel(channel, 0);
+        self.set_channel(channel, channel_no);
     }
 }
 
