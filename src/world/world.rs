@@ -9,7 +9,9 @@ use entity::{ Id, Entities };
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::audio::audio::*;
+use crate::audio::instrument::BASS;
 use crate::audio::instrument::OBOE;
+use crate::audio::tempo::Tempo;
 use crate::entities::entity_events;
 use crate::entities::spring::spawn_spring;
 use crate::shapes::push::Push;
@@ -99,16 +101,21 @@ impl World {
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
 
-        events.fire(PlayTune(3, vec![
-            (Duration::from_millis(0), OBOE.note(C, 2, 0.15)),
-            (Duration::from_millis(150), OBOE.note(D, 2, 0.15)),
-            (Duration::from_millis(300), OBOE.note(E, 2, 0.15)),
-            (Duration::from_millis(450), OBOE.note(F, 2, 0.15)),
-            (Duration::from_millis(600), OBOE.note(G, 2, 0.15)),
-            (Duration::from_millis(750), OBOE.note(A, 3, 0.15)),
-            (Duration::from_millis(900), OBOE.note(B, 3, 0.15)),
-            (Duration::from_millis(1050), OBOE.note(C, 3, 0.15)),
-        ]));
+        let tempo = Tempo::new(4, 120);
+
+        let tune = tempo.using(&BASS, 1)
+            .play(1.0, 0.25, C, 0)
+            .play(1.25, 0.25, G, 0)
+            .play(1.5, 0.25, G, 0)
+            .play(1.75, 0.25, C, 0)
+            .play(2.0, 0.5, G, 0)
+            .play(2.5, 0.25, C, 0)
+            .play(2.75, 0.5, G, 0)
+            .play(3.25, 0.25, C, 0)
+            .play(3.5, 0.5, G, 0)
+            .build();
+
+        events.fire(tune);
 
         World {
             map,

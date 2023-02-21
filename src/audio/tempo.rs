@@ -2,17 +2,17 @@ use std::time::Duration;
 use super::instrument::*;
 use super::audio::*;
 
-struct Tempo {
+pub struct Tempo {
     beats: usize,
     beat_length: f32
 }
 
 impl Tempo {
-    fn new(beats: usize, bpm: usize) -> Tempo {
+    pub fn new(beats: usize, bpm: usize) -> Tempo {
         Tempo { beats, beat_length : 60.0 / bpm as f32 }
     }
 
-    fn using<'a>(&'a self, instrument: &'a Instrument, channel: usize) -> TuneBuilder<'a> {
+    pub fn using<'a>(&'a self, instrument: &'a Instrument, channel: usize) -> TuneBuilder<'a> {
         TuneBuilder {
             tempo: self,
             instrument,
@@ -29,7 +29,7 @@ impl Tempo {
     }
 }
 
-struct TuneBuilder<'a> {
+pub struct TuneBuilder<'a> {
     tempo: &'a Tempo,
     instrument: &'a Instrument,
     channel: usize,
@@ -39,18 +39,18 @@ struct TuneBuilder<'a> {
 
 impl <'a> TuneBuilder<'a> {
 
-    fn play(mut self, beat: f32, length: f32, pitch: f32, octave: i32) -> Self {
+    pub fn play(mut self, beat: f32, length: f32, pitch: f32, octave: i32) -> Self {
         let (start, len) = self.tempo.beat(beat, self.bar, length);
         self.notes.push((Duration::from_secs_f32(start), self.instrument.note(pitch, octave, len)));
         self
     }
 
-    fn bar(mut self, bar: usize) -> Self {
+    pub fn bar(mut self, bar: usize) -> Self {
         self.bar = bar;
         self
     }
 
-    fn build(self) -> PlayTune {
+    pub fn build(self) -> PlayTune {
         let TuneBuilder { channel, notes, .. } = self;
         PlayTune(channel, notes)
     }
