@@ -2,7 +2,6 @@ use super::audio::*;
 
 pub const BELL : Instrument = Instrument { waveform: Waveform::Triangle(0.5), enveloper: Enveloper::Decay { decay: 0.5, volume: 0.25 }};
 pub const FLUTE: Instrument = Instrument { waveform: Waveform::Sine, enveloper: Enveloper::ADSR { attack: 0.1, decay: 0.2, release: 0.3, peak: 0.25, sustained: 0.15 }};
-pub const OBOE: Instrument = Instrument { waveform: Waveform::Pulse(0.5), enveloper: Enveloper::ADSR { attack: 0.15, decay: 0.15, release: 0.3, peak: 0.05, sustained: 0.03 }};
 pub const CYMBAL: Percussion = Percussion { low: A*2.0, high: A*8.0, enveloper: Enveloper::Decay { decay: 0.5, volume: 0.25 }};
 pub const BASS: Instrument = Instrument { waveform: Waveform::Pulse(0.7), enveloper: Enveloper::ADSR { attack: 0.1, decay: 0.1, release: 0.2, peak: 0.2, sustained: 0.1 }};
 
