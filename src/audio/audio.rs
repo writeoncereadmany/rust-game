@@ -30,7 +30,7 @@ pub const G: f32 = 391.995;
 pub const Gs: f32 = 415.305;
 pub const Ab: f32 = Gs / 2.0;
 
-#[derive(Event, Debug, PartialEq)]
+#[derive(Event, Debug, PartialEq, Clone)]
 pub struct PlayTune(pub usize, pub Vec<(Duration, Note)>);
 
 #[derive(Clone, Debug, PartialEq)]
@@ -312,6 +312,10 @@ impl AudioPlayer {
             Note::Silence => Channel::Silence
         };
         self.set_channel(channel, channel_no);
+    }
+
+    pub fn clear(&mut self) {
+        self.queue.clear();
     }
 }
 

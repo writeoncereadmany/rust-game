@@ -38,6 +38,9 @@ pub struct SpawnHero(pub f64, pub f64, pub PandaType);
 pub struct SpawnTimer(pub f64, pub f64);
 
 #[derive(Event)]
+pub struct ClearAudio();
+
+#[derive(Event)]
 pub struct Interaction {
     pub hero_id: u64,
     pub other_id: u64,

@@ -101,66 +101,20 @@ impl World {
 
         events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
 
-        let tempo = Tempo::new(4, 120);
+        events.fire(ClearAudio());
 
-        let bassline = tempo.using(&BASS, 0)
-            .play(1.0, 0.25, C, 0)
-            .play(1.25, 0.25, G, 0)
-            .play(1.5, 0.25, G, 0)
-            .play(1.75, 0.25, C, 0)
-            .play(2.0, 0.5, G, 0)
-            .play(2.5, 0.25, C, 0)
-            .play(2.75, 0.5, G, 0)
-            .play(3.25, 0.25, C, 0)
-            .play(3.5, 0.5, G, 0)
-            .play(4.0, 0.5, Bb, 0)
-            .play(4.5, 0.5, B, 0)
-            .bar(2)
-            .play(1.0, 0.25, C, 0)
-            .play(1.25, 0.25, G, 0)
-            .play(1.5, 0.25, G, 0)
-            .play(1.75, 0.25, C, 0)
-            .play(2.0, 0.5, G, 0)
-            .play(2.5, 0.25, C, 0)
-            .play(2.75, 0.5, G, 0)
-            .play(3.25, 0.25, C, 0)
-            .play(3.5, 0.5, G, 0)
-            .play(4.0, 0.5, Bb, 0)
-            .play(4.5, 0.5, B, 0)
-            .build();
-
-        let arpeggio = tempo.using(&OBOE, 1)
-            .play(1.0, 0.25, C, 3)
-            .play(1.25, 0.25, F, 3)
-            .play(1.5, 0.25, G, 3)
-            .play(1.75, 0.25, F, 3)
-            .play(2.0, 0.25, C, 4)
-            .play(2.25, 0.25, B, 4)
-            .play(2.5, 0.25, F, 3)
-            .play(2.75, 0.5, G, 3)
-            .play(3.25, 0.25, F, 3)
-            .play(3.5, 0.25, G, 3)
-            .play(3.75, 0.25, F, 3)
-            .play(4.0, 0.5, E, 3)
-            .play(4.5, 0.5, D, 3)
-            .bar(2)
-            .play(1.0, 0.25, C, 3)
-            .play(1.25, 0.25, F, 3)
-            .play(1.5, 0.25, G, 3)
-            .play(1.75, 0.25, F, 3)
-            .play(2.0, 0.25, C, 4)
-            .play(2.25, 0.25, B, 4)
-            .play(2.5, 0.25, F, 3)
-            .play(2.75, 0.5, G, 3)
-            .play(3.25, 0.25, F, 3)
-            .play(3.5, 0.25, G, 3)
-            .play(3.75, 0.25, F, 3)
-            .play(4.0, 0.5, E, 3)
-            .play(4.5, 0.5, D, 3)
+        let bassline = Tempo::new(4, 120).using(&BASS, 0)
+            .bar(1).play(1.0, 1.0, A, 1).play(2.5, 1.0, A, 1).play(4.0, 0.5, E, 0).play(4.5, 0.5, Gs, 0)
+            .bar(2).play(1.0, 1.0, A, 1).play(2.5, 1.0, A, 1).play(4.0, 0.5, A, 1).play(4.5, 0.5, Gs, 0)
+            .bar(3).play(1.0, 1.0, Fs, 0).play(2.5, 1.0, Fs, 0).play(4.0, 1.0, E, 0)
+            .bar(4).play(1.0, 1.0, Fs, 0).play(2.5, 1.0, Fs, 0).play(4.0, 0.5, Fs, 0).play(4.5, 0.5, E, 0)
+            .bar(5).play(1.0, 1.0, D, 0).play(2.5, 1.0, D, 0).play(4.0, 0.5, D, 0).play(4.5, 0.5, Fs, 0)
+            .bar(6).play(1.0, 1.0, E, 0).play(2.5, 1.0, E, 0).play(4.0, 0.5, E, 0).play(4.5, 0.5, Gs, 0)
+            .bar(7).play(1.0, 1.0, A, 1).play(2.5, 1.0, A, 1).play(4.0, 0.5, E, 0).play(4.5, 0.5, Gs, 0)
+            .bar(8).play(1.0, 1.0, A, 1).play(2.5, 1.0, A, 1).play(4.0, 0.5, E, 0).play(4.5, 0.5, Gs, 0)
             .build();
 
         events.fire(bassline);
-        events.fire(arpeggio);
 
         World {
             map,

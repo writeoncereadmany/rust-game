@@ -4,6 +4,7 @@ use entity::{ entity, Entities, };
 
 use crate::audio::audio::*;
 use crate::audio::instrument::BELL;
+use crate::audio::tempo::Tempo;
 use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
@@ -25,10 +26,7 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
         .with(Phase(phase_offset(x, y)))
         .with(animation_cycle)
         .with(OnPickupEffect::Sparkles)
-        .with(OnPickupTune(vec![
-            (Duration::from_millis(0), BELL.note(B, 4, 0.0)),
-            (Duration::from_millis(60), BELL.note(E, 4, 0.0))
-        ]))
+        .with(OnPickupTune(Tempo::new(2, 250).using(&BELL, 3).play(1.0, 0.25, B, 4).play(1.25, 1.0, E, 4).build()))
         .with(OnPickupDo::Score(5))
     );
 }

@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use component_derive::{ Constant, Event };
 use entity::Entities;
 
@@ -22,7 +20,7 @@ pub enum OnPickupEffect {
 }
 
 #[derive(Clone, Constant)]
-pub struct OnPickupTune(pub Vec<(Duration, Note)>);
+pub struct OnPickupTune(pub PlayTune);
 
 #[derive(Clone, Constant)]
 pub struct OnPickupText(pub &'static str);
@@ -40,7 +38,7 @@ pub fn collect_pickup(PickupCollected(id): &PickupCollected, entities: &mut Enti
     if let Some((Position(x, y), effect, tune, text, action)) = entities.delete(&id)
     {
         if let Some(OnPickupEffect::Sparkles) = effect { spawn_spangle(x, y, entities, events); }
-        if let Some(OnPickupTune(tune)) = tune { events.fire(PlayTune(3, tune)); }
+        if let Some(OnPickupTune(tune)) = tune { events.fire(tune); }
         if let Some(OnPickupText(text)) = text { spawn_text(x + 0.5, y + 1.0, text, entities, events); }
         match action {
             Some(OnPickupDo::Score(score)) => events.fire(Score::Points(score)),
