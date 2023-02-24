@@ -103,14 +103,14 @@ impl World {
         events.fire(ClearAudio());
 
         let bassline = Tempo::new(4, 120).using(&BASS, 0)
-            .bar(1).phrase(bass_bar((A, 1), (E, 0), (Gs, 0)))
-            .bar(2).phrase(bass_bar((A, 1), (A, 1), (Gs, 0)))
-            .bar(3).phrase(bass_bar((Fs, 0), (E, 0), (E, 0)))
-            .bar(4).phrase(bass_bar((Fs, 0), (Fs, 0), (E, 0)))
-            .bar(5).phrase(bass_bar((D, 0), (D, 0), (Fs, 0)))
-            .bar(6).phrase(bass_bar((E, 0), (E, 0), (Gs, 0)))
-            .bar(7).phrase(bass_bar((A, 1), (E, 0), (Gs, 0)))
-            .bar(8).phrase(bass_bar((A, 1), (E, 0), (Gs, 0)))
+            .bar(1).phrase(bass_bar(A2, E2, Ab2))
+            .bar(2).phrase(bass_bar(A2, A2, Ab2))
+            .bar(3).phrase(bass_bar(Fs2, E2, E2))
+            .bar(4).phrase(bass_bar(Fs2, Fs2, E2))
+            .bar(5).phrase(bass_bar(D2, D2, Fs2))
+            .bar(6).phrase(bass_bar(E2, E2, Ab2))
+            .bar(7).phrase(bass_bar(A2, E2, Ab2))
+            .bar(8).phrase(bass_bar(A2, E2, Ab2))
         .build();
 
         events.fire(bassline);
@@ -122,8 +122,8 @@ impl World {
     }
 }
 
-fn bass_bar((r, r_o): (f32, i32), (a, a_o): (f32, i32), (b, b_o): (f32, i32)) -> Vec<(f32, f32, f32, i32)> {
-    vec![(1.0, 1.0, r, r_o), (2.5, 1.0, r, r_o), (4.0, 0.5, a, a_o), (4.5, 0.5, b, b_o)]
+fn bass_bar(r: f32, a: f32, b: f32) -> Vec<(f32, f32, f32)> {
+    vec![(1.0, 1.0, r), (2.5, 1.0, r), (4.0, 0.5, a), (4.5, 0.5, b)]
 }
 
 fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {

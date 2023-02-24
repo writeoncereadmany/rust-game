@@ -24,7 +24,7 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
         .with(Phase(phase_offset(x, y)))
         .with(animation_cycle)
         .with(OnPickupEffect::Sparkles)
-        .with(OnPickupTune(Tempo::new(2, 250).using(&BELL, 3).play(1.0, 0.25, B, 4).play(1.25, 1.0, E, 4).build()))
+        .with(OnPickupTune(Tempo::new(2, 250).using(&BELL, 3).play(1.0, 0.25, B5).play(1.25, 1.0, E6).build()))
         .with(OnPickupDo::Score(5))
     );
 }

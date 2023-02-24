@@ -26,7 +26,7 @@ pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
         .with(Period(0.2))
         .with(Phase(0.0))
         .with(OnPickupTune(Tempo::new(4, 250).using(&FLUTE, 3)
-            .play(1.0, 0.25, A, 3).play(1.25, 0.25, Cs, 3).play(1.5, 0.25, E, 3).play(1.75, 1.25, A, 4).build()))
+            .play(1.0, 0.25, A3).play(1.25, 0.25, C4).play(1.5, 0.25, E4).play(1.75, 1.25, A4).build()))
         .with(OnPickupDo::CompleteLevel)
         .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
     );

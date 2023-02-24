@@ -1,23 +1,6 @@
 #![allow(dead_code, unused_variables, non_upper_case_globals)]
 
-pub const A: f32 = 220.0;
-pub const As: f32 = 233.082;
-pub const Bb: f32 = As;
-pub const B: f32 = 246.942;
-pub const C: f32 = 261.626;
-pub const Cs: f32 = 277.183;
-pub const Db: f32 = Cs;
-pub const D: f32 = 293.665;
-pub const Ds: f32 = 311.127;
-pub const Eb: f32 = Ds;
-pub const E: f32 = 329.628;
-pub const F: f32 = 349.228;
-pub const Fs: f32 = 369.994;
-pub const Gb: f32 = Fs;
-pub const G: f32 = 391.995;
-pub const Gs: f32 = 415.305;
-pub const Ab: f32 = Gs / 2.0;
-
+// offsets from C
 pub const C_mod: f32 = 1.0;
 pub const Db_mod: f32 = 16.0 / 15.0;
 pub const D_mod: f32 = 9.0 / 8.0;
@@ -31,6 +14,7 @@ pub const A_mod: f32 = 5.0 / 3.0;
 pub const Bb_mod: f32 = 9.0 / 5.0;
 pub const B_mod: f32 = 15.0 / 8.0;
 
+// octave scaling factors
 pub const Octave_0: f32 = 1.0 / 16.0;
 pub const Octave_1: f32 = 1.0 / 8.0;
 pub const Octave_2: f32 = 1.0 / 4.0;
@@ -42,7 +26,7 @@ pub const Octave_7: f32 = 8.0;
 pub const Octave_8: f32 = 16.0;
 pub const Octave_9: f32 = 32.0;
 
-// reference tone, and middle c derived from that as our starting point
+// reference tone is A=440Hz, and middle c derived from that as our starting point
 pub const REF_FREQ: f32 = 440.0 / A_mod;
 
 // and now.... all the notes
