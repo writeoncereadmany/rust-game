@@ -45,6 +45,14 @@ impl <'a> TuneBuilder<'a> {
         self
     }
 
+    pub fn phrase(mut self, phrase: Vec<(f32, f32, f32, i32)>) -> Self {
+        for (beat, length, pitch, octave) in phrase {
+            let (start, len) = self.tempo.beat(beat, self.bar, length);
+            self.notes.push((Duration::from_secs_f32(start), self.instrument.note(pitch, octave, len)));
+        }
+        self
+    }
+
     pub fn bar(mut self, bar: usize) -> Self {
         self.bar = bar;
         self
