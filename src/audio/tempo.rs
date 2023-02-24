@@ -70,6 +70,7 @@ mod tests {
     use std::time::Duration;
     use super::*;
     use crate::audio::instrument::BELL;
+    use crate::audio::notes::*;
 
     #[test]
     fn converts_beats_into_times() {

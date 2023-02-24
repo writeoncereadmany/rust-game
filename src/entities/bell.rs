@@ -1,6 +1,6 @@
 use entity::{ entity, Entities };
 
-use crate::audio::audio::*;
+use crate::audio::notes::*;
 use crate::audio::instrument::BELL;
 use crate::audio::tempo::Tempo;
 use crate::graphics::sprite::Sprite;

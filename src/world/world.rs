@@ -8,7 +8,7 @@ use entity::{ Id, Entities };
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
-use crate::audio::audio::*;
+use crate::audio::notes::*;
 use crate::audio::instrument::BASS;
 use crate::audio::tempo::Tempo;
 use crate::entities::entity_events;
