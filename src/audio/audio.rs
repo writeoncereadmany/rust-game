@@ -17,7 +17,6 @@ pub struct PlayTune(pub usize, pub Vec<(Duration, Note)>);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Note {
-    Silence,
     Wave { pitch: f32, envelope: EnvSpec, waveform: Waveform },
     Noise { low: f32, high: f32, envelope: EnvSpec }
 }
@@ -290,8 +289,7 @@ impl AudioPlayer {
                     envelope,
                     cycle: 0,
                 })
-            },
-            Note::Silence => Channel::Silence
+            }
         };
         self.set_channel(channel, channel_no);
     }
