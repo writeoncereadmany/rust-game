@@ -329,16 +329,20 @@ mod tests {
     fn should_iterate_over_cues_in_increasing_time_order(){
         let mut heap = BinaryHeap::new();
 
-        heap.push(Cue { start_at: 1, channel: 0, note: Note::Silence });
-        heap.push(Cue { start_at: 2, channel: 0, note: Note::Silence });
-        heap.push(Cue { start_at: 3, channel: 0, note: Note::Silence });
-        heap.push(Cue { start_at: 4, channel: 0, note: Note::Silence });
+        heap.push(Cue { start_at: 1, channel: 0, note: note() });
+        heap.push(Cue { start_at: 2, channel: 0, note: note() });
+        heap.push(Cue { start_at: 3, channel: 0, note: note() });
+        heap.push(Cue { start_at: 4, channel: 0, note: note() });
 
         assert_eq!(heap.pop().unwrap().start_at, 1);
         assert_eq!(heap.pop().unwrap().start_at, 2);
         assert_eq!(heap.pop().unwrap().start_at, 3);
         assert_eq!(heap.pop().unwrap().start_at, 4);
         assert_eq!(heap.pop(), None);
+    }
+
+    fn note() -> Note {
+        Note::Noise { low: 0.0, high: 1.0, envelope: EnvSpec(vec![]) }
     }
 
     #[test]
