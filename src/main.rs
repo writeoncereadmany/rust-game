@@ -7,6 +7,7 @@ mod fps_counter;
 mod game_loop;
 mod graphics;
 mod map;
+mod music;
 mod game;
 mod world;
 mod sign;
