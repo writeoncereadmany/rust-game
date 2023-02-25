@@ -11,6 +11,7 @@ use crate::app::events::*;
 use crate::entities::entity_events;
 use crate::entities::spring::spawn_spring;
 use crate::music::stand_by_me::stand_by_me;
+use crate::music::street_spirit::street_spirit;
 use crate::shapes::push::Push;
 use crate::entities::flagpole::*;
 use crate::entities::bell::*;
@@ -100,7 +101,7 @@ impl World {
 
         events.fire(ClearAudio());
 
-        stand_by_me(events);
+        street_spirit(events);
 
         World {
             map,
