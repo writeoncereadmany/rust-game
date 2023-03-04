@@ -10,7 +10,7 @@ use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::entities::entity_events;
 use crate::entities::spring::spawn_spring;
-use crate::music::street_spirit::street_spirit;
+use crate::music::countdown::countdown;
 use crate::shapes::push::Push;
 use crate::entities::flagpole::*;
 use crate::entities::bell::*;
@@ -100,7 +100,7 @@ impl World {
 
         events.fire(ClearAudio());
 
-        street_spirit(events);
+        countdown(events);
 
         World {
             map,

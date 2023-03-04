@@ -37,6 +37,8 @@ pub struct TuneBuilder<'a> {
     notes: Vec<(Duration, Note)>
 }
 
+pub type Phrase = Vec<(f32, f32, f32)>;
+
 impl <'a> TuneBuilder<'a> {
 
     pub fn play(mut self, beat: f32, length: f32, pitch: f32) -> Self {
@@ -45,11 +47,16 @@ impl <'a> TuneBuilder<'a> {
         self
     }
 
-    pub fn phrase(mut self, beat: f32, phrase: Vec<(f32, f32, f32)>) -> Self {
+    pub fn phrase(mut self, beat: f32, phrase: Phrase) -> Self {
         for (pos, length, pitch) in phrase {
             let (start, len) = self.tempo.beat(beat + pos, self.bar, length);
             self.notes.push((Duration::from_secs_f32(start), self.instrument.note(pitch, len)));
         }
+        self
+    }
+
+    pub fn on(mut self, instrument: &'a Instrument) -> Self {
+        self.instrument = instrument;
         self
     }
 
