@@ -9,6 +9,7 @@ use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::{ Renderer };
 use crate::game::game::Game;
+use crate::screens::screens::Screen;
 
 use super::events::ClearAudio;
 
@@ -16,7 +17,7 @@ pub struct App<'a> {
     pub game_controller_subsystem: GameControllerSubsystem,
     pub audio_device: AudioDevice<AudioPlayer>,
     pub active_controller: Option<GameController>,
-    pub game: Game<'a>
+    pub screen: Screen<'a>
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
@@ -24,7 +25,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.clear().unwrap();
 
-        self.game.render(renderer)?;
+        self.screen.render(renderer)?;
 
         renderer.present()?;
 
@@ -45,6 +46,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
         event.apply(|tune| play_tune(&mut self.audio_device, tune));
 
-        self.game.event(event, events)
+        self.screen.event(event, events)
     }
 }

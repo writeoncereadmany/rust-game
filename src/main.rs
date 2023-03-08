@@ -12,24 +12,22 @@ mod game;
 mod world;
 mod sign;
 mod events;
+mod screens;
 
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
-use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use entities::hero::PandaType;
 use audio::audio::initialise_audio;
 use game_loop::run_game_loop;
 use graphics::renderer::{Renderer};
 use graphics::sprite::SpriteSheet;
-use controller::Controller;
 use app::app::App;
 use app::assets::Assets;
-use world::world::World;
 use events::Events;
 use game::game::Game;
+use screens::screens::Screen;
 
 const COLUMNS: usize = 26;
 const ROWS: usize = 15;
@@ -71,13 +69,13 @@ fn main() -> Result<(), String> {
 
     let mut events = Events::new();
 
-    let game: Game = Game::new(&assets, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), &mut events);
+    let game: Game = Game::new(&assets, &mut events);
 
     let app = App {
         game_controller_subsystem, 
         audio_device,
         active_controller: None,
-        game
+        screen: Screen::GameScreen(game)
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;

@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use component_derive::Event;
+use sdl2::keyboard::Keycode;
 
 use crate::app::assets::Assets;
 use crate::graphics::renderer::{ Renderer, Text, align };
@@ -27,7 +28,7 @@ struct Pause(f64);
 struct NewLevel;
 
 impl <'a> Game<'a> {
-    pub fn new(assets: &'a Assets<'a>, controller: Controller, events: &mut Events) -> Game<'a> {
+    pub fn new(assets: &'a Assets<'a>, events: &mut Events) -> Game<'a> {
 
         let world: World = World::new(
             &assets, 
@@ -38,7 +39,7 @@ impl <'a> Game<'a> {
         Game{ 
             assets: &assets,
             world, 
-            controller, 
+            controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
             level: 0, 
             score: 0,
             score_this_level: 0,
