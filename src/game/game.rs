@@ -82,9 +82,14 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|ReachedDoor| {
-            self.level = (self.level + 1) % self.assets.levels.len();
             events.fire(Pause(0.5));
-            events.schedule(Duration::from_secs_f64(0.5), NewLevel);
+
+            self.level = (self.level + 1);
+            if self.level < self.assets.levels.len() {
+                events.schedule(Duration::from_secs_f64(0.5), NewLevel);
+            } else {
+                events.schedule(Duration::from_secs_f64(0.5), GameOver());
+            }
         });
 
         event.apply(|NewLevel| {

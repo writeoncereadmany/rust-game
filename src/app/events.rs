@@ -5,6 +5,9 @@ use crate::entities::components::Interacts;
 use crate::events::EventTrait;
 
 #[derive(Event)]
+pub struct NewGame();
+
+#[derive(Event)]
 pub struct FlagpoleCollected { pub id: u64 }
 
 #[derive(Event)]
@@ -39,6 +42,9 @@ pub struct SpawnTimer(pub f64, pub f64);
 
 #[derive(Event)]
 pub struct ClearAudio();
+
+#[derive(Event)]
+pub struct GameOver();
 
 #[derive(Event)]
 pub struct Interaction {

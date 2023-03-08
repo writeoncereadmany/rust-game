@@ -14,6 +14,7 @@ mod sign;
 mod events;
 mod screens;
 
+use screens::title::Title;
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
 use sdl2::render::{Canvas};
@@ -69,13 +70,12 @@ fn main() -> Result<(), String> {
 
     let mut events = Events::new();
 
-    let game: Game = Game::new(&assets, &mut events);
-
     let app = App {
         game_controller_subsystem, 
         audio_device,
         active_controller: None,
-        screen: Screen::GameScreen(game)
+        assets: &assets,
+        screen: Screen::TitleScreen(Title)
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
