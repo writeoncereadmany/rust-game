@@ -26,6 +26,27 @@ struct Pause(f64);
 #[derive (Event)]
 struct NewLevel;
 
+impl <'a> Game<'a> {
+    pub fn new(assets: &'a Assets<'a>, controller: Controller, events: &mut Events) -> Game<'a> {
+
+        let world: World = World::new(
+            &assets, 
+            0,
+            PandaType::GiantPanda,
+            events);
+
+        Game{ 
+            assets: &assets,
+            world, 
+            controller, 
+            level: 0, 
+            score: 0,
+            score_this_level: 0,
+            pause: 0.0
+        }
+    }
+}
+
 impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
 
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {

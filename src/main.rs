@@ -71,20 +71,7 @@ fn main() -> Result<(), String> {
 
     let mut events = Events::new();
 
-    let world: World = World::new(
-        &assets, 
-        0,
-        PandaType::GiantPanda,
-        &mut events);
-    let game: Game = Game{ 
-        assets: &assets,
-        world, 
-        controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
-        level: 0, 
-        score: 0,
-        score_this_level: 0,
-        pause: 0.0
-    };
+    let game: Game = Game::new(&assets, Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), &mut events);
 
     let app = App {
         game_controller_subsystem, 
