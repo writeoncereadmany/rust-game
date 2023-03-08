@@ -88,5 +88,5 @@ pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entiti
         ]))
     );
 
-    events.schedule(Duration::from_millis(1800), Destroy(shadow_id));
+    events.schedule(Duration::from_millis(2400), Destroy(shadow_id));
 }

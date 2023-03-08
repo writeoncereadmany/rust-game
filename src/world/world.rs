@@ -87,16 +87,16 @@ impl World {
 
         for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
             spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
-            events.schedule(Duration::from_millis(1800), SpawnHero(x as f64, y as f64, panda_type)); 
+            events.schedule(Duration::from_millis(2400), SpawnHero(x as f64, y as f64, panda_type)); 
         }
        
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.fire(SpawnBulb(x as f64, y as f64)); }
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64))}
-        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64))}
  
-        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(1800), SpawnFlashBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64))}
 
-        events.schedule(Duration::from_millis(1800), SpawnTimer(13.0, 14.5));
+        events.schedule(Duration::from_millis(2400), SpawnTimer(13.0, 14.5));
 
         events.fire(ClearAudio());
 
