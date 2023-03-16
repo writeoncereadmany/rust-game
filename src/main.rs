@@ -68,14 +68,15 @@ fn main() -> Result<(), String> {
         ROWS as u32,
     ).unwrap(); 
 
-    let mut events = Events::new();
+    let events = Events::new();
 
     let app = App {
         game_controller_subsystem, 
         audio_device,
         active_controller: None,
         assets: &assets,
-        screen: Screen::TitleScreen(Title)
+        screen: Screen::TitleScreen(Title),
+        scores: App::startingScores(),
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;

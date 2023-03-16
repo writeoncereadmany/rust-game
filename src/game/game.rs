@@ -19,6 +19,7 @@ pub struct Game<'a> {
     pub level: usize,
     pub score: u32,
     pub score_this_level: u32,
+    pub panda_type: PandaType,
     pub pause: f64
 }
 #[derive (Event)]
@@ -28,12 +29,12 @@ struct Pause(f64);
 struct NewLevel;
 
 impl <'a> Game<'a> {
-    pub fn new(assets: &'a Assets<'a>, events: &mut Events) -> Game<'a> {
+    pub fn new(panda_type: PandaType, assets: &'a Assets<'a>, events: &mut Events) -> Game<'a> {
 
         let world: World = World::new(
             &assets, 
             0,
-            PandaType::GiantPanda,
+            panda_type,
             events);
 
         Game{ 
@@ -42,6 +43,7 @@ impl <'a> Game<'a> {
             controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
             level: 0, 
             score: 0,
+            panda_type,
             score_this_level: 0,
             pause: 0.0
         }
@@ -82,23 +84,24 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|ReachedDoor| {
+            self.score += self.score_this_level;
+            self.score_this_level = 0;
+
             events.fire(Pause(0.5));
 
-            self.level = (self.level + 1);
+            self.level = self.level + 1;
             if self.level < self.assets.levels.len() {
                 events.schedule(Duration::from_secs_f64(0.5), NewLevel);
             } else {
-                events.schedule(Duration::from_secs_f64(0.5), GameOver());
+                events.schedule(Duration::from_secs_f64(0.5), GameOver(self.score));
             }
         });
 
         event.apply(|NewLevel| {
-            self.score += self.score_this_level;
-            self.score_this_level = 0;
             self.world = World::new(
                 &self.assets,
                 self.level, 
-                PandaType::GiantPanda,
+                self.panda_type,
                 &mut events);
 
         });
