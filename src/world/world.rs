@@ -218,6 +218,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
+    flicker(&mut world.entities);
     map_collisions(&mut world.entities, &world.map);
     item_collisions(&world.entities, events);
 }

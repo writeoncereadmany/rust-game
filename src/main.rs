@@ -48,6 +48,7 @@ fn main() -> Result<(), String> {
 
     let canvas : Canvas<Window> = window
         .into_canvas()
+        .present_vsync()
         .build()
         .expect("could not make a canvas");
 
