@@ -27,11 +27,10 @@ use graphics::sprite::SpriteSheet;
 use app::app::App;
 use app::assets::Assets;
 use events::Events;
-use game::game::Game;
 use screens::screens::Screen;
 
-const COLUMNS: usize = 26;
-const ROWS: usize = 15;
+const COLUMNS: usize = 30;
+const ROWS: usize = 20;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;

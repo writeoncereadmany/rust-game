@@ -96,7 +96,7 @@ impl World {
  
         for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64))}
 
-        events.schedule(Duration::from_millis(2400), SpawnTimer(13.0, 14.5));
+        events.schedule(Duration::from_millis(2400), SpawnTimer(15.0, 19.5));
 
         events.fire(ClearAudio());
 
@@ -192,7 +192,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         renderer.draw_map(&self.map);
 
-        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 12.0, 14.0);
+        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 14.0, 19.0);
 
         self.entities.for_each(|(Position(x, y), sprite)| {
             renderer.draw_sprite(&sprite, x, y);
