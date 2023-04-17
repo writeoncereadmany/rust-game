@@ -76,7 +76,7 @@ fn main() -> Result<(), String> {
         active_controller: None,
         assets: &assets,
         screen: Screen::TitleScreen(Title),
-        scores: App::startingScores(),
+        scores: App::starting_scores(),
     };
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;

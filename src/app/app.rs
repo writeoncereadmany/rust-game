@@ -35,7 +35,7 @@ pub struct App<'a> {
 }
 
 impl <'a> App<'a> {
-    pub fn startingScores() -> Vec<HiScore> {
+    pub fn starting_scores() -> Vec<HiScore> {
         vec![
             HiScore { name: "Anne".to_string(), score: 1000},
             HiScore { name: "Bill".to_string(), score: 900},
@@ -78,8 +78,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
         event.apply(|tune| play_tune(&mut self.audio_device, tune));
         event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events))});
-        event.apply(|GameOver(_score)| { self.screen = Screen::TitleScreen(Title)});
-        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores{ scores: self.scores.clone()})});
+        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone()))});
+        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone()))});
 
 
         self.screen.event(event, events)
