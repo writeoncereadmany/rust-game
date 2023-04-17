@@ -1,3 +1,4 @@
+use sdl2::VideoSubsystem;
 use sdl2::event::Event as SdlEvent;
 use sdl2::audio::AudioDevice;
 use sdl2::GameControllerSubsystem;
@@ -5,6 +6,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
 use crate::audio::audio::*;
+use crate::controller::Controller;
 use crate::game_loop::*;
 use crate::events::*;
 use crate::graphics::renderer::{ Renderer };
@@ -14,10 +16,8 @@ use crate::screens::screens::Screen;
 use crate::screens::title::Title;
 
 use super::assets::Assets;
-use super::events::ClearAudio;
-use super::events::GameOver;
-use super::events::NewGame;
-use super::events::ShowHighScores;
+use super::events::UpdateHiScores;
+use super::events::{ ClearAudio, GameOver, NewGame, ShowHighScores, ShowTitleScreen, StartTextInput, StopTextInput };
 
 #[derive(Clone)]
 pub struct HiScore {
@@ -26,9 +26,11 @@ pub struct HiScore {
 }
 
 pub struct App<'a> {
+    pub video_subsystem: VideoSubsystem,
     pub game_controller_subsystem: GameControllerSubsystem,
     pub audio_device: AudioDevice<AudioPlayer>,
     pub active_controller: Option<GameController>,
+    pub controller: Controller,
     pub assets: &'a Assets<'a>,
     pub screen: Screen<'a>,
     pub scores: Vec<HiScore>
@@ -78,10 +80,14 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
         event.apply(|tune| play_tune(&mut self.audio_device, tune));
         event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events))});
-        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone()))});
-        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone()))});
+        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone(), events))});
+        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone(), events))});
+        event.apply(|ShowTitleScreen()| { self.screen = Screen::TitleScreen(Title)});
+        event.apply(|StartTextInput()| { self.video_subsystem.text_input().start() });
+        event.apply(|StopTextInput()| { self.video_subsystem.text_input().stop() });
+        event.apply(|UpdateHiScores(scores)| { self.scores = scores.clone() });
 
-
+        self.controller.on_event(event, events);
         self.screen.event(event, events)
     }
 }

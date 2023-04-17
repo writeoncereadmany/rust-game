@@ -4,11 +4,27 @@ use crate::entities::hero::PandaType;
 use crate::entities::components::Interacts;
 use crate::events::EventTrait;
 
+use super::app::HiScore;
+
 #[derive(Event)]
 pub struct NewGame(pub PandaType);
 
 #[derive(Event)]
 pub struct ShowHighScores();
+
+
+#[derive(Event)]
+pub struct ShowTitleScreen();
+
+
+#[derive(Event)]
+pub struct StartTextInput();
+
+
+#[derive(Event)]
+pub struct StopTextInput();
+
+
 
 #[derive(Event)]
 pub struct FlagpoleCollected { pub id: u64 }
@@ -18,6 +34,9 @@ pub struct KeyCollected;
 
 #[derive(Event)]
 pub struct TimeLimitExpired;
+
+#[derive(Event)]
+pub struct UpdateHiScores(pub Vec<HiScore>);
 
 #[derive(Event)]
 pub struct ReachedDoor;

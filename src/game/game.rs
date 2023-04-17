@@ -14,7 +14,6 @@ use crate::controller::Controller;
 
 pub struct Game<'a> {
     pub assets: &'a Assets<'a>,
-    pub controller: Controller,
     pub world: World,
     pub level: usize,
     pub score: u32,
@@ -40,7 +39,6 @@ impl <'a> Game<'a> {
         Game{ 
             assets: &assets,
             world, 
-            controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift), 
             level: 0, 
             score: 0,
             panda_type,
@@ -65,9 +63,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         Ok(())
     }
 
-    fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
-        self.controller.on_event(event, &mut events);
-        
+    fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {       
         event.apply(| score | {
             match score {
                 Score::Points(p) => self.score_this_level += *p,

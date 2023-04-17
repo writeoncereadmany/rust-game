@@ -14,9 +14,11 @@ mod sign;
 mod events;
 mod screens;
 
+use controller::Controller;
 use screens::title::Title;
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
+use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
@@ -40,7 +42,7 @@ fn main() -> Result<(), String> {
 
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
-    let window = video_subsystem.window("rust-sdl2 demo", 360, 240)
+    let window = video_subsystem.window("rust-sdl2 demo", 2560, 1600)
         .fullscreen()
         .build()
         .expect("could not initialize video subsystem");
@@ -71,9 +73,11 @@ fn main() -> Result<(), String> {
     let events = Events::new();
 
     let app = App {
+        video_subsystem,
         game_controller_subsystem, 
         audio_device,
         active_controller: None,
+        controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift),
         assets: &assets,
         screen: Screen::TitleScreen(Title),
         scores: App::starting_scores(),

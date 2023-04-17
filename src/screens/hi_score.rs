@@ -2,20 +2,38 @@ use sdl2::keyboard::Keycode;
 use sdl2::event::Event as SdlEvent;
 
 use crate::entities::hero::PandaType;
+use crate::events::Events;
 use crate::graphics::renderer::{Renderer, Text, align};
 use crate::game_loop::GameLoop;
-use crate::app::events::NewGame;
+use crate::app::events::{ NewGame, StartTextInput, StopTextInput, ShowTitleScreen, UpdateHiScores };
 use crate::app::app::HiScore;
 
-pub struct Scores{ new_hiscore_index: usize, scorer: String, current_letter: String, scores: Vec<HiScore> }
+pub struct Scores{ new_hiscore_index: usize, scores: Vec<HiScore> }
 
 impl Scores {
-    pub fn new(latest_score: u32, mut scores: Vec<HiScore>) -> Self {
+    pub fn new(latest_score: u32, mut scores: Vec<HiScore>, events: &mut Events) -> Self {
         let new_hiscore_index = new_hiscore_index(latest_score, &scores);
-        scores.insert(new_hiscore_index, HiScore { name: "new".to_string(), score: latest_score });
-        scores.truncate(10);
 
-        Scores { new_hiscore_index: new_hiscore_index, scorer: String::new(), current_letter: String::new(), scores }
+        if new_hiscore_index < 10 {
+            events.fire(StartTextInput());
+            scores.insert(new_hiscore_index, HiScore { name: "".to_string(), score: latest_score });
+            scores.truncate(10);    
+        }
+
+        Scores { new_hiscore_index, scores }
+    }
+
+    fn update_name(&mut self, text: &String)
+    {
+        let current_name = &mut self.scores[self.new_hiscore_index].name;
+        current_name.push_str(text); 
+        current_name.truncate(4);
+    }
+
+    fn trim_name(&mut self)
+    {
+        let current_name = &mut self.scores[self.new_hiscore_index].name;
+        current_name.truncate(current_name.len() - 1);
     }
 }
 
@@ -43,7 +61,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Scores {
     }
 
     fn event(&mut self, event: &crate::events::Event, events: &mut crate::events::Events) -> Result<(), String> {
-        if self.new_hiscore_index <= 10 {
+
+        if self.new_hiscore_index > 10 {
             event.apply(|e| { match e { 
                 SdlEvent::KeyDown{ keycode: Some(Keycode::Num1), .. } => events.fire(NewGame(PandaType::GiantPanda)),
                 SdlEvent::KeyDown{ keycode: Some(Keycode::Num2), .. } => events.fire(NewGame(PandaType::RedPanda)),
@@ -51,13 +70,17 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Scores {
                 _otherwise => {}
             }});    
         } else {
-            event.apply(|e| { match e { 
-                SdlEvent::KeyDown{ keycode: Some(Keycode::Num1), .. } => events.fire(NewGame(PandaType::GiantPanda)),
-                SdlEvent::KeyDown{ keycode: Some(Keycode::Num2), .. } => events.fire(NewGame(PandaType::RedPanda)),
-    
-                _otherwise => {}
-            }});    
+            event.apply(|e| { match e {
+                SdlEvent::TextInput { text, .. } => self.update_name(text),
+                SdlEvent::KeyDown { keycode: Some(Keycode::Backspace), .. } => self.trim_name(),
+                SdlEvent::KeyDown { keycode: Some(Keycode::Return), ..} => {
+                    events.fire(StopTextInput());
+                    events.fire(UpdateHiScores(self.scores.clone()));
+                    events.fire(ShowTitleScreen());
+                }
 
+                _otherwise => {}
+            }});
         }
         Ok(())
     }
