@@ -42,8 +42,8 @@ fn main() -> Result<(), String> {
 
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
-    let window = video_subsystem.window("rust-sdl2 demo", 2560, 1600)
-        .fullscreen()
+    let window = video_subsystem.window("rust-sdl2 demo", 0, 0)
+        .fullscreen_desktop()
         .build()
         .expect("could not initialize video subsystem");
 
