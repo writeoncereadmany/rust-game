@@ -1,6 +1,5 @@
 use crate::audio::instrument::*;
 use crate::audio::notes::*;
-use crate::audio::tempo::Phrase;
 use crate::audio::tempo::Tempo;
 use crate::events::Events;
 

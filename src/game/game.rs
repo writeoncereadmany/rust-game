@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use component_derive::Event;
-use sdl2::keyboard::Keycode;
 
 use crate::app::assets::Assets;
 use crate::graphics::renderer::{ Renderer, Text, align };
@@ -10,7 +9,6 @@ use crate::game_loop::*;
 use crate::events::*;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
-use crate::controller::Controller;
 
 pub struct Game<'a> {
     pub assets: &'a Assets<'a>,
