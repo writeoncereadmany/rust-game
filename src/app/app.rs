@@ -17,7 +17,7 @@ use crate::screens::title::Title;
 
 use super::assets::Assets;
 use super::events::UpdateHiScores;
-use super::events::{ ClearAudio, GameOver, NewGame, ShowHighScores, ShowTitleScreen, StartTextInput, StopTextInput };
+use super::events::{ ClearAudio, GameOver, NewGame, ShowHighScores, ShowTitleScreen };
 
 #[derive(Clone)]
 pub struct HiScore {
@@ -80,11 +80,9 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
         event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
         event.apply(|tune| play_tune(&mut self.audio_device, tune));
         event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events))});
-        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone(), events))});
-        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone(), events))});
+        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone()))});
+        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone()))});
         event.apply(|ShowTitleScreen()| { self.screen = Screen::TitleScreen(Title)});
-        event.apply(|StartTextInput()| { self.video_subsystem.text_input().start() });
-        event.apply(|StopTextInput()| { self.video_subsystem.text_input().stop() });
         event.apply(|UpdateHiScores(scores)| { self.scores = scores.clone() });
 
         self.controller.on_event(event, events);

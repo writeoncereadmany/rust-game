@@ -5,17 +5,16 @@ use crate::entities::hero::PandaType;
 use crate::events::Events;
 use crate::graphics::renderer::{Renderer, Text, align};
 use crate::game_loop::GameLoop;
-use crate::app::events::{ NewGame, StartTextInput, StopTextInput, ShowTitleScreen, UpdateHiScores };
+use crate::app::events::{ NewGame, ShowTitleScreen, UpdateHiScores };
 use crate::app::app::HiScore;
 
 pub struct Scores{ new_hiscore_index: usize, scores: Vec<HiScore> }
 
 impl Scores {
-    pub fn new(latest_score: u32, mut scores: Vec<HiScore>, events: &mut Events) -> Self {
+    pub fn new(latest_score: u32, mut scores: Vec<HiScore>) -> Self {
         let new_hiscore_index = new_hiscore_index(latest_score, &scores);
 
         if new_hiscore_index < 10 {
-            events.fire(StartTextInput());
             scores.insert(new_hiscore_index, HiScore { name: "".to_string(), score: latest_score });
             scores.truncate(10);    
         }
@@ -74,7 +73,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Scores {
                 SdlEvent::TextInput { text, .. } => self.update_name(text),
                 SdlEvent::KeyDown { keycode: Some(Keycode::Backspace), .. } => self.trim_name(),
                 SdlEvent::KeyDown { keycode: Some(Keycode::Return), ..} => {
-                    events.fire(StopTextInput());
                     events.fire(UpdateHiScores(self.scores.clone()));
                     events.fire(ShowTitleScreen());
                 }

@@ -47,6 +47,8 @@ fn main() -> Result<(), String> {
         .build()
         .expect("could not initialize video subsystem");
 
+    video_subsystem.text_input().start();
+
     let canvas : Canvas<Window> = window
         .into_canvas()
         .present_vsync()

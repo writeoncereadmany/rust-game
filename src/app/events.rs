@@ -16,16 +16,6 @@ pub struct ShowHighScores();
 #[derive(Event)]
 pub struct ShowTitleScreen();
 
-
-#[derive(Event)]
-pub struct StartTextInput();
-
-
-#[derive(Event)]
-pub struct StopTextInput();
-
-
-
 #[derive(Event)]
 pub struct FlagpoleCollected { pub id: u64 }
 
