@@ -52,12 +52,12 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         self.world.render(renderer)?;
         renderer.draw_text(
             &Text { text: self.score.to_string(), justification: align::RIGHT | align::MIDDLE},
-            25.0,
-            14.5);
+            29.0,
+            19.5);
         renderer.draw_text(
             &Text { text: self.score_this_level.to_string(), justification: align::RIGHT | align::MIDDLE}, 
             3.0, 
-            14.5);   
+            19.5);   
         Ok(())
     }
 
