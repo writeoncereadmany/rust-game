@@ -70,6 +70,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|TimeLimitExpired| {
+            events.fire(Pause(2.0));
             events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
         });
 
@@ -77,12 +78,13 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             self.score += self.score_this_level;
             self.score_this_level = 0;
 
-            events.fire(Pause(0.5));
 
             self.level = self.level + 1;
             if self.level < self.assets.levels.len() {
+                events.fire(Pause(0.5));
                 events.schedule(Duration::from_secs_f64(0.5), NewLevel);
             } else {
+                events.fire(Pause(2.0));
                 events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
             }
         });
