@@ -70,11 +70,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|TimeLimitExpired| {
-            self.world = World::new(
-                &self.assets,
-                self.level, 
-                PandaType::RedPanda,
-                &mut events)
+            events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
         });
 
         event.apply(|ReachedDoor| {
@@ -87,7 +83,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             if self.level < self.assets.levels.len() {
                 events.schedule(Duration::from_secs_f64(0.5), NewLevel);
             } else {
-                events.schedule(Duration::from_secs_f64(0.5), GameOver(self.score));
+                events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
             }
         });
 
