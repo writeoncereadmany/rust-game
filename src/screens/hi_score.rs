@@ -2,7 +2,6 @@ use sdl2::keyboard::Keycode;
 use sdl2::event::Event as SdlEvent;
 
 use crate::entities::hero::PandaType;
-use crate::events::Events;
 use crate::graphics::renderer::{Renderer, Text, align};
 use crate::game_loop::GameLoop;
 use crate::app::events::{ NewGame, ShowTitleScreen, UpdateHiScores };
