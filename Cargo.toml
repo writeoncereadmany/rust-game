@@ -2,8 +2,13 @@
 name = "sdl2-experiments"
 version = "0.1.0"
 edition = "2018"
+default-run="sdl2-experiments"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name="controller-tester"
+path="src/controller_tester.rs"
 
 [profile.release]
 debug = true

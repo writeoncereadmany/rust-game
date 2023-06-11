@@ -13,6 +13,7 @@ mod world;
 mod sign;
 mod events;
 mod screens;
+mod controller_tester;
 
 use controller::Controller;
 use screens::title::Title;
