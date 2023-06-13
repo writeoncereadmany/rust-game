@@ -1,10 +1,10 @@
 use entity::{ entity, Entities };
+use engine::graphics::sprite::Sprite;
 
 use crate::audio::notes::*;
 use crate::audio::instrument::*;
 use crate::audio::tempo::Tempo;
 use crate::shapes::convex_mesh::ConvexMesh;
-use crate::graphics::sprite::Sprite;
 
 use super::components::*;
 use super::pickup::*;

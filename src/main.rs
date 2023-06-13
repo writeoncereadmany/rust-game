@@ -3,9 +3,7 @@ mod audio;
 mod entities;
 mod shapes;
 mod controller;
-mod fps_counter;
 mod game_loop;
-mod graphics;
 mod map;
 mod music;
 mod game;
@@ -13,7 +11,6 @@ mod world;
 mod sign;
 mod events;
 mod screens;
-mod controller_tester;
 
 use controller::Controller;
 use screens::title::Title;
@@ -25,8 +22,8 @@ use sdl2::video::Window;
 
 use audio::audio::initialise_audio;
 use game_loop::run_game_loop;
-use graphics::renderer::{Renderer};
-use graphics::sprite::SpriteSheet;
+use engine::graphics::renderer::Renderer;
+use engine::graphics::sprite::SpriteSheet;
 use app::app::App;
 use app::assets::Assets;
 use events::Events;

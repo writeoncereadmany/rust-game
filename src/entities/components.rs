@@ -1,8 +1,9 @@
 use std::time::Duration;
 
+use engine::graphics::sprite::Sprite;
 use component_derive::{Constant, Variable};
+
 use crate::shapes::convex_mesh::ConvexMesh;
-use crate::graphics::sprite::Sprite;
 use entity::*;
 
 

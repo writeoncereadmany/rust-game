@@ -1,9 +1,9 @@
 use component_derive::Constant;
 use entity::{ entity, Entities, Id };
+use engine::graphics::sprite::Sprite;
 
 use crate::app::events::{KeyCollected, Destroy, SpawnParticle};
 use crate::events::*;
-use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 

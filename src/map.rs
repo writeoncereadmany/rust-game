@@ -1,5 +1,8 @@
 use std::ops::Index;
 
+use engine::graphics::renderer::{ Renderer, Tiled };
+use engine::graphics::sprite::Sprite;
+
 use crate::shapes::bbox::BBox;
 
 pub struct Map<Tile>
@@ -69,6 +72,15 @@ where Tile: Clone {
             min_x: grid_min_x,
             max_x: grid_max_x,
             max_y: grid_max_y
+        }
+    }
+
+    pub fn draw(&self, renderer: &mut Renderer) 
+    where Tile : Clone + Tiled,
+    {
+        for (pos, t) in self {
+            let (x, y) = t.tile();
+            renderer.draw_sprite(&Sprite::new(x, y, 0.0), pos.min_x as f64, pos.min_y as f64);
         }
     }
 }

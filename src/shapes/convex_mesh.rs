@@ -1,10 +1,10 @@
 use std::cmp::Ordering;
 
+use engine::graphics::renderer::Tiled;
+
 use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
-use crate::graphics::renderer::Tiled;
-
 #[derive(Clone)]
 pub struct ConvexMesh {
     bbox: BBox,

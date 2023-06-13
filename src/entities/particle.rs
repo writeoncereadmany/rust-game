@@ -1,10 +1,10 @@
 use std::time::Duration;
+use engine::graphics::sprite::Sprite;
+use engine::graphics::renderer::{align, Text};
 
 use super::components::*;
 use super::hero::PandaType;
 use crate::events::Events;
-use crate::graphics::sprite::Sprite;
-use crate::graphics::renderer::{align, Text};
 use crate::app::events::Destroy;
 use entity::{ Entities, entity };
 

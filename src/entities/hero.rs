@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities };
+use engine::graphics::sprite::Sprite;
 
 use crate::app::events::{SpawnHero, Interaction};
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::events::*;
-use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 use super::components::*;

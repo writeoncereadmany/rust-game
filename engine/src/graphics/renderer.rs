@@ -8,7 +8,6 @@ use sdl2::video::{WindowContext};
 use component_derive::{ Variable };
 
 use crate::fps_counter::FpsCounter;
-use crate::map::Map;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
 pub mod align {
@@ -112,15 +111,6 @@ impl <'a> Renderer<'a>
                 y * self.spritesheet.tile_height as f64,
             );
             current_x += self.text_width as f64;
-        }
-    }
-
-    pub fn draw_map<Tile>(&mut self, map: &Map<Tile>) 
-    where Tile : Clone + Tiled,
-    {
-        for (pos, t) in map {
-            let (x, y) = t.tile();
-            self.draw_sprite(&Sprite::new(x, y, 0.0), pos.min_x as f64, pos.min_y as f64);
         }
     }
 

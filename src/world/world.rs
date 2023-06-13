@@ -1,10 +1,17 @@
 use std::time::Duration;
 use std::collections::HashSet;
 
-use entity::not;
-use image::{ Rgb, RgbImage };
+use image::RgbImage;
+use image::Rgb;
 
-use entity::{ Id, Entities };
+use entity::not;
+use entity::Entities;
+use entity::Id;
+
+use engine::graphics::renderer::Tiled;
+use engine::graphics::renderer::Renderer;
+use engine::graphics::sprite::Sprite;
+
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
@@ -27,8 +34,6 @@ use crate::map::Map;
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
 use crate::game_loop::*;
-use crate::graphics::renderer::{ Renderer, Tiled };
-use crate::graphics::sprite::Sprite;
 
 #[derive(Clone)]
 pub enum Tile {
@@ -190,7 +195,7 @@ fn ledge_mesh(x: f64, y: f64) -> ConvexMesh {
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
     
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
-        renderer.draw_map(&self.map);
+        &self.map.draw(renderer);
 
         renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 14.0, 19.0);
 

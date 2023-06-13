@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use component_derive::{ Constant, Variable };
 use entity::{ entity, Entities };
+use engine::graphics::sprite::Sprite;
 
 use crate::app::events::Interaction;
 use crate::events::{ Event, Events };
 use crate::shapes::convex_mesh::ConvexMesh;
-use crate::graphics::sprite::Sprite;
 
 use super::components::*;
 

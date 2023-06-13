@@ -1,9 +1,9 @@
 use std::time::Duration;
 use component_derive::{ Constant, Event };
 use entity::{ entity, Entities };
+use engine::graphics::sprite::Sprite;
 
 use entity::Id;
-use crate::graphics::sprite::Sprite;
 use crate::events::{ EventTrait, Events, Event };
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::app::events::*;

@@ -1,4 +1,9 @@
-use crate::{game::game::Game, game_loop::GameLoop, graphics::renderer::Renderer, events::{Event, Events}};
+use engine::graphics::renderer::Renderer;
+
+use crate::events::Events;
+use crate::events::Event;
+use crate::game_loop::GameLoop;
+use crate::game::game::Game;
 
 use super::hi_score::Scores;
 use super::title::Title;

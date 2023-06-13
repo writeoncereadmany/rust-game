@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use entity::{ entity, Entities };
+use engine::graphics::sprite::Sprite;
 
 use crate::audio::audio::PlayTune;
 use crate::audio::instrument::*;
 use crate::audio::notes::C4;
-use crate::graphics::sprite::Sprite;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::pickup::OnPickupDo;

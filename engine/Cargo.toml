@@ -1,10 +1,13 @@
 [package]
-name = "pandamonium"
+name = "engine"
 version = "0.1.0"
 edition = "2018"
-default-run="pandamonium"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name="controller-tester"
+path="src/tools/controller_tester.rs"
 
 [profile.release]
 debug = true
@@ -22,6 +25,5 @@ features = ["small_rng"]
 find_folder = "0.3.0"
 derivative = "2.2.0"
 image = "0.23.14"
-component-derive = { path = "component-derive" }
-entity = { path = "entity" }
-engine = { path = "engine" }
+component-derive = { path = "../component-derive" }
+entity = { path = "../entity" }
