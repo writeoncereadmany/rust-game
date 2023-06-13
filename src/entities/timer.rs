@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use component_derive::Variable;
 use engine::graphics::renderer::{ Text, align };
+use engine::events::Events;
 
 use super::components::Position;
-use crate::events::Events;
 use crate::app::events::TimeLimitExpired;
 use entity::*;
 

@@ -6,7 +6,7 @@ use engine::graphics::renderer::{ Renderer, Text, align };
 use crate::app::assets::Assets;
 use crate::world::world::World;
 use crate::game_loop::*;
-use crate::events::*;
+use engine::events::*;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
 

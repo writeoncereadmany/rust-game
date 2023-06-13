@@ -1,7 +1,6 @@
 use engine::graphics::renderer::Renderer;
+use engine::events::{ Event, Events };
 
-use crate::events::Events;
-use crate::events::Event;
 use crate::game_loop::GameLoop;
 use crate::game::game::Game;
 

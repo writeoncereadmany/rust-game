@@ -1,9 +1,9 @@
 use component_derive::{ Constant, Event };
 use entity::Entities;
+use engine::events::{ EventTrait, Events };
+use engine::audio::audio::*;
 
 use crate::app::events::*;
-use crate::events::{ EventTrait, Events };
-use crate::audio::audio::*;
 
 use super::components::*;
 use super::particle::{spawn_spangle, spawn_text};

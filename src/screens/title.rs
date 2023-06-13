@@ -4,6 +4,8 @@ use sdl2::event::Event as SdlEvent;
 use engine::graphics::renderer::align;
 use engine::graphics::renderer::Text;
 use engine::graphics::renderer::Renderer;
+use engine::events::{ Event, Events };
+
 
 use crate::entities::hero::PandaType;
 use crate::game_loop::GameLoop;
@@ -22,7 +24,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Title {
         Ok(())
     }
 
-    fn event(&mut self, event: &crate::events::Event, events: &mut crate::events::Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         event.apply(|e| { match e { 
             SdlEvent::KeyDown{ keycode: Some(Keycode::Num1), .. } => events.fire(NewGame(PandaType::GiantPanda)),
             SdlEvent::KeyDown{ keycode: Some(Keycode::Num2), .. } => events.fire(NewGame(PandaType::RedPanda)),

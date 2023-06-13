@@ -5,12 +5,12 @@ use sdl2::GameControllerSubsystem;
 use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
 
-use engine::graphics::renderer::{ Renderer };
+use engine::graphics::renderer::Renderer;
+use engine::audio::audio::*;
+use engine::events::*;
 
-use crate::audio::audio::*;
 use crate::controller::Controller;
 use crate::game_loop::*;
-use crate::events::*;
 use crate::game::game::Game;
 use crate::screens::hi_score::Scores;
 use crate::screens::screens::Screen;

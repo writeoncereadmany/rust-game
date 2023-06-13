@@ -1,9 +1,10 @@
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 
-use crate::audio::notes::*;
-use crate::audio::instrument::*;
-use crate::audio::tempo::Tempo;
+use engine::audio::notes::*;
+use engine::audio::instrument::*;
+use engine::audio::tempo::Tempo;
+
 use crate::shapes::convex_mesh::ConvexMesh;
 
 use super::components::*;

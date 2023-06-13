@@ -4,7 +4,8 @@ use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 
 use entity::Id;
-use crate::events::{ EventTrait, Events, Event };
+use engine::events::{ EventTrait, Events, Event };
+
 use crate::shapes::convex_mesh::ConvexMesh;
 use crate::app::events::*;
 use super::components::*;

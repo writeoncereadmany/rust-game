@@ -3,9 +3,9 @@ use std::time::Duration;
 use component_derive::{ Constant, Variable };
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
+use engine::events::{ Event, Events };
 
 use crate::app::events::Interaction;
-use crate::events::{ Event, Events };
 use crate::shapes::convex_mesh::ConvexMesh;
 
 use super::components::*;

@@ -1,5 +1,4 @@
 mod app;
-mod audio;
 mod entities;
 mod shapes;
 mod controller;
@@ -9,7 +8,6 @@ mod music;
 mod game;
 mod world;
 mod sign;
-mod events;
 mod screens;
 
 use controller::Controller;
@@ -20,13 +18,14 @@ use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas};
 use sdl2::video::Window;
 
-use audio::audio::initialise_audio;
+use engine::events::Events;
+use engine::audio::audio::initialise_audio;
+
 use game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::SpriteSheet;
 use app::app::App;
 use app::assets::Assets;
-use events::Events;
 use screens::screens::Screen;
 
 const COLUMNS: usize = 30;

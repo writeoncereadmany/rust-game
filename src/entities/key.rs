@@ -2,10 +2,10 @@ use std::time::Duration;
 
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
+use engine::audio::audio::PlayTune;
+use engine::audio::instrument::*;
+use engine::audio::notes::C4;
 
-use crate::audio::audio::PlayTune;
-use crate::audio::instrument::*;
-use crate::audio::notes::C4;
 use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::pickup::OnPickupDo;

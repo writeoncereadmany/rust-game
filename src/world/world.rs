@@ -10,7 +10,7 @@ use entity::Id;
 
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::Sprite;
-
+use engine::events::*;
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
@@ -31,7 +31,6 @@ use crate::entities::components::*;
 use crate::entities::particle::*;
 use crate::map::{ Map, Tiled };
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
-use crate::events::*;
 use crate::game_loop::*;
 
 #[derive(Clone)]

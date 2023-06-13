@@ -2,6 +2,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::event::Event as SdlEvent;
 
 use engine::graphics::renderer::{Renderer, Text, align};
+use engine::events::{ Event, Events };
 
 use crate::entities::hero::PandaType;
 use crate::game_loop::GameLoop;
@@ -59,7 +60,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Scores {
         Ok(())
     }
 
-    fn event(&mut self, event: &crate::events::Event, events: &mut crate::events::Events) -> Result<(), String> {
+    fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
 
         if self.new_hiscore_index > 10 {
             event.apply(|e| { match e { 
