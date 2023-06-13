@@ -1,10 +1,10 @@
 use std::ops::Index;
 
-use engine::graphics::renderer::{ Renderer };
-use engine::graphics::sprite::Sprite;
+use crate::graphics::renderer::{ Renderer };
+use crate::graphics::sprite::Sprite;
 
-use engine::shapes::bbox::BBox;
-use engine::shapes::convex_mesh::Meshed;
+use crate::shapes::bbox::BBox;
+use crate::shapes::convex_mesh::Meshed;
 
 pub trait Tiled {
     fn tile(&self) -> (i32, i32);

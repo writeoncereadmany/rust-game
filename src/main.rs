@@ -1,7 +1,6 @@
 mod app;
 mod entities;
 mod controller;
-mod map;
 mod music;
 mod game;
 mod world;

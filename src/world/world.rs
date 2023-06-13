@@ -14,7 +14,7 @@ use engine::events::*;
 use engine::shapes::push::Push;
 use engine::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use engine::game_loop::*;
-
+use engine::map::{ Map, Tiled };
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
@@ -32,7 +32,6 @@ use crate::entities::pickup::*;
 use crate::entities::lockbox::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
-use crate::map::{ Map, Tiled };
 
 #[derive(Clone)]
 pub enum Tile {
