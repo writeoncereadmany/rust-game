@@ -5,10 +5,9 @@ use engine::graphics::renderer::align;
 use engine::graphics::renderer::Text;
 use engine::graphics::renderer::Renderer;
 use engine::events::{ Event, Events };
-
+use engine::game_loop::GameLoop;
 
 use crate::entities::hero::PandaType;
-use crate::game_loop::GameLoop;
 use crate::app::events::{NewGame, ShowHighScores};
 
 pub struct Title;

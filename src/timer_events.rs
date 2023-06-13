@@ -4,7 +4,7 @@ use std::time::{Instant, Duration};
 
 use component_derive::Event;
 
-use crate::events::{ Event, EventTrait, Events };
+use engine::events::{ Event, EventTrait, Events };
 
 #[derive(Event)]
 pub struct FutureEvent {

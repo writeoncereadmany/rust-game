@@ -5,13 +5,13 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video()?;
     let game_controller_subsystem = sdl_context.game_controller()?;
 
-    let window = video_subsystem.window("input-tester", 100, 100)
+    let _window = video_subsystem.window("input-tester", 100, 100)
         .build()
         .expect("could not initialize video subsystem");
 
     let mut event_pump: EventPump = sdl_context.event_pump()?;
 
-    let mut controller: Option<GameController> = Option::None;
+    let mut _controller: Option<GameController> = Option::None;
 
     'outer: loop {
         'inner: for event in event_pump.poll_iter() {
@@ -21,7 +21,7 @@ fn main() -> Result<(), String> {
                 Event::Quit {..} => break 'outer,
                 Event::KeyDown { keycode: Some(Keycode::Escape), ..} => break 'outer,
                 Event::ControllerDeviceAdded{ which, .. } => { 
-                    controller = game_controller_subsystem.open(which).ok();
+                    _controller = game_controller_subsystem.open(which).ok();
                 },
                 _ => {}
             }

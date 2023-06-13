@@ -1,7 +1,6 @@
 mod app;
 mod entities;
 mod controller;
-mod game_loop;
 mod map;
 mod music;
 mod game;
@@ -19,10 +18,10 @@ use sdl2::video::Window;
 
 use engine::events::Events;
 use engine::audio::audio::initialise_audio;
-
-use game_loop::run_game_loop;
+use engine::game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::SpriteSheet;
+
 use app::app::App;
 use app::assets::Assets;
 use screens::screens::Screen;

@@ -3,9 +3,9 @@ use sdl2::event::Event as SdlEvent;
 
 use engine::graphics::renderer::{Renderer, Text, align};
 use engine::events::{ Event, Events };
+use engine::game_loop::GameLoop;
 
 use crate::entities::hero::PandaType;
-use crate::game_loop::GameLoop;
 use crate::app::events::{ NewGame, ShowTitleScreen, UpdateHiScores };
 use crate::app::app::HiScore;
 

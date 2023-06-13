@@ -4,7 +4,7 @@ use sdl2::keyboard::Keycode;
 
 use component_derive::Event;
 use engine::events::{Event, Events, EventTrait};
-use crate::game_loop::CascadeInputs;
+use engine::game_loop::CascadeInputs;
 
 use crate::sign::Sign;
 

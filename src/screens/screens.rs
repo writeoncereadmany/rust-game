@@ -1,7 +1,7 @@
 use engine::graphics::renderer::Renderer;
 use engine::events::{ Event, Events };
+use engine::game_loop::GameLoop;
 
-use crate::game_loop::GameLoop;
 use crate::game::game::Game;
 
 use super::hi_score::Scores;

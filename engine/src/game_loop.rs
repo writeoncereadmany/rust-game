@@ -4,7 +4,7 @@ use sdl2::EventPump;
 
 use component_derive::Event;
 
-use engine::events::*;
+use crate::events::*;
 
 #[derive(Event)]
 pub struct Cleanup;
