@@ -4,10 +4,10 @@ use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 use engine::events::*;
+use engine::shapes::convex_mesh::ConvexMesh;
 
 use crate::app::events::{SpawnHero, Interaction};
 use crate::controller::{ ButtonPress, ControllerState };
-use crate::shapes::convex_mesh::ConvexMesh;
 use crate::sign::{ Sign, Signed };
 use super::components::*;
 

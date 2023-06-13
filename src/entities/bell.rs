@@ -4,8 +4,8 @@ use engine::graphics::sprite::Sprite;
 use engine::audio::notes::*;
 use engine::audio::instrument::BELL;
 use engine::audio::tempo::Tempo;
+use engine::shapes::convex_mesh::ConvexMesh;
 
-use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::pickup::*;
 

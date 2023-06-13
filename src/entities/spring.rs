@@ -4,9 +4,9 @@ use component_derive::{ Constant, Variable };
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 use engine::events::{ Event, Events };
+use engine::shapes::convex_mesh::ConvexMesh;
 
 use crate::app::events::Interaction;
-use crate::shapes::convex_mesh::ConvexMesh;
 
 use super::components::*;
 

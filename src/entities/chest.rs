@@ -5,8 +5,8 @@ use engine::graphics::sprite::Sprite;
 
 use entity::Id;
 use engine::events::{ EventTrait, Events, Event };
+use engine::shapes::convex_mesh::ConvexMesh;
 
-use crate::shapes::convex_mesh::ConvexMesh;
 use crate::app::events::*;
 use super::components::*;
 use super::pickup::*;

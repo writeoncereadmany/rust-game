@@ -1,7 +1,5 @@
 use std::cmp::Ordering;
 
-use crate::map::Tiled;
-
 use super::bbox::BBox;
 use super::push::Push;
 use super::vec2d::Vec2d;
@@ -17,12 +15,6 @@ pub struct Meshed<A>
 where A: Clone {
     pub item: A,
     pub mesh: ConvexMesh
-}
-
-impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
-    fn tile(&self) -> (i32, i32) {
-        self.item.tile()
-    }
 }
 
 impl ConvexMesh {

@@ -11,13 +11,13 @@ use entity::Id;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::Sprite;
 use engine::events::*;
+use engine::shapes::push::Push;
 
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::entities::entity_events;
 use crate::entities::spring::spawn_spring;
 use crate::music::countdown::countdown;
-use crate::shapes::push::Push;
 use crate::entities::flagpole::*;
 use crate::entities::bell::*;
 use crate::entities::chest::*;
@@ -30,7 +30,7 @@ use crate::entities::lockbox::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
 use crate::map::{ Map, Tiled };
-use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
+use engine::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::game_loop::*;
 
 #[derive(Clone)]

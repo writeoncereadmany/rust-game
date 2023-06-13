@@ -5,8 +5,8 @@ use engine::graphics::sprite::Sprite;
 use engine::audio::audio::PlayTune;
 use engine::audio::instrument::*;
 use engine::audio::notes::C4;
+use engine::shapes::convex_mesh::ConvexMesh;
 
-use crate::shapes::convex_mesh::ConvexMesh;
 use super::components::*;
 use super::pickup::OnPickupDo;
 use super::pickup::OnPickupEffect;

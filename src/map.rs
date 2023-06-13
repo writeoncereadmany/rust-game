@@ -3,7 +3,8 @@ use std::ops::Index;
 use engine::graphics::renderer::{ Renderer };
 use engine::graphics::sprite::Sprite;
 
-use crate::shapes::bbox::BBox;
+use engine::shapes::bbox::BBox;
+use engine::shapes::convex_mesh::Meshed;
 
 pub trait Tiled {
     fn tile(&self) -> (i32, i32);
@@ -15,6 +16,12 @@ where Tile: Clone
     grid: Vec<Vec<Option<Tile>>>,
     columns: usize,
     rows: usize,
+}
+
+impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
+    fn tile(&self) -> (i32, i32) {
+        self.item.tile()
+    }
 }
 
 pub struct Position {
