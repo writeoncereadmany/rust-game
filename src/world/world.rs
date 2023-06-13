@@ -194,7 +194,7 @@ fn ledge_mesh(x: f64, y: f64) -> ConvexMesh {
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
     
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
-        &self.map.draw(renderer);
+        self.map.draw(renderer);
 
         renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 14.0, 19.0);
 
