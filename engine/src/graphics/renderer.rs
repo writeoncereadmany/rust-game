@@ -40,10 +40,6 @@ pub struct Renderer<'a>
     fps_counter: FpsCounter
 }
 
-pub trait Tiled {
-    fn tile(&self) -> (i32, i32);
-}
-
 impl <'a> Renderer<'a>
 {
     pub fn new(

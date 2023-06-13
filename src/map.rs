@@ -1,9 +1,13 @@
 use std::ops::Index;
 
-use engine::graphics::renderer::{ Renderer, Tiled };
+use engine::graphics::renderer::{ Renderer };
 use engine::graphics::sprite::Sprite;
 
 use crate::shapes::bbox::BBox;
+
+pub trait Tiled {
+    fn tile(&self) -> (i32, i32);
+}
 
 pub struct Map<Tile>
 where Tile: Clone 

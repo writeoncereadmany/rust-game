@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use engine::graphics::renderer::Tiled;
+use crate::map::Tiled;
 
 use super::bbox::BBox;
 use super::push::Push;

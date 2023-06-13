@@ -8,7 +8,6 @@ use entity::not;
 use entity::Entities;
 use entity::Id;
 
-use engine::graphics::renderer::Tiled;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::Sprite;
 
@@ -30,7 +29,7 @@ use crate::entities::pickup::*;
 use crate::entities::lockbox::*;
 use crate::entities::components::*;
 use crate::entities::particle::*;
-use crate::map::Map;
+use crate::map::{ Map, Tiled };
 use crate::shapes::convex_mesh::{ Meshed, ConvexMesh };
 use crate::events::*;
 use crate::game_loop::*;
