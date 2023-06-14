@@ -1,14 +1,3 @@
-mod app;
-mod entities;
-mod controller;
-mod music;
-mod game;
-mod world;
-mod sign;
-mod screens;
-
-use controller::Controller;
-use screens::title::Title;
 use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
 use sdl2::keyboard::Keycode;
@@ -21,9 +10,11 @@ use engine::game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::SpriteSheet;
 
-use app::app::App;
-use app::assets::Assets;
-use screens::screens::Screen;
+use pandamonium::controller::Controller;
+use pandamonium::screens::title::Title;
+use pandamonium::app::app::App;
+use pandamonium::app::assets::Assets;
+use pandamonium::screens::screens::Screen;
 
 const COLUMNS: usize = 30;
 const ROWS: usize = 20;
