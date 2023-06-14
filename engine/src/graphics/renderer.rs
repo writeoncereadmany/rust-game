@@ -1,13 +1,13 @@
 use std::cmp::Ordering;
+use std::time::Instant;
 
-use sdl2::pixels::{Color};
+use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
-use sdl2::video::{WindowContext};
+use sdl2::video::WindowContext;
 
-use component_derive::{ Variable };
+use component_derive::Variable;
 
-use crate::fps_counter::FpsCounter;
 use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
 
 pub mod align {
@@ -60,6 +60,7 @@ impl <'a> Renderer<'a>
         let textbatch = spritefont.batch();
         let text_width = spritefont.tile_width as f64 / spritesheet.tile_width as f64;
         let text_height = spritefont.tile_height as f64 / spritesheet.tile_height as f64;
+        let fps_counter = FpsCounter::new(30);
 
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
@@ -73,7 +74,7 @@ impl <'a> Renderer<'a>
             textbatch,
             text_width,
             text_height,
-            fps_counter: FpsCounter::new(30)
+            fps_counter
         })
     }
 
@@ -205,4 +206,31 @@ fn char_tile(ch: char) -> (i32, i32) {
 fn position(ch: char, base: char, starting_row: i32) -> (i32, i32) {
     let offset = ch as i32 - base as i32;
     (offset % 10, (offset / 10) + starting_row)
+}
+
+pub struct FpsCounter
+{
+    threshold: u128,
+    then: Instant
+}
+
+impl FpsCounter {
+    pub fn new(threshold: u128) -> Self {
+        return FpsCounter {
+            threshold,
+            then: Instant::now()
+        };
+    }
+
+    pub fn on_frame(&mut self) {
+        let now = Instant::now();
+
+        let frame_duration = now.duration_since(self.then).as_millis();
+        if frame_duration > self.threshold
+        {
+            println!("Slow frame: took {frame_duration} between frames");
+        }
+
+        self.then = now;
+    }
 }
