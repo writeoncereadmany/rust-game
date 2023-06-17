@@ -4,7 +4,8 @@ use crate::graphics::renderer::{ Renderer };
 use crate::graphics::sprite::Sprite;
 
 use crate::shapes::bbox::BBox;
-use crate::shapes::convex_mesh::Meshed;
+use crate::shapes::convex_mesh::{Meshed, ConvexMesh};
+use crate::shapes::push::Push;
 
 pub trait Tiled {
     fn tile(&self) -> (i32, i32);
@@ -92,6 +93,30 @@ where Tile: Clone {
     }
 }
 
+impl <Tile> Push<ConvexMesh> for Map<Meshed<Tile>> where Tile: Clone {
+
+    fn push(&self, original_mesh: &ConvexMesh) -> Option<(f64, f64)> {
+        let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
+        let mut updated_mesh = original_mesh.clone();
+        for (_pos, t) in self.overlapping(&updated_mesh.bbox()) {
+            let push = t.mesh.push(&updated_mesh);
+            match push {
+                None => {},
+                Some((x, y)) => {
+                    if x != 0.0 {
+                        updated_mesh = updated_mesh.translate(x, 0.0);
+                        tot_x_push += x;
+                    }
+                    if y != 0.0 {
+                        updated_mesh = updated_mesh.translate(0.0, y);
+                        tot_y_push += y;
+                    }
+                }
+            }
+        }
+        if tot_x_push == 0.0 && tot_y_push == 0.0 { None } else { Some((tot_x_push, tot_y_push)) }
+    }
+}
 
 
 fn constrain(value: f64, min: usize, max: usize) -> usize {
