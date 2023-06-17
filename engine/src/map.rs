@@ -25,12 +25,8 @@ impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
 }
 
 pub struct Position {
-    pub grid_x: i32,
-    pub grid_y: i32,
-    pub min_x: i32,
-    pub max_x: i32,
-    pub min_y: i32,
-    pub max_y: i32
+    pub x: i32,
+    pub y: i32
 }
 
 impl <Tile> Map<Tile> 
@@ -91,7 +87,7 @@ where Tile: Clone {
     {
         for (pos, t) in self {
             let (x, y) = t.tile();
-            renderer.draw_sprite(&Sprite::new(x, y, 0.0), pos.min_x as f64, pos.min_y as f64);
+            renderer.draw_sprite(&Sprite::new(x, y, 0.0), pos.x as f64, pos.y as f64);
         }
     }
 }
@@ -158,12 +154,8 @@ where Tile: Clone {
             match tile {
                 Some(present) => {
                     let position = Position {
-                        grid_x: x as i32,
-                        grid_y: y as i32,
-                        min_x: x as i32,
-                        max_x: (x + 1) as i32,
-                        min_y: y as i32,
-                        max_y: (y + 1) as i32
+                        x: x as i32,
+                        y: y as i32
                     };
                     return Some((position, present.clone()))
                 },
@@ -198,7 +190,7 @@ mod tests {
         let mut iterated : Vec<(i32, i32)> = Vec::new();
 
         for (pos, _tile) in map.overlapping(&BBox::from(2.5, 3.5).to(4.5, 6.5)) {
-            iterated.push((pos.grid_x, pos.grid_y));
+            iterated.push((pos.x, pos.y));
         }
 
         assert_eq!(iterated, vec![
