@@ -10,16 +10,16 @@ use engine::game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::SpriteSheet;
 
-use pandamonium::controller::Controller;
-use pandamonium::screens::title::Title;
-use pandamonium::app::app::App;
-use pandamonium::app::assets::Assets;
-use pandamonium::screens::screens::Screen;
+use crate::controller::Controller;
+use crate::screens::title::Title;
+use crate::app::app::App;
+use crate::app::assets::Assets;
+use crate::screens::screens::Screen;
 
 const COLUMNS: usize = 30;
 const ROWS: usize = 20;
 
-fn main() -> Result<(), String> {
+pub fn run() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let game_controller_subsystem = sdl_context.game_controller()?;

@@ -1,8 +1,10 @@
-pub mod controller;
-pub mod sign;
-pub mod app;
-pub mod entities;
-pub mod game;
-pub mod music;
-pub mod screens;
-pub mod world;
+pub mod exec;
+
+mod controller;
+mod sign;
+mod app;
+mod entities;
+mod game;
+mod music;
+mod screens;
+mod world;

@@ -1,17 +1,9 @@
 [package]
-name = "sdl2-games"
+name = "tetris"
 version = "0.1.0"
 edition = "2018"
-default-run="pandamonium"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
-name="pandamonium"
-path="src/pandamonium.rs"
-
-[profile.release]
-debug = true
 
 [dependencies.sdl2]
 version = "0.34.5"
@@ -26,7 +18,6 @@ features = ["small_rng"]
 find_folder = "0.3.0"
 derivative = "2.2.0"
 image = "0.23.14"
-component-derive = { path = "component-derive" }
-entity = { path = "entity" }
-engine = { path = "engine" }
-pandamonium = { path = "pandamonium" }
+component-derive = { path = "../component-derive" }
+entity = { path = "../entity" }
+engine = { path = "../engine" }

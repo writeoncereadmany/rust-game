@@ -234,7 +234,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 const TRANSLATE_EPSILON: f64 = 0.01;
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
-    let collidables = entities.collect::<(Obstacle, Mesh)>();
+    let collidables = entities.collect();
     entities.apply(|(Collidable, Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
