@@ -95,11 +95,11 @@ where Tile: Clone {
 
 impl <Tile> Push<ConvexMesh> for Map<Meshed<Tile>> where Tile: Clone {
 
-    fn push(&self, original_mesh: &ConvexMesh) -> Option<(f64, f64)> {
+    fn push(&self, original_mesh: &ConvexMesh, relative_motion: &(f64, f64)) -> Option<(f64, f64)> {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let mut updated_mesh = original_mesh.clone();
         for (_pos, t) in self.overlapping(&updated_mesh.bbox()) {
-            let push = t.mesh.push(&updated_mesh);
+            let push = t.mesh.push(&updated_mesh, relative_motion);
             match push {
                 None => {},
                 Some((x, y)) => {

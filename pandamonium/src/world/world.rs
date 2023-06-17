@@ -236,10 +236,10 @@ const TRANSLATE_EPSILON: f64 = 0.01;
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
     let collidables = entities.collect();
     entities.apply(|(Collidable, Mesh(original_mesh), Velocity(dx, dy), Translation(tx, ty))| {
-        let (mut tot_x_push, mut tot_y_push) = map.push(&original_mesh).unwrap_or((0.0, 0.0));
+        let (mut tot_x_push, mut tot_y_push) = map.push(&original_mesh, &(tx, ty)).unwrap_or((0.0, 0.0));
         let mut updated_mesh = original_mesh.translate(tot_x_push, tot_y_push);
         for (Obstacle, Mesh(mesh)) in &collidables {
-            let push = mesh.push(&updated_mesh);
+            let push = mesh.push(&updated_mesh, &(tx, ty));
             match push {
                 None => {},
                 Some((x, y)) => {

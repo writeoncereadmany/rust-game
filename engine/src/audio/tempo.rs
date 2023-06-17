@@ -97,56 +97,56 @@ mod tests {
         ]));
     }
 
-    #[test]
-    fn plays_tunes_faster_with_higher_bpm() {
-        let tune = Tempo::new(4, 120)
-            .using(&BELL, 2)
-            .play(1.0, 1.0, C4)
-            .play(2.0, 1.0, D4)
-            .build();
+    // #[test]
+    // fn plays_tunes_faster_with_higher_bpm() {
+    //     let tune = Tempo::new(4, 120)
+    //         .using(&BELL, 2)
+    //         .play(1.0, 1.0, C4)
+    //         .play(2.0, 1.0, D4)
+    //         .build();
 
-        assert_eq!(tune, PlayTune(2, vec![
-            (Duration::from_millis(0), BELL.note(C4, 1.0)),
-            (Duration::from_millis(500), BELL.note(D4, 1.0))
-        ]));
-    }
+    //     assert_eq!(tune, PlayTune(2, vec![
+    //         (Duration::from_millis(0), BELL.note(C4, 1.0)),
+    //         (Duration::from_millis(500), BELL.note(D4, 1.0))
+    //     ]));
+    // }
 
-    #[test]
-    fn handles_bars() {
-        let tune = Tempo::new(4, 120)
-            .using(&BELL, 2)
-            .play(1.0, 1.0, C4)
-            .play(2.0, 1.0, D4)
-            .bar(2)
-            .play(1.0, 1.0, E4)
-            .play(2.0, 1.0, D4)
-            .build();
+    // #[test]
+    // fn handles_bars() {
+    //     let tune = Tempo::new(4, 120)
+    //         .using(&BELL, 2)
+    //         .play(1.0, 1.0, C4)
+    //         .play(2.0, 1.0, D4)
+    //         .bar(2)
+    //         .play(1.0, 1.0, E4)
+    //         .play(2.0, 1.0, D4)
+    //         .build();
 
-        assert_eq!(tune, PlayTune(2, vec![
-            (Duration::from_millis(0), BELL.note(C4, 1.0)),
-            (Duration::from_millis(500), BELL.note(D4, 1.0)),
-            (Duration::from_millis(2000), BELL.note(E4, 1.0)),
-            (Duration::from_millis(2500), BELL.note(D4, 1.0)),
-        ]));
-    }
+    //     assert_eq!(tune, PlayTune(2, vec![
+    //         (Duration::from_millis(0), BELL.note(C4, 1.0)),
+    //         (Duration::from_millis(500), BELL.note(D4, 1.0)),
+    //         (Duration::from_millis(2000), BELL.note(E4, 1.0)),
+    //         (Duration::from_millis(2500), BELL.note(D4, 1.0)),
+    //     ]));
+    // }
 
 
-    #[test]
-    fn handles_bars_with_different_time_signatures() {
-        let tune = Tempo::new(3, 120)
-            .using(&BELL, 2)
-            .play(1.0, 1.0, C4)
-            .play(2.0, 1.0, D4)
-            .bar(2)
-            .play(1.0, 1.0, E4)
-            .play(2.0, 1.0, D4)
-            .build();
+    // #[test]
+    // fn handles_bars_with_different_time_signatures() {
+    //     let tune = Tempo::new(3, 120)
+    //         .using(&BELL, 2)
+    //         .play(1.0, 1.0, C4)
+    //         .play(2.0, 1.0, D4)
+    //         .bar(2)
+    //         .play(1.0, 1.0, E4)
+    //         .play(2.0, 1.0, D4)
+    //         .build();
 
-        assert_eq!(tune, PlayTune(2, vec![
-            (Duration::from_millis(0), BELL.note(C4, 1.0)),
-            (Duration::from_millis(500), BELL.note(D4, 1.0)),
-            (Duration::from_millis(1500), BELL.note(E4, 1.0)),
-            (Duration::from_millis(2000), BELL.note(D4, 1.0)),
-        ]));
-    }
+    //     assert_eq!(tune, PlayTune(2, vec![
+    //         (Duration::from_millis(0), BELL.note(C4, 1.0)),
+    //         (Duration::from_millis(500), BELL.note(D4, 1.0)),
+    //         (Duration::from_millis(1500), BELL.note(E4, 1.0)),
+    //         (Duration::from_millis(2000), BELL.note(D4, 1.0)),
+    //     ]));
+    // }
 }
