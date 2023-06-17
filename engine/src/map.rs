@@ -97,19 +97,22 @@ impl <Tile> Push<ConvexMesh> for Map<Meshed<Tile>> where Tile: Clone {
 
     fn push(&self, original_mesh: &ConvexMesh, relative_motion: &(f64, f64)) -> Option<(f64, f64)> {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
+        let (mut rel_x, mut rel_y) = relative_motion;
         let mut updated_mesh = original_mesh.clone();
         for (_pos, t) in self.overlapping(&updated_mesh.bbox()) {
-            let push = t.mesh.push(&updated_mesh, relative_motion);
+            let push = t.mesh.push(&updated_mesh, &(rel_x, rel_y));
             match push {
                 None => {},
                 Some((x, y)) => {
                     if x != 0.0 {
                         updated_mesh = updated_mesh.translate(x, 0.0);
                         tot_x_push += x;
+                        rel_x += x;
                     }
                     if y != 0.0 {
                         updated_mesh = updated_mesh.translate(0.0, y);
                         tot_y_push += y;
+                        rel_y += y;
                     }
                 }
             }

@@ -84,7 +84,7 @@ fn earliest(a: &(f64, f64), b: &(f64, f64), relative_travel: &(f64, f64)) -> Ord
     // that would be hit first
     let proj_a = a.dot(relative_travel);
     let proj_b = b.dot(relative_travel);
-    match proj_b.partial_cmp(&proj_a) {
+    match proj_a.partial_cmp(&proj_b) {
         None => Ordering::Equal,
         Some(ord) => ord
     }
@@ -122,7 +122,6 @@ mod tests {
         assert_eq!(pushes_up_only.push(&square, &(0.0, -0.5)), None);
     }
 
-
     #[test]
     fn does_not_push_more_than_movement_in_normal_component(){
         let pushes_up_only = ConvexMesh::new(vec![(0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0)]);
@@ -130,5 +129,36 @@ mod tests {
 
         // horizontal speed should not matter here, only vertical
         assert_eq!(pushes_up_only.push(&square, &(20.0, -0.5)), None);
+    }
+
+    #[test]
+    fn pushes_against_first_impacted_edge_from_side(){
+        let pushes_up_and_left = ConvexMesh::new(vec![(0.0, -10.0), (0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0), (-1.0, 0.0)]);
+        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+
+        // intersects evenly deeply into left and top sides, but with larger horizontal component to approach,
+        // therefore push should be all left
+        assert_eq!(pushes_up_and_left.push(&square, &(10.0, -2.0)), Some((-1.0, 0.0)));
+    }
+
+
+    #[test]
+    fn pushes_against_first_impacted_edge_from_side(){
+        let pushes_up_and_left = ConvexMesh::new(vec![(0.0, -10.0), (0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0), (-1.0, 0.0)]);
+        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+
+        // intersects nore shallowly into top than left, but hits left first,
+        // therefore push should be all left
+        assert_eq!(pushes_up_and_left.push(&square, &(10.0, -2.0)), Some((-1.0, 0.0)));
+    }
+
+    #[test]
+    fn pushes_against_first_impacted_edge_from_top(){
+        let pushes_up_and_left = ConvexMesh::new(vec![(0.0, -10.0), (0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0), (-1.0, 0.0)]);
+        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+
+        // intersects evenly deeply into left and top sides, but with larger vertical component to approach,
+        // therefore push should be all up
+        assert_eq!(pushes_up_and_left.push(&square, &(2.0, -10.0)), Some((0.0, 1.0)));
     }
 }
