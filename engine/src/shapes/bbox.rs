@@ -123,17 +123,17 @@ mod tests {
     fn no_collision_where_axis_of_separation_exists() {
         let bbox = BBox::from(0.0, 0.0).to(10.0, 10.0);
 
-        assert_eq!(bbox.push(&BBox::from(-10.0, 0.0).to(-2.0, 10.0), &(1.0, 0.0)), None);
-        assert_eq!(bbox.push(&BBox::from(12.0, 0.0).to(14.0, 10.0), &(-1.0, 0.0)), None);
-        assert_eq!(bbox.push(&BBox::from(0.0, -10.0).to(10.0, -3.0), &(0.0, 1.0)), None);
-        assert_eq!(bbox.push(&BBox::from(0.0, 12.0).to(10.0, 15.0), &(0.0, -1.0)), None);
+        assert_eq!(bbox.push(&BBox::from(-10.0, 0.0).size(8.0, 10.0), &(1.0, 0.0)), None);
+        assert_eq!(bbox.push(&BBox::from(12.0, 0.0).size(2.0, 10.0), &(-1.0, 0.0)), None);
+        assert_eq!(bbox.push(&BBox::from(0.0, -10.0).size(10.0, 7.0), &(0.0, 1.0)), None);
+        assert_eq!(bbox.push(&BBox::from(0.0, 12.0).size(10.0, 3.0), &(0.0, -1.0)), None);
     }
 
     #[test]
     fn no_collision_where_objects_had_already_collided() {
-        let bbox = BBox::from(0.0, 0.0).to(10.0, 10.0);
+        let bbox = BBox::from(0.0, 0.0).size(10.0, 10.0);
 
-        assert_eq!(bbox.push(&BBox::from(5.0, 5.0).to(8.0, 8.0), &(1.0, 0.0)), None);
+        assert_eq!(bbox.push(&BBox::from(5.0, 5.0).size(3.0, 3.0), &(1.0, 0.0)), None);
     }
 
     #[test]
@@ -142,17 +142,17 @@ mod tests {
 
         // a bunch of cases where the incoming box would end up embedded in the center of the pushing box
         // but coming from the outside, at speed, from different directions
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(10.0, 2.0)), Some((-6.0, 0.0)));
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(10.0, -2.0)), Some((-6.0, 0.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(10.0, 2.0)), Some((-6.0, 0.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(10.0, -2.0)), Some((-6.0, 0.0)));
 
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(-10.0, 2.0)), Some((6.0, 0.0)));
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(-10.0, -2.0)), Some((6.0, 0.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(-10.0, 2.0)), Some((6.0, 0.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(-10.0, -2.0)), Some((6.0, 0.0)));
 
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(2.0, -10.0)), Some((0.0, 6.0)));
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(-2.0, -10.0)), Some((0.0, 6.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(2.0, -10.0)), Some((0.0, 6.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(-2.0, -10.0)), Some((0.0, 6.0)));
 
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(2.0, 10.0)), Some((0.0, -6.0)));
-        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).to(6.0, 6.0), &(-2.0, 10.0)), Some((0.0, -6.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(2.0, 10.0)), Some((0.0, -6.0)));
+        assert_eq!(bbox.push(&BBox::from(4.0, 4.0).size(2.0, 2.0), &(-2.0, 10.0)), Some((0.0, -6.0)));
     }
 
     // tunneling is a phenomenon wherein an object goes from not colliding with an object on one side to not colliding
@@ -190,7 +190,7 @@ mod tests {
     //  | B |  \|____|
     //  |___|  
     // 
-    // in this case, the aligned box
+    // in this case, the aligned box for A overlaps B, but the swept volume doesn't.
     #[test]
     fn should_not_snag() {
         let bbox = BBox::from(0.0, 0.0).to(10.0, 10.0);
