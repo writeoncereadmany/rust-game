@@ -4,7 +4,6 @@ use std::collections::HashSet;
 use image::RgbImage;
 use image::Rgb;
 
-use entity::not;
 use entity::Entities;
 use entity::Id;
 

@@ -1,6 +1,6 @@
 use sdl2::{EventPump, event::Event, keyboard::Keycode, controller::GameController};
 
-fn main() -> Result<(), String> {
+pub fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let game_controller_subsystem = sdl_context.game_controller()?;
