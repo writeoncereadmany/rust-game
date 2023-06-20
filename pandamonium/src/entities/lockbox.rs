@@ -16,10 +16,7 @@ pub fn spawn_lockbox(x: f64, y: f64, entities: &mut Entities) {
         .with(Obstacle)
         .with(Position(x, y))
         .with(Sprite::new(4, 8, 0.5))
-        .with(Mesh(ConvexMesh::new(
-            vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], 
-            vec![(1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)])
-            .translate(x, y)))
+        .with(Mesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
     );
 }
 

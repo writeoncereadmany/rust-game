@@ -14,7 +14,7 @@ pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
         .with(Pickup)
         .with(Position(x, y))
         .with(Sprite::new(1, 0, 0.5))
-        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+        .with(Mesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("x2"))
         .with(OnPickupDo::DoubleScore)

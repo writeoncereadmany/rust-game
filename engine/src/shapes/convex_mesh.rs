@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::iter::Chain;
 
 use super::bbox::BBox;
 use super::push::Push;
@@ -19,6 +18,11 @@ pub struct Meshed<A>
 where A: Clone {
     pub item: A,
     pub mesh: ConvexMesh
+}
+
+pub enum Mesh {
+    Convex(ConvexMesh),
+    AABB(BBox),
 }
 
 impl ConvexMesh {
@@ -57,22 +61,21 @@ impl ConvexMesh {
 impl Push<ConvexMesh> for ConvexMesh {
 
     fn push(&self, other: &ConvexMesh, relative_travel: &(f64, f64)) -> Option<(f64, f64)> {
-
         let mut earliest_push: Option<(f64, f64)> = None;
 
         for normal in normals_as_applied_to_other(self, other) {
             let my_max : f64 = self.points.iter().map(|point| normal.dot(point)).reduce(f64::max)?;
-                let their_min : f64 = other.points.iter().map(|point| normal.dot(point)).reduce(f64::min)?;
-                if my_max < their_min {
-                    return None;
-                } else {
-                    let push_distance = my_max - their_min;
-                    if push_distance + normal.dot(relative_travel) <= PUSH_EPSILON
-                    {
-                        let potential_push = normal.scale(push_distance);
-                        earliest_push = earliest_push.map_or(Some(potential_push), |push| Some(earliest(push, potential_push, relative_travel)));
-                    }
+            let their_min : f64 = other.points.iter().map(|point| normal.dot(point)).reduce(f64::min)?;
+            if my_max < their_min {
+                return None;
+            } else {
+                let push_distance = my_max - their_min;
+                if push_distance + normal.dot(relative_travel) <= PUSH_EPSILON
+                {
+                    let potential_push = normal.scale(push_distance);
+                    earliest_push = earliest_push.map_or(Some(potential_push), |push| Some(earliest(push, potential_push, relative_travel)));
                 }
+            }
         }
         earliest_push
     }
@@ -112,30 +115,30 @@ mod tests {
 
     #[test]
     fn does_not_push_with_motion(){
-        let pushes_up_only = ConvexMesh::new(vec![(0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0)]);
+        let deep_rect = ConvexMesh::rect(0.0, -20.0, 10.0, 20.0);
         let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
 
-        assert_eq!(pushes_up_only.push(&square, &(0.0, 5.0)), None);
+        assert_eq!(deep_rect.push(&square, &(0.0, 5.0)), None);
     }
 
-    // #[test]
-    // fn does_not_push_more_than_movement(){
-    //     let pushes_up_only = ConvexMesh::new(vec![(0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0)]);
-    //     let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+    #[test]
+    fn does_not_push_more_than_movement() {
+        let deep_rect = ConvexMesh::rect(0.0, -20.0, 10.0, 20.0);
+        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
 
-    //     // was already 1 unit to other side of barrier, but has only moved 0.5 this frame: was already through
-    //     // the object, let it continue
-    //     assert_eq!(pushes_up_only.push(&square, &(0.0, -0.5)), None);
-    // }
+        // was already 1 unit to other side of barrier, but has only moved 0.5 this frame: was already through
+        // the object, let it continue
+        assert_eq!(deep_rect.push(&square, &(0.0, -0.5)), None);
+    }
 
-    // #[test]
-    // fn does_not_push_more_than_movement_in_normal_component(){
-    //     let pushes_up_only = ConvexMesh::new(vec![(0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0)]);
-    //     let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+    #[test]
+    fn does_not_push_more_than_movement_in_normal_component() {
+        let deep_rect = ConvexMesh::rect(-100.0, -20.0, 100.0, 0.0);
+        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
 
-    //     // horizontal speed should not matter here, only vertical
-    //     assert_eq!(pushes_up_only.push(&square, &(20.0, -0.5)), None);
-    // }
+        // horizontal speed should not matter here, only vertical
+        assert_eq!(deep_rect.push(&square, &(20.0, -0.5)), None);
+    }
 
     #[test]
     fn pushes_against_first_impacted_edge_from_side(){

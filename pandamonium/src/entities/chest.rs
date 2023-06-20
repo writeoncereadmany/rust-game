@@ -29,7 +29,7 @@ pub fn spawn_open_chest(x: f64, y: f64, entities: &mut Entities, events: &mut Ev
     let chest_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(3, 7, 0.5))
-        .with(Mesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![]).translate(x, y)))
+        .with(Mesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
     );
 
     events.schedule(Duration::from_secs(1), Destroy(chest_id));
@@ -46,7 +46,7 @@ pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {
         .with(OnPickupDo::Score(100))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("100"))
-        .with(ReferenceMesh(ConvexMesh::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], vec![])))
+        .with(ReferenceMesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0)))
     );
 }
 
