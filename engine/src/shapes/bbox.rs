@@ -57,13 +57,6 @@ impl BBox {
             bottom: self.bottom + dy
         }
     }
-
-    pub fn touches(&self, other: &BBox) -> bool {
-        self.left < other.right && 
-        self.right > other.left &&
-        self.bottom < other.top &&
-        self.top > other.bottom
-    }
 }
 
 impl BoxBuilder {

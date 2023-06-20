@@ -250,7 +250,7 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
                 }
             }
         }
-        (LastPush(tot_x_push, tot_y_push), not::<Translation>())
+        (LastPush(tot_x_push, tot_y_push), Translation(utx, uty))
     });
 
     entities.apply(|(Position(x, y), LastPush(px, py))| {
@@ -266,18 +266,19 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh)), (Pickup, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().touches(&mesh.bbox()) {
+    entities.for_each_pair(|(Hero, Mesh(hero_mesh), Translation(tx, ty)), (Pickup, Id(id), Mesh(mesh))| {
+        if hero_mesh.bbox().intersects(&mesh.bbox(), &(*tx, *ty)) {
             events.fire(PickupCollected(*id));
         }
     });
 
-    entities.for_each_pair(|(Hero, Id(hero_id), Mesh(hero_mesh)), (interaction_type, Id(other_id), Mesh(other_mesh))| {
-        if hero_mesh.bbox().touches(&other_mesh.bbox()) {
+    entities.for_each_pair(|(Hero, Id(hero_id), Mesh(hero_mesh), Translation(tx, ty)), (interaction_type, Id(other_id), Mesh(other_mesh))| {
+        if hero_mesh.bbox().intersects(&other_mesh.bbox(), &(*tx, *ty)) {
             events.fire(Interaction { 
                 hero_id: *hero_id, 
                 other_id: *other_id, 
-                interaction_type: *interaction_type });
+                interaction_type: *interaction_type 
+            });
         }
     });
 }
