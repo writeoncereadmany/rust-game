@@ -58,6 +58,16 @@ impl ConvexMesh {
     }
 }
 
+impl Push<Mesh> for Mesh {
+    fn push(&self, other: &Mesh, relative_translation: &(f64, f64)) -> Option<(f64, f64)> {
+        match (self, other) {
+            (Mesh::Convex(this), Mesh::Convex(other)) => this.push(other, relative_translation),
+            (Mesh::AABB(this), Mesh::AABB(that)) => this.push(that, relative_translation),
+            _ => None
+        }
+    }
+}
+
 impl Push<ConvexMesh> for ConvexMesh {
 
     fn push(&self, other: &ConvexMesh, relative_travel: &(f64, f64)) -> Option<(f64, f64)> {
