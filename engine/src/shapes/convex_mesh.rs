@@ -80,6 +80,13 @@ impl Push<Mesh> for Mesh {
 }
 
 impl Mesh {
+    pub fn rect(left: f64, bottom: f64, width: f64, height: f64) -> Self {
+        Mesh::Convex(ConvexMesh::new(
+            vec![(left, bottom), (left+width, bottom), (left+width, bottom+height), (left, bottom+height)],
+            vec![(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0)]
+        ))
+    }
+
     pub fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
         match self {
             Mesh::Convex(mesh) => mesh.project(normal, trans),
@@ -141,7 +148,7 @@ mod tests {
     #[test]
     fn project_shows_places_on_relative_normals_with_no_translation_vector()
     {
-        let rect = Mesh::Convex(ConvexMesh::rect(4.0, 6.0, 3.0, 5.0));
+        let rect = Mesh::rect(4.0, 6.0, 3.0, 5.0);
         assert_eq!(rect.project(&(1.0, 0.0), &(0.0, 0.0)), (4.0, 7.0));
         assert_eq!(rect.project(&(0.0, 1.0), &(0.0, 0.0)), (6.0, 11.0));
     }   
@@ -149,7 +156,7 @@ mod tests {
     #[test]
     fn project_shows_places_on_relative_normals_with_translation_vector()
     {
-        let rect = ConvexMesh::rect(4.0, 6.0, 3.0, 5.0);
+        let rect = Mesh::rect(4.0, 6.0, 3.0, 5.0);
         assert_eq!(rect.project(&(1.0, 0.0), &(7.0, 3.0)), (-3.0, 7.0));
         assert_eq!(rect.project(&(1.0, 0.0), &(-2.0, -3.0)), (4.0, 9.0));
 
@@ -160,24 +167,24 @@ mod tests {
 
     #[test]
     fn pushes_against_motion(){
-        let base = ConvexMesh::new(vec![(0.0, 0.0), (10.0, 0.0)], vec![(0.0, 1.0)]);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let base = Mesh::rect(0.0, -10.0, 10.0, 10.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         assert_eq!(base.push(&square, &(0.0, -5.0)), Some((0.0, 1.0)));
     }
 
     #[test]
     fn does_not_push_with_motion(){
-        let deep_rect = ConvexMesh::rect(0.0, -20.0, 10.0, 20.0);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let deep_rect = Mesh::rect(0.0, -20.0, 10.0, 20.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         assert_eq!(deep_rect.push(&square, &(0.0, 5.0)), None);
     }
 
     #[test]
     fn does_not_push_more_than_movement() {
-        let deep_rect = ConvexMesh::rect(0.0, -20.0, 10.0, 20.0);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let deep_rect = Mesh::rect(0.0, -20.0, 10.0, 20.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         // was already 1 unit to other side of barrier, but has only moved 0.5 this frame: was already through
         // the object, let it continue
@@ -186,8 +193,8 @@ mod tests {
 
     #[test]
     fn does_not_push_more_than_movement_in_normal_component() {
-        let deep_rect = ConvexMesh::rect(-100.0, -20.0, 100.0, 0.0);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let deep_rect = Mesh::rect(-100.0, -20.0, 100.0, 0.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         // horizontal speed should not matter here, only vertical
         assert_eq!(deep_rect.push(&square, &(20.0, -0.5)), None);
@@ -195,8 +202,8 @@ mod tests {
 
     #[test]
     fn pushes_against_first_impacted_edge_from_side(){
-        let base = ConvexMesh::rect(0.0, -10.0, 10.0, 10.0);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let base = Mesh::rect(0.0, -10.0, 10.0, 10.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         // intersects evenly deeply into top and left, but hits left side, therefore push should be all left
         assert_eq!(base.push(&square, &(10.0, -2.0)), Some((-1.0, 0.0)));
@@ -204,8 +211,8 @@ mod tests {
 
     #[test]
     fn pushes_against_first_impacted_edge_from_side_with_even_approach(){
-        let base = ConvexMesh::rect(0.0, -10.0, 10.0, 10.0);
-        let square = ConvexMesh::rect(-1.0, -2.0, 2.0, 2.0);
+        let base = Mesh::rect(0.0, -10.0, 10.0, 10.0);
+        let square = Mesh::rect(-1.0, -2.0, 2.0, 2.0);
 
         // approaches left and down at equal rates, but ends up hitting left side
         assert_eq!(base.push(&square, &(10.0, -10.0)), Some((-1.0, 0.0)));
@@ -213,8 +220,8 @@ mod tests {
 
     #[test]
     fn pushes_against_first_impacted_edge_from_top_with_even_approach(){
-        let base = ConvexMesh::rect(0.0, -10.0, 10.0, 10.0);
-        let square = ConvexMesh::rect(0.0, -1.0, 2.0, 2.0);
+        let base = Mesh::rect(0.0, -10.0, 10.0, 10.0);
+        let square = Mesh::rect(0.0, -1.0, 2.0, 2.0);
 
         // approaches left and down at equal rates, but ends up hitting top side
         assert_eq!(base.push(&square, &(10.0, -10.0)), Some((0.0, 1.0)));
@@ -222,8 +229,8 @@ mod tests {
 
     #[test]
     fn pushes_against_first_impacted_edge_from_top(){
-        let pushes_up_and_left = ConvexMesh::rect(0.0, -10.0, 10.0, 10.0);
-        let square = ConvexMesh::rect(-1.0, -1.0, 2.0, 2.0);
+        let pushes_up_and_left = Mesh::rect(0.0, -10.0, 10.0, 10.0);
+        let square = Mesh::rect(-1.0, -1.0, 2.0, 2.0);
 
         // intersects evenly deeply into left and top sides, but with larger vertical component to approach,
         // therefore push should be all up
@@ -232,38 +239,38 @@ mod tests {
 
     #[test]
     fn no_collision_where_axis_of_separation_exists() {
-        let rect = ConvexMesh::rect(0.0, 0.0, 10.0, 10.0);
+        let rect = Mesh::rect(0.0, 0.0, 10.0, 10.0);
 
-        assert_eq!(rect.push(&ConvexMesh::rect(-10.0, 0.0, -2.0, 10.0), &(1.0, 0.0)), None);
-        assert_eq!(rect.push(&ConvexMesh::rect(12.0, 0.0, 14.0, 10.0), &(-1.0, 0.0)), None);
-        assert_eq!(rect.push(&ConvexMesh::rect(0.0, -10.0, 10.0, -3.0), &(0.0, 1.0)), None);
-        assert_eq!(rect.push(&ConvexMesh::rect(0.0, 12.0, 10.0, 15.0), &(0.0, -1.0)), None);
+        assert_eq!(rect.push(&Mesh::rect(-10.0, 0.0, -2.0, 10.0), &(1.0, 0.0)), None);
+        assert_eq!(rect.push(&Mesh::rect(12.0, 0.0, 14.0, 10.0), &(-1.0, 0.0)), None);
+        assert_eq!(rect.push(&Mesh::rect(0.0, -10.0, 10.0, -3.0), &(0.0, 1.0)), None);
+        assert_eq!(rect.push(&Mesh::rect(0.0, 12.0, 10.0, 15.0), &(0.0, -1.0)), None);
     }
 
     #[test]
     fn no_collision_where_objects_had_already_collided() {
-        let rect = ConvexMesh::rect(0.0, 0.0, 10.0, 10.0);
+        let rect = Mesh::rect(0.0, 0.0, 10.0, 10.0);
 
-        assert_eq!(rect.push(&ConvexMesh::rect(5.0, 5.0, 8.0, 8.0), &(1.0, 0.0)), None);
+        assert_eq!(rect.push(&Mesh::rect(5.0, 5.0, 8.0, 8.0), &(1.0, 0.0)), None);
     }
 
     #[test]
     fn collision_where_objects_are_newly_collided() {
-        let bbox = ConvexMesh::rect(0.0, 0.0, 10.0, 10.0);
+        let bbox = Mesh::rect(0.0, 0.0, 10.0, 10.0);
 
         // a bunch of cases where the incoming box would end up embedded in the center of the pushing box
         // but coming from the outside, at speed, from different directions
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(10.0, 2.0)), Some((-6.0, 0.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(10.0, -2.0)), Some((-6.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(10.0, 2.0)), Some((-6.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(10.0, -2.0)), Some((-6.0, 0.0)));
 
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(-10.0, 2.0)), Some((6.0, 0.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(-10.0, -2.0)), Some((6.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(-10.0, 2.0)), Some((6.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(-10.0, -2.0)), Some((6.0, 0.0)));
 
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(2.0, -10.0)), Some((0.0, 6.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(-2.0, -10.0)), Some((0.0, 6.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(2.0, -10.0)), Some((0.0, 6.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(-2.0, -10.0)), Some((0.0, 6.0)));
 
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(2.0, 10.0)), Some((0.0, -6.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 4.0, 2.0, 2.0), &(-2.0, 10.0)), Some((0.0, -6.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(2.0, 10.0)), Some((0.0, -6.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 4.0, 2.0, 2.0), &(-2.0, 10.0)), Some((0.0, -6.0)));
     }
 
     // tunneling is a phenomenon wherein an object goes from not colliding with an object on one side to not colliding
@@ -273,17 +280,17 @@ mod tests {
     // collision meshes, but also the path travelled, to check that for intersections too
     #[test]
     fn should_not_tunnel() {
-        let bbox = ConvexMesh::rect(0.0, 0.0, 10.0, 10.0);
+        let bbox = Mesh::rect(0.0, 0.0, 10.0, 10.0);
 
         // cardinal directions of travel
-        assert_eq!(bbox.push(&ConvexMesh::rect(12.0, 4.0, 2.0, 2.0), &(20.0, 0.0)), Some((-14.0, 0.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(-4.0, 4.0, 2.0, 2.0), &(-20.0, 0.0)), Some((14.0, 0.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, 14.0, 2.0, 2.0), &(0.0, 20.0)), Some((0.0, -16.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(4.0, -4.0, 2.0, 2.0), &(0.0, -20.0)), Some((0.0, 14.0)));
+        assert_eq!(bbox.push(&Mesh::rect(12.0, 4.0, 2.0, 2.0), &(20.0, 0.0)), Some((-14.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(-4.0, 4.0, 2.0, 2.0), &(-20.0, 0.0)), Some((14.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, 14.0, 2.0, 2.0), &(0.0, 20.0)), Some((0.0, -16.0)));
+        assert_eq!(bbox.push(&Mesh::rect(4.0, -4.0, 2.0, 2.0), &(0.0, -20.0)), Some((0.0, 14.0)));
 
         // diagonal travel across object: pushes along whichever axis is breached _last_
-        assert_eq!(bbox.push(&ConvexMesh::rect(12.0, 14.0, 2.0, 2.0), &(20.0, 20.0)), Some((-14.0, 0.0)));
-        assert_eq!(bbox.push(&ConvexMesh::rect(14.0, 12.0, 2.0, 2.0), &(20.0, 20.0)), Some((0.0, -14.0)));
+        assert_eq!(bbox.push(&Mesh::rect(12.0, 14.0, 2.0, 2.0), &(20.0, 20.0)), Some((-14.0, 0.0)));
+        assert_eq!(bbox.push(&Mesh::rect(14.0, 12.0, 2.0, 2.0), &(20.0, 20.0)), Some((0.0, -14.0)));
     }
 
     // here, snagging means an object passing diagonally past another without colliding, but such that the
@@ -304,9 +311,9 @@ mod tests {
     // in this case, the aligned box overlaps, but the swept volume doesn't
     #[test]
     fn should_not_snag() {
-        let bbox = ConvexMesh::rect(0.0, 0.0, 10.0, 10.0);
+        let bbox = Mesh::rect(0.0, 0.0, 10.0, 10.0);
 
-        assert_eq!(bbox.intersects(&ConvexMesh::rect(14.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), true);
-        assert_eq!(bbox.intersects(&ConvexMesh::rect(16.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), false);
+        assert_eq!(bbox.intersects(&Mesh::rect(14.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), true);
+        assert_eq!(bbox.intersects(&Mesh::rect(16.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), false);
     }
 }
