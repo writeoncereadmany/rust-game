@@ -93,6 +93,13 @@ impl Mesh {
             Mesh::AABB(mesh) => mesh.project(normal, trans)
         }
     }
+
+    pub fn translate(&self, dx: f64, dy: f64) -> Mesh {
+        match self {
+            Mesh::Convex(mesh) => Mesh::Convex(mesh.translate(dx, dy)),
+            Mesh::AABB(mesh) => Mesh::AABB(mesh.translate(dx, dy))
+        }
+    }
 }
 
 impl Push<ConvexMesh> for ConvexMesh {
