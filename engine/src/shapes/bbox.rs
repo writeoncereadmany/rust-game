@@ -26,11 +26,12 @@ impl BBox {
         self.top - self.bottom
     }
 
-    pub fn project(&self, normal@&(nx, ny): &(f64, f64)) -> (f64, f64) {
+    pub fn project(&self, normal@&(nx, ny): &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
         let (min_x, max_x) = if nx > 0.0 { (self.left, self.right) } else { (self.right, self.left) };
         let (min_y, max_y) = if ny > 0.0 { (self.bottom, self.top) } else { (self.top, self.bottom) };
+        let t_proj = -normal.dot(trans);
          
-        (normal.dot(&(min_x, min_y)), normal.dot(&(max_x, max_y)))
+        (normal.dot(&(min_x, min_y)) + t_proj.min(0.0), normal.dot(&(max_x, max_y)) + t_proj.max(0.0))
     }
 
     pub fn translate(&self, dx: f64, dy: f64) -> BBox{
@@ -89,8 +90,8 @@ impl Push<BBox> for BBox {
         // are separated along this axis: just whether they are or not
         let direction_of_travel_axis = rel_trans.perpendicular();
 
-        let (this_min, this_max) = self.project(&direction_of_travel_axis);
-        let (that_min, that_max) = other.project(&direction_of_travel_axis);
+        let (this_min, this_max) = self.project(&direction_of_travel_axis, rel_trans);
+        let (that_min, that_max) = other.project(&direction_of_travel_axis, rel_trans);
 
         let separated_by_axis_of_travel = this_min > that_max || that_min > this_max;
 

@@ -79,6 +79,15 @@ impl Push<Mesh> for Mesh {
     }
 }
 
+impl Mesh {
+    pub fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
+        match self {
+            Mesh::Convex(mesh) => mesh.project(normal, trans),
+            Mesh::AABB(mesh) => mesh.project(normal, trans)
+        }
+    }
+}
+
 impl Push<ConvexMesh> for ConvexMesh {
 
     fn push(&self, other: &ConvexMesh, relative_travel: &(f64, f64)) -> Option<(f64, f64)> {
@@ -132,7 +141,7 @@ mod tests {
     #[test]
     fn project_shows_places_on_relative_normals_with_no_translation_vector()
     {
-        let rect = ConvexMesh::rect(4.0, 6.0, 3.0, 5.0);
+        let rect = Mesh::Convex(ConvexMesh::rect(4.0, 6.0, 3.0, 5.0));
         assert_eq!(rect.project(&(1.0, 0.0), &(0.0, 0.0)), (4.0, 7.0));
         assert_eq!(rect.project(&(0.0, 1.0), &(0.0, 0.0)), (6.0, 11.0));
     }   
