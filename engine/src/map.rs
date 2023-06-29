@@ -68,10 +68,10 @@ where Tile: Clone {
     }
 
     pub fn overlapping(&self, bbox: &BBox) -> MapIter<Tile> {
-        let grid_min_x = constrain(f64::floor(bbox.left()), 0, self.columns - 1);
-        let grid_max_x = constrain(f64::floor(bbox.right()), 0, self.columns - 1);
-        let grid_min_y = constrain(f64::floor(bbox.bottom()), 0, self.rows - 1);
-        let grid_max_y = constrain(f64::floor(bbox.top()), 0, self.rows - 1);
+        let grid_min_x = constrain(f64::floor(bbox.left), 0, self.columns - 1);
+        let grid_max_x = constrain(f64::floor(bbox.right), 0, self.columns - 1);
+        let grid_min_y = constrain(f64::floor(bbox.bottom), 0, self.rows - 1);
+        let grid_max_y = constrain(f64::floor(bbox.top), 0, self.rows - 1);
 
         MapIter {
             map: self,
@@ -99,7 +99,7 @@ impl <Tile> Push<ConvexMesh> for Map<Meshed<Tile>> where Tile: Clone {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let (mut rel_x, mut rel_y) = relative_motion;
         let mut updated_mesh = original_mesh.clone();
-        for (_pos, t) in self.overlapping(&updated_mesh.bbox()) {
+        for (_pos, t) in self.overlapping(&updated_mesh.bbox(relative_motion)) {
             let push = t.mesh.push(&updated_mesh, &(rel_x, rel_y));
             match push {
                 None => {},

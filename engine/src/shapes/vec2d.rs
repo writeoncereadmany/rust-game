@@ -12,6 +12,10 @@ pub trait Vec2d<A> {
     fn perpendicular(&self) -> A;
 }
 
+pub const ZERO: (f64, f64) = (0.0, 0.0);
+pub const UNIT_X: (f64, f64) = (1.0, 0.0);
+pub const UNIT_Y: (f64, f64) = (0.0, 1.0);
+
 impl Vec2d<(f64, f64)> for (f64, f64) {
 
     fn dot(&self, other: &(f64, f64)) -> f64 {

@@ -266,13 +266,13 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
     entities.for_each_pair(|(Hero, Mesh(hero_mesh), Translation(tx, ty)), (Pickup, Id(id), Mesh(mesh))| {
-        if hero_mesh.bbox().intersects(&mesh.bbox(), &(*tx, *ty)) {
+        if hero_mesh.intersects(&mesh, &(*tx, *ty)) {
             events.fire(PickupCollected(*id));
         }
     });
 
     entities.for_each_pair(|(Hero, Id(hero_id), Mesh(hero_mesh), Translation(tx, ty)), (interaction_type, Id(other_id), Mesh(other_mesh))| {
-        if hero_mesh.bbox().intersects(&other_mesh.bbox(), &(*tx, *ty)) {
+        if hero_mesh.intersects(&other_mesh, &(*tx, *ty)) {
             events.fire(Interaction { 
                 hero_id: *hero_id, 
                 other_id: *other_id, 

@@ -2,10 +2,10 @@ use super::{push::Push, vec2d::Vec2d};
 
 #[derive(Clone, Copy)]
 pub struct BBox {
-    left: f64,
-    right: f64,
-    top: f64,
-    bottom: f64
+    pub left: f64,
+    pub right: f64,
+    pub top: f64,
+    pub bottom: f64
 }
 
 pub struct BoxBuilder {
@@ -16,22 +16,6 @@ pub struct BoxBuilder {
 impl BBox {
     pub fn from(left: f64, bottom: f64) -> BoxBuilder {
         BoxBuilder { left, bottom }
-    }
-
-    pub fn left(&self) -> f64 {
-        self.left
-    }
-
-    pub fn right(&self) -> f64 {
-        self.right
-    }
-
-    pub fn top(&self) -> f64 {
-        self.top
-    }
-
-    pub fn bottom(&self) -> f64 {
-        self.bottom
     }
 
     pub fn width(&self) -> f64 {
@@ -72,15 +56,15 @@ impl BoxBuilder {
 impl Push<BBox> for BBox {
 
     fn push(&self, other: &BBox, rt@&(rx, ry): &(f64, f64)) -> Option<(f64, f64)> {
-        let swept_left = other.left() - rx.max(0.0);
-        let swept_right = other.right() - rx.min(0.0);
-        let swept_bottom = other.bottom() - ry.max(0.0);
-        let swept_top = other.top() - ry.min(0.0);
+        let swept_left = other.left - rx.max(0.0);
+        let swept_right = other.right - rx.min(0.0);
+        let swept_bottom = other.bottom - ry.max(0.0);
+        let swept_top = other.top - ry.min(0.0);
 
         if !self.intersects(other, rt) { return None }
         
-        let hpush = if rx > 0.0 { self.left() - swept_right } else { self.right() - swept_left };
-        let vpush = if ry > 0.0 { self.bottom() - swept_top } else { self.top() - swept_bottom };
+        let hpush = if rx > 0.0 { self.left - swept_right } else { self.right - swept_left };
+        let vpush = if ry > 0.0 { self.bottom - swept_top } else { self.top - swept_bottom };
         
         match(hpush.abs() > rx.abs(), vpush.abs() > ry.abs())
         {
@@ -96,10 +80,10 @@ impl Push<BBox> for BBox {
     }
 
     fn intersects(&self, other: &BBox, rel_trans@(rx, ry): &(f64, f64)) -> bool {
-        let swept_boxes_intersect = (other.left() - rx.max(0.0)) < self.right() 
-        && self.left() < (other.right() - rx.min(0.0)) 
-        && (other.bottom() - ry.max(0.0)) < self.top() 
-        && self.bottom() < (other.top() - ry.min(0.0));
+        let swept_boxes_intersect = (other.left - rx.max(0.0)) < self.right 
+        && self.left < (other.right - rx.min(0.0)) 
+        && (other.bottom - ry.max(0.0)) < self.top 
+        && self.bottom < (other.top - ry.min(0.0));
 
         // we don't need to bother normalising here, because we don't care how much the boxes 
         // are separated along this axis: just whether they are or not

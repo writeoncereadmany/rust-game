@@ -2,13 +2,12 @@ use std::cmp::Ordering;
 
 use super::bbox::BBox;
 use super::push::Push;
-use super::vec2d::Vec2d;
+use super::vec2d::{Vec2d, UNIT_Y, UNIT_X};
 
 const PUSH_EPSILON: f64 = 0.001;
 
 #[derive(Clone)]
 pub struct ConvexMesh {
-    bbox: BBox,
     points: Vec<(f64, f64)>,
     pub normals: Vec<(f64, f64)>
 }
@@ -27,12 +26,7 @@ pub enum Mesh {
 
 impl ConvexMesh {
     pub fn new(points: Vec<(f64, f64)>, normals: Vec<(f64, f64)>) -> Self {
-        let left = points.iter().map(|&(x, _y)| x).reduce(f64::min).unwrap();
-        let right = points.iter().map(|&(x, _y)| x).reduce(f64::max).unwrap();
-        let bottom = points.iter().map(|&(_x, y)| y).reduce(f64::min).unwrap();
-        let top = points.iter().map(|&(_x, y)| y).reduce(f64::max).unwrap();
         ConvexMesh {
-            bbox: BBox::from(left, bottom).to(right, top),
             points,
             normals
         }
@@ -47,7 +41,6 @@ impl ConvexMesh {
 
     pub fn translate(&self, dx: f64, dy: f64) -> ConvexMesh {
         ConvexMesh {
-            bbox: self.bbox.translate(dx, dy),
             points: self.points.iter().map(|(x, y)| (x + dx, y + dy)).collect(),
             normals: self.normals.clone()
         }
@@ -64,8 +57,15 @@ impl ConvexMesh {
         (min + trans_proj.min(0.0), max + trans_proj.max(0.0))
     }
 
-    pub fn bbox(&self) -> BBox {
-        self.bbox
+    pub fn bbox(&self, trans: &(f64, f64)) -> BBox {
+        let (min_y, max_y) = self.project(&UNIT_Y, trans);
+        let (min_x, max_x) = self.project(&UNIT_X, trans);
+        BBox {
+           left: min_x,
+           right: max_x,
+           bottom: min_y,
+           top: max_y 
+        }
     }
 }
 
