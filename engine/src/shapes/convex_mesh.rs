@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use super::bbox::BBox;
 use super::push::Push;
-use super::vec2d::{Vec2d, UNIT_Y, UNIT_X};
+use super::vec2d::Vec2d;
 
 const PUSH_EPSILON: f64 = 0.001;
 
@@ -55,17 +55,6 @@ impl ConvexMesh {
         });
         let trans_proj = -normal.dot(trans);
         (min + trans_proj.min(0.0), max + trans_proj.max(0.0))
-    }
-
-    pub fn bbox(&self, trans: &(f64, f64)) -> BBox {
-        let (min_y, max_y) = self.project(&UNIT_Y, trans);
-        let (min_x, max_x) = self.project(&UNIT_X, trans);
-        BBox {
-           left: min_x,
-           right: max_x,
-           bottom: min_y,
-           top: max_y 
-        }
     }
 }
 
