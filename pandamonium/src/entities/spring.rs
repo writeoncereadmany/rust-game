@@ -4,7 +4,7 @@ use component_derive::{ Constant, Variable };
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 use engine::events::{ Event, Events };
-use engine::shapes::convex_mesh::ConvexMesh;
+use engine::shapes::convex_mesh::Mesh;
 
 use crate::app::events::Interaction;
 
@@ -27,7 +27,7 @@ pub fn spawn_spring(x: f64, y: f64, entities: &mut Entities) {
         .with(Spring)
         .with(Position(x, y))
         .with(Interacts::Spring)
-        .with(Mesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
         .with(SPRING_DOWN)
     );
 }

@@ -11,7 +11,7 @@ use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::Sprite;
 use engine::events::*;
 use engine::shapes::push::Push;
-use engine::shapes::convex_mesh::{ Meshed, ConvexMesh };
+use engine::shapes::convex_mesh::{ Meshed, Mesh };
 use engine::game_loop::*;
 use engine::map::{ Map, Tiled };
 
@@ -171,7 +171,7 @@ fn ledge_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
     (tx, 4)
 }
 
-fn mesh_from_neighbours(x: f64, y: f64, neighbours: &Neighbours) -> ConvexMesh {
+fn mesh_from_neighbours(x: f64, y: f64, neighbours: &Neighbours) -> Mesh {
     let points = vec![(x, y), (x + 1.0, y), (x + 1.0, y + 1.0), (x, y + 1.0)];
     let mut normals : Vec<(f64, f64)> = Vec::new();
     if !neighbours.left { normals.push((-1.0, 0.0));}
@@ -179,14 +179,14 @@ fn mesh_from_neighbours(x: f64, y: f64, neighbours: &Neighbours) -> ConvexMesh {
     if !neighbours.above { normals.push((0.0, 1.0));}
     if !neighbours.below { normals.push((0.0, -1.0));}
 
-    ConvexMesh::new(points, normals)
+    Mesh::convex(points, normals)
 }
 
-fn ledge_mesh(x: f64, y: f64) -> ConvexMesh {
+fn ledge_mesh(x: f64, y: f64) -> Mesh {
     let points = vec![(x, y), (x + 1.0, y), (x + 1.0, y + 1.0), (x, y + 1.0)];
     let normals = vec![(0.0, 1.0)];
 
-    ConvexMesh::new(points, normals)
+    Mesh::convex(points, normals)
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
@@ -227,11 +227,11 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 
 fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
     let collidables = entities.collect();
-    entities.apply(|(Collidable, Mesh(original_mesh), Translation(tx, ty))| {
+    entities.apply(|(Collidable, TranslatedMesh(original_mesh), Translation(tx, ty))| {
         let (mut tot_x_push, mut tot_y_push) = map.push(&original_mesh, &(tx, ty)).unwrap_or((0.0, 0.0));
         let (mut utx, mut uty) = (tx + tot_x_push, ty + tot_y_push);
         let mut updated_mesh = original_mesh.translate(tot_x_push, tot_y_push);
-        for (Obstacle, Mesh(mesh)) in &collidables {
+        for (Obstacle, TranslatedMesh(mesh)) in &collidables {
             let push = mesh.push(&updated_mesh, &(utx, uty));
             match push {
                 None => {},
@@ -261,17 +261,17 @@ fn map_collisions(entities: &mut Entities, map: &Map<Meshed<Tile>>) {
             if py != 0.0 { 0.0 } else { dy },
         )
     );
-    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| Mesh(mesh.translate(x, y)));
+    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(x, y)));
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
-    entities.for_each_pair(|(Hero, Mesh(hero_mesh), Translation(tx, ty)), (Pickup, Id(id), Mesh(mesh))| {
+    entities.for_each_pair(|(Hero, TranslatedMesh(hero_mesh), Translation(tx, ty)), (Pickup, Id(id), TranslatedMesh(mesh))| {
         if hero_mesh.intersects(&mesh, &(*tx, *ty)) {
             events.fire(PickupCollected(*id));
         }
     });
 
-    entities.for_each_pair(|(Hero, Id(hero_id), Mesh(hero_mesh), Translation(tx, ty)), (interaction_type, Id(other_id), Mesh(other_mesh))| {
+    entities.for_each_pair(|(Hero, Id(hero_id), TranslatedMesh(hero_mesh), Translation(tx, ty)), (interaction_type, Id(other_id), TranslatedMesh(other_mesh))| {
         if hero_mesh.intersects(&other_mesh, &(*tx, *ty)) {
             events.fire(Interaction { 
                 hero_id: *hero_id, 

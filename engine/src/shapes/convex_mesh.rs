@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use super::bbox::BBox;
 use super::push::Push;
-use super::vec2d::Vec2d;
+use super::vec2d::{Vec2d, UNIT_X, ZERO, UNIT_Y};
 
 const PUSH_EPSILON: f64 = 0.001;
 
@@ -16,9 +16,10 @@ pub struct ConvexMesh {
 pub struct Meshed<A>
 where A: Clone {
     pub item: A,
-    pub mesh: ConvexMesh
+    pub mesh: Mesh
 }
 
+#[derive(Clone)]
 pub enum Mesh {
     Convex(ConvexMesh),
     AABB(BBox),
@@ -58,6 +59,10 @@ impl ConvexMesh {
     }
 }
 
+fn overlaps((min_first, max_first): &(f64, f64), (min_second, max_second): &(f64, f64)) -> bool {
+    min_first < max_second && max_first > min_second
+}
+
 impl Push<Mesh> for Mesh {
     fn push(&self, other: &Mesh, relative_translation: &(f64, f64)) -> Option<(f64, f64)> {
         match (self, other) {
@@ -68,12 +73,18 @@ impl Push<Mesh> for Mesh {
     }
 }
 
+
+
 impl Mesh {
     pub fn rect(left: f64, bottom: f64, width: f64, height: f64) -> Self {
         Mesh::Convex(ConvexMesh::new(
             vec![(left, bottom), (left+width, bottom), (left+width, bottom+height), (left, bottom+height)],
             vec![(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0)]
         ))
+    }
+
+    pub fn convex(points: Vec<(f64, f64)>, normals: Vec<(f64, f64)>) -> Self {
+        Mesh::Convex(ConvexMesh::new(points, normals))
     }
 
     pub fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {

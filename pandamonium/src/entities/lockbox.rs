@@ -1,8 +1,8 @@
 use component_derive::Constant;
 use entity::{ entity, Entities, Id };
+use engine::shapes::convex_mesh::Mesh;
 use engine::graphics::sprite::Sprite;
 use engine::events::*;
-use engine::shapes::convex_mesh::ConvexMesh;
 
 use crate::app::events::{KeyCollected, Destroy, SpawnParticle};
 use super::components::*;
@@ -16,7 +16,7 @@ pub fn spawn_lockbox(x: f64, y: f64, entities: &mut Entities) {
         .with(Obstacle)
         .with(Position(x, y))
         .with(Sprite::new(4, 8, 0.5))
-        .with(Mesh(ConvexMesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
     );
 }
 

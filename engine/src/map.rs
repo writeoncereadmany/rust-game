@@ -1,9 +1,9 @@
 use std::ops::Index;
 
-use crate::graphics::renderer::{ Renderer };
+use crate::graphics::renderer::Renderer;
 use crate::graphics::sprite::Sprite;
 
-use crate::shapes::convex_mesh::{Meshed, ConvexMesh};
+use crate::shapes::convex_mesh::{Meshed, Mesh};
 use crate::shapes::push::Push;
 use crate::shapes::vec2d::{UNIT_X, UNIT_Y};
 
@@ -67,7 +67,7 @@ where Tile: Clone {
         self
     }
 
-    pub fn overlapping(&self, bbox: &ConvexMesh, relative_motion: &(f64, f64)) -> MapIter<Tile> {
+    pub fn overlapping(&self, bbox: &Mesh, relative_motion: &(f64, f64)) -> MapIter<Tile> {
         let (left, right) = bbox.project(&UNIT_X, relative_motion);
         let (bottom, top) = bbox.project(&UNIT_Y, relative_motion);
         let grid_min_x = constrain(f64::floor(left), 0, self.columns - 1);
@@ -95,9 +95,9 @@ where Tile: Clone {
     }
 }
 
-impl <Tile> Push<ConvexMesh> for Map<Meshed<Tile>> where Tile: Clone {
+impl <Tile> Push<Mesh> for Map<Meshed<Tile>> where Tile: Clone {
 
-    fn push(&self, original_mesh: &ConvexMesh, relative_motion: &(f64, f64)) -> Option<(f64, f64)> {
+    fn push(&self, original_mesh: &Mesh, relative_motion: &(f64, f64)) -> Option<(f64, f64)> {
         let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
         let (mut rel_x, mut rel_y) = relative_motion;
         let mut updated_mesh = original_mesh.clone();
@@ -219,7 +219,7 @@ mod tests {
 
         let mut iterated : Vec<(i32, i32)> = Vec::new();
 
-        for (pos, _tile) in map.overlapping(&ConvexMesh::rect(2.5, 3.5, 2.0, 3.0), &(0.0, 0.0)) {
+        for (pos, _tile) in map.overlapping(&Mesh::rect(2.5, 3.5, 2.0, 3.0), &(0.0, 0.0)) {
             iterated.push((pos.x, pos.y));
         }
 
