@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use super::bbox::BBox;
-use super::push::Push;
+use super::push::{Push, Projectable};
 use super::vec2d::{Vec2d, UNIT_X, ZERO, UNIT_Y};
 
 const PUSH_EPSILON: f64 = 0.001;
@@ -46,24 +46,14 @@ impl ConvexMesh {
             normals: self.normals.clone()
         }
     }
-
-    pub fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
-        // NAN.min(x) and NAN.max(x) both always return x, so we'll set both min and max to the
-        // projection on first iteration. 
-        let (min, max) = self.points.iter().fold((f64::NAN, f64::NAN), |(min, max), point| { 
-            let proj = normal.dot(point); 
-            (min.min(proj), max.max(proj))
-        });
-        let trans_proj = -normal.dot(trans);
-        (min + trans_proj.min(0.0), max + trans_proj.max(0.0))
-    }
-}
-
-fn overlaps((min_first, max_first): &(f64, f64), (min_second, max_second): &(f64, f64)) -> bool {
-    min_first < max_second && max_first > min_second
 }
 
 impl Push<Mesh> for Mesh {
+
+    fn intersects(&self, other: &Mesh, relative_translation: &(f64, f64)) -> bool {
+        intersects(self, other, relative_translation)
+    }
+
     fn push(&self, other: &Mesh, relative_translation: &(f64, f64)) -> Option<(f64, f64)> {
         match (self, other) {
             (Mesh::Convex(this), Mesh::Convex(other)) => this.push(other, relative_translation),
@@ -73,6 +63,38 @@ impl Push<Mesh> for Mesh {
     }
 }
 
+impl Projectable for Mesh {
+    fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
+        match self {
+            Mesh::AABB(aabb) => aabb.project(normal, trans),
+            Mesh::Convex(convex) => convex.project(normal, trans)
+        }
+    }
+
+    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+        match self {
+            Mesh::Convex(this) => this.non_orthogonal_normals(),
+            Mesh::AABB(this) => this.non_orthogonal_normals()
+        }
+    }
+}
+
+fn overlaps((min_first, max_first): &(f64, f64), (min_second, max_second): &(f64, f64)) -> bool {
+    min_first < max_second && max_first > min_second
+}
+
+fn intersects<A>(this: &A, other: &A, relative_translation: &(f64, f64)) -> bool
+   where A: Projectable {
+    for n in this.non_orthogonal_normals().iter()
+                 .chain(other.non_orthogonal_normals().iter())
+                 .chain(&[UNIT_X, UNIT_Y]) {
+        if !overlaps(&this.project(&n, &(0.0, 0.0)), &other.project(&n, relative_translation))
+        {
+            return false;
+        }
+    }
+    true
+}
 
 
 impl Mesh {
@@ -125,6 +147,28 @@ impl Push<ConvexMesh> for ConvexMesh {
             }
         }
         latest_push
+    }
+
+    fn intersects(&self, other: &ConvexMesh, relative_translation: &(f64, f64)) -> bool {
+        intersects(self, other, relative_translation)
+    }
+}
+
+impl Projectable for ConvexMesh {
+    
+    fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
+        // NAN.min(x) and NAN.max(x) both always return x, so we'll set both min and max to the
+        // projection on first iteration. 
+        let (min, max) = self.points.iter().fold((f64::NAN, f64::NAN), |(min, max), point| { 
+            let proj = normal.dot(point); 
+            (min.min(proj), max.max(proj))
+        });
+        let trans_proj = -normal.dot(trans);
+        (min + trans_proj.min(0.0), max + trans_proj.max(0.0))
+    }
+
+    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+        self.normals.clone()
     }
 }
 

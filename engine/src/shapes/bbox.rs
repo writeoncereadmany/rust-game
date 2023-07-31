@@ -1,4 +1,4 @@
-use super::{push::Push, vec2d::Vec2d};
+use super::{push::{Push, Projectable}, vec2d::Vec2d};
 
 #[derive(Clone, Copy)]
 pub struct BBox {
@@ -26,13 +26,7 @@ impl BBox {
         self.top - self.bottom
     }
 
-    pub fn project(&self, normal@&(nx, ny): &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
-        let (min_x, max_x) = if nx > 0.0 { (self.left, self.right) } else { (self.right, self.left) };
-        let (min_y, max_y) = if ny > 0.0 { (self.bottom, self.top) } else { (self.top, self.bottom) };
-        let t_proj = -normal.dot(trans);
-         
-        (normal.dot(&(min_x, min_y)) + t_proj.min(0.0), normal.dot(&(max_x, max_y)) + t_proj.max(0.0))
-    }
+
 
     pub fn translate(&self, dx: f64, dy: f64) -> BBox{
         BBox {
@@ -41,6 +35,21 @@ impl BBox {
             top: self.top + dy,
             bottom: self.bottom + dy
         }
+    }
+}
+
+impl Projectable for BBox {
+    
+    fn project(&self, normal@&(nx, ny): &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
+        let (min_x, max_x) = if nx > 0.0 { (self.left, self.right) } else { (self.right, self.left) };
+        let (min_y, max_y) = if ny > 0.0 { (self.bottom, self.top) } else { (self.top, self.bottom) };
+        let t_proj = -normal.dot(trans);
+         
+        (normal.dot(&(min_x, min_y)) + t_proj.min(0.0), normal.dot(&(max_x, max_y)) + t_proj.max(0.0))
+    }
+
+    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+        Vec::new()
     }
 }
 

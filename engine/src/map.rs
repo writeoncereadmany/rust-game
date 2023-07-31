@@ -121,6 +121,15 @@ impl <Tile> Push<Mesh> for Map<Meshed<Tile>> where Tile: Clone {
         }
         if tot_x_push == 0.0 && tot_y_push == 0.0 { None } else { Some((tot_x_push, tot_y_push)) }
     }
+
+    fn intersects(&self, other: &Mesh, relative_translation: &(f64, f64)) -> bool {
+        for (_pos, t) in self.overlapping(other, relative_translation) {
+            if t.mesh.intersects(other, relative_translation) {
+                return true;
+            }
+        }
+        false
+    }
 }
 
 
