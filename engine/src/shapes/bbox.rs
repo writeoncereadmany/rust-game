@@ -48,7 +48,7 @@ impl Projectable for BBox {
         (normal.dot(&(min_x, min_y)) + t_proj.min(0.0), normal.dot(&(max_x, max_y)) + t_proj.max(0.0))
     }
 
-    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+    fn additional_separable_axes(&self) -> Vec<(f64, f64)> {
         Vec::new()
     }
 }

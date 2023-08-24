@@ -11,5 +11,6 @@ pub trait Push<A> {
 pub trait Projectable {
     fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64);
 
-    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)>;
+    // 
+    fn additional_separable_axes(&self) -> Vec<(f64, f64)>;
 }

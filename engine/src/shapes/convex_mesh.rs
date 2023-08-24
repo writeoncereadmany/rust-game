@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use super::bbox::BBox;
 use super::push::{Push, Projectable};
-use super::vec2d::{Vec2d, UNIT_X, ZERO, UNIT_Y};
+use super::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
 const PUSH_EPSILON: f64 = 0.001;
 
@@ -71,10 +71,10 @@ impl Projectable for Mesh {
         }
     }
 
-    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+    fn additional_separable_axes(&self) -> Vec<(f64, f64)> {
         match self {
-            Mesh::Convex(this) => this.non_orthogonal_normals(),
-            Mesh::AABB(this) => this.non_orthogonal_normals()
+            Mesh::Convex(this) => this.additional_separable_axes(),
+            Mesh::AABB(this) => this.additional_separable_axes()
         }
     }
 }
@@ -85,8 +85,8 @@ fn overlaps((min_first, max_first): &(f64, f64), (min_second, max_second): &(f64
 
 fn intersects<A>(this: &A, other: &A, relative_translation: &(f64, f64)) -> bool
    where A: Projectable {
-    for n in this.non_orthogonal_normals().iter()
-                 .chain(other.non_orthogonal_normals().iter())
+    for n in this.additional_separable_axes().iter()
+                 .chain(other.additional_separable_axes().iter())
                  .chain(&[UNIT_X, UNIT_Y]) {
         if !overlaps(&this.project(&n, &(0.0, 0.0)), &other.project(&n, relative_translation))
         {
@@ -167,7 +167,7 @@ impl Projectable for ConvexMesh {
         (min + trans_proj.min(0.0), max + trans_proj.max(0.0))
     }
 
-    fn non_orthogonal_normals(&self) -> Vec<(f64, f64)> {
+    fn additional_separable_axes(&self) -> Vec<(f64, f64)> {
         self.normals.clone()
     }
 }
