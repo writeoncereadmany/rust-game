@@ -49,6 +49,17 @@ fn centerpoint(points: &Vec<(f64, f64)>) -> (f64, f64) {
 
 fn normals(points: &Vec<(f64, f64)>) -> Vec<(f64, f64)> {
     let centerpoint = centerpoint(points);
+    let sorted_points = rotation_order_around(&centerpoint, points);
+    let mut normals = Vec::new();
+    for (i, point) in sorted_points.iter().enumerate() {
+        let next_point = sorted_points.get((i + 1) % sorted_points.len()).unwrap();
+        let normal = next_point.sub(point).perpendicular().unit();
+        normals.push(normal);
+    }
+    normals
+}
+
+fn rotation_order_around(centerpoint: &(f64, f64), points: &Vec<(f64, f64)>) -> Vec<(f64, f64)> {
     let mut sorted_points = points.clone();
     sorted_points.sort_by(|a, b| {
         let (ax, ay) = a.sub(&centerpoint);
@@ -57,13 +68,7 @@ fn normals(points: &Vec<(f64, f64)>) -> Vec<(f64, f64)> {
         let b_theta = by.atan2(bx);
         a_theta.partial_cmp(&b_theta).unwrap()
     });
-    let mut normals = Vec::new();
-    for (i, point) in sorted_points.iter().enumerate() {
-        let next_point = sorted_points.get((i + 1) % sorted_points.len()).unwrap();
-        let normal = next_point.sub(point).perpendicular().unit();
-        normals.push(normal);
-    }
-    normals
+    sorted_points
 }
 
 #[derive(Debug, PartialEq)]
@@ -117,6 +122,9 @@ impl Project for Shape {
 
 #[cfg(test)]
 mod tests {
+    use googletest::prelude::approx_eq;
+    use googletest::{ assert_that, elements_are };
+    use googletest::matcher::{ Matcher, MatcherResult };
     use super::*;
     use crate::shapes::vec2d::{ UNIT_X, UNIT_Y, Vec2d };
 
@@ -184,11 +192,40 @@ mod tests {
         assert_eq!(Projection { min: 3.0, max: 6.0}.overlaps(&Projection { min: 1.0, max: 3.0}), true);
     }
 
-    // these assertions are too clumsy - we need to use matchers with some give for the f64s in the tuples
-    // #[test]
-    // fn calculate_normals_for_convex_hull() {
-    //     // we pick normals by finding the centerpoint, rotating from -pi round to pi on the x-axis
-    //     // so first we hit the bottom-left, then bottom-right, then top-left corners of the triangle
-    //     assert_eq!(normals(&vec![(2.0, 2.0), (6.0, 2.0), (2.0, 5.0)]), vec![(0.0, -1.0), (0.6, 0.8), (-1.0, 0.0)]);
-    // }
+    #[test]
+    fn calculate_normals_for_convex_hull() {
+        // we pick normals by finding the centerpoint, rotating from -pi round to pi on the x-axis
+        // so first we hit the bottom-left, then bottom-right, then top-left corners of the triangle
+        assert_that!(
+            normals(&vec![(2.0, 2.0), (6.0, 2.0), (2.0, 5.0)]), 
+            elements_are!(approx((0.0, -1.0)), approx((0.6, 0.8)), approx((-1.0, 0.0))));
+    }
+
+    struct Vec2dMatcher {
+        expected: (f64, f64)
+    }
+
+    fn approx(expected: (f64, f64)) -> Vec2dMatcher {
+        Vec2dMatcher { expected }
+    }
+
+    impl Matcher for Vec2dMatcher {
+        type ActualT = (f64, f64);
+
+        fn matches(&self, (actual_x, actual_y): &Self::ActualT) -> MatcherResult {
+            let (expected_x, expected_y) = self.expected;
+            let (match_x, match_y) = (approx_eq(expected_x), approx_eq(expected_y));
+            match (match_x.matches(actual_x), match_y.matches(actual_y)) {
+                (MatcherResult::Match, MatcherResult::Match) => MatcherResult::Match,
+                _otherwise => MatcherResult::NoMatch,
+            }
+        }
+
+        fn describe(&self, result: MatcherResult) -> String {
+            match result {
+                MatcherResult::Match => format!("is equal to {:?}, given some tolerance", self.expected),
+                MatcherResult::NoMatch => format!("is not equal to {:?}, given some tolerance", self.expected),
+            }
+        }
+    }
 }
