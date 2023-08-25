@@ -1,6 +1,4 @@
-use super::vec2d::{ UNIT_X, UNIT_Y, Vec2d };
-
-const AXES: [(f64, f64); 2] = [UNIT_X, UNIT_Y];
+use super::vec2d::Vec2d;
 
 struct BBox {
     left: f64,
@@ -15,7 +13,8 @@ struct Circle {
 }
 
 struct Convex {
-    points: Vec<(f64, f64)>
+    points: Vec<(f64, f64)>,
+    normals: Vec<(f64, f64)>
 }
 
 enum Shape {
@@ -34,8 +33,37 @@ impl Shape {
     }
 
     fn convex(points: Vec<(f64, f64)>) -> Shape {
-        Shape::Convex(Convex { points })
+        let normals = normals(&points);
+        Shape::Convex(Convex { points, normals })
     }
+}
+
+fn centerpoint(points: &Vec<(f64, f64)>) -> (f64, f64) {
+    let (mut tot_x, mut tot_y) = (0.0, 0.0);
+    for (x, y) in points {
+        tot_x += x;
+        tot_y += y;
+    }
+    (tot_x / points.len() as f64, tot_y / points.len() as f64) 
+}
+
+fn normals(points: &Vec<(f64, f64)>) -> Vec<(f64, f64)> {
+    let centerpoint = centerpoint(points);
+    let mut sorted_points = points.clone();
+    sorted_points.sort_by(|a, b| {
+        let (ax, ay) = a.sub(&centerpoint);
+        let a_theta = ay.atan2(ax);
+        let (bx, by) = b.sub(&centerpoint);
+        let b_theta = by.atan2(bx);
+        a_theta.partial_cmp(&b_theta).unwrap()
+    });
+    let mut normals = Vec::new();
+    for (i, point) in sorted_points.iter().enumerate() {
+        let next_point = sorted_points.get((i + 1) % sorted_points.len()).unwrap();
+        let normal = next_point.sub(point).perpendicular().unit();
+        normals.push(normal);
+    }
+    normals
 }
 
 #[derive(Debug, PartialEq)]
@@ -89,7 +117,6 @@ impl Project for Shape {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use crate::shapes::vec2d::{ UNIT_X, UNIT_Y, Vec2d };
 
@@ -148,14 +175,20 @@ mod tests {
 
 
     #[test]
-    fn overlap_left_end()
-    {
+    fn overlap_left_end() {
         assert_eq!(Projection { min: 2.0, max: 4.0}.overlaps(&Projection { min: 1.0, max: 3.0}), true);
     }
 
     #[test]
-    fn overlap_right_end()
-    {
+    fn overlap_right_end() {
         assert_eq!(Projection { min: 3.0, max: 6.0}.overlaps(&Projection { min: 1.0, max: 3.0}), true);
     }
+
+    // these assertions are too clumsy - we need to use matchers with some give for the f64s in the tuples
+    // #[test]
+    // fn calculate_normals_for_convex_hull() {
+    //     // we pick normals by finding the centerpoint, rotating from -pi round to pi on the x-axis
+    //     // so first we hit the bottom-left, then bottom-right, then top-left corners of the triangle
+    //     assert_eq!(normals(&vec![(2.0, 2.0), (6.0, 2.0), (2.0, 5.0)]), vec![(0.0, -1.0), (0.6, 0.8), (-1.0, 0.0)]);
+    // }
 }

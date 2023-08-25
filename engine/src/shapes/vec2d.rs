@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 pub trait Vec2d<A> {
     fn dot(&self, other: &A) -> f64;
 
@@ -10,6 +12,10 @@ pub trait Vec2d<A> {
     fn sq_len(&self) -> f64;
 
     fn perpendicular(&self) -> A;
+
+    fn plus(&self, other: &A) -> A;
+
+    fn sub(&self, other: &A) -> A;
 }
 
 pub const ZERO: (f64, f64) = (0.0, 0.0);
@@ -46,5 +52,13 @@ impl Vec2d<(f64, f64)> for (f64, f64) {
     fn perpendicular(&self) -> (f64, f64) {
         let &(x, y) = self;
         (y, -x)
+    }
+
+    fn plus(&self, (ox, oy): &(f64, f64)) -> (f64, f64) {
+        (self.0 + ox, self.1 + oy)
+    }
+
+    fn sub(&self, (ox, oy): &(f64, f64)) -> (f64, f64) {
+        (self.0 - ox, self.1 - oy)
     }
 }
