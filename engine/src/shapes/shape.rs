@@ -120,11 +120,31 @@ impl Project for Shape {
     }
 }
 
+trait Push<T> {
+    fn pushes(&self, other: &T) -> Option<Vec<(f64, f64)>>;
+}
+
+impl Push<Circle> for Circle {
+    fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
+        let separating_axis = other.center.sub(&self.center).unit();
+        let proj_self = self.project(&separating_axis); 
+        let proj_other = other.project(&separating_axis);
+        if proj_self.overlaps(&proj_other) {
+            Some(vec![
+                separating_axis.scale(proj_self.max - proj_other.min),
+                separating_axis.scale(proj_self.min - proj_other.max)])
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use googletest::prelude::approx_eq;
     use googletest::{ assert_that, elements_are };
     use googletest::matcher::{ Matcher, MatcherResult };
+    use googletest::matchers::some;
     use super::*;
     use crate::shapes::vec2d::{ UNIT_X, UNIT_Y, Vec2d };
 
@@ -199,6 +219,22 @@ mod tests {
         assert_that!(
             normals(&vec![(2.0, 2.0), (6.0, 2.0), (2.0, 5.0)]), 
             elements_are!(approx((0.0, -1.0)), approx((0.6, 0.8)), approx((-1.0, 0.0))));
+    }
+
+    #[test]
+    fn non_overlapping_circles() {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 5.0};
+        let circle2 = Circle { center: (0.0, 10.0), radius: 3.0};
+        
+        assert_eq!(circle1.pushes(&circle2), None);
+    }
+
+    #[test]
+    fn overlapping_circles_provides_pushout_along_line_joining_centers() {
+        assert_that!(
+            Circle { center: (0.0, 0.0), radius: 10.0}.pushes(&Circle { center: (0.0, 10.0), radius: 5.0}),
+            some(elements_are!(approx((0.0, 5.0)), approx((0.0, -25.0))))
+        );
     }
 
     struct Vec2dMatcher {
