@@ -1,11 +1,9 @@
-use std::ops::Sub;
-
 pub trait Vec2d<A> {
     fn dot(&self, other: &A) -> f64;
 
     fn unit(&self) -> A;
 
-    fn scale(&self, other: f64) -> A;
+    fn scale(&self, other: &f64) -> A;
 
     fn len(&self) -> f64;
 
@@ -31,10 +29,10 @@ impl Vec2d<(f64, f64)> for (f64, f64) {
     }
 
     fn unit(&self) -> (f64, f64) {
-        self.scale(1.0 / self.len())
+        self.scale(&(1.0 / self.len()))
     }
 
-    fn scale(&self, scale: f64) -> (f64, f64) {
+    fn scale(&self, scale: &f64) -> (f64, f64) {
         let (x, y) = self;
         (x * scale, y * scale)
     }

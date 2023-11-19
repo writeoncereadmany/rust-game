@@ -142,7 +142,7 @@ impl Push<ConvexMesh> for ConvexMesh {
             
             let push_distance = my_max - their_min;
             if push_distance + normal.dot(relative_travel) <= PUSH_EPSILON {
-                let potential_push = normal.scale(push_distance);
+                let potential_push = normal.scale(&push_distance);
                 latest_push = latest_push.map_or(Some(potential_push), |push| Some(latest(push, potential_push, relative_travel)));
             }
         }
@@ -174,8 +174,8 @@ impl Projectable for ConvexMesh {
 
 fn normals_as_applied_to_other(first: &ConvexMesh, other: &ConvexMesh) -> Vec<(f64, f64)> {
     first.normals.iter()
-        .map(|mine| mine.scale(1.0))
-        .chain(other.normals.iter().map(|theirs| theirs.scale(-1.0)))
+        .map(|mine| mine.scale(&(1.0)))
+        .chain(other.normals.iter().map(|theirs| theirs.scale(&(-1.0))))
         .collect()
 }
 

@@ -1,4 +1,4 @@
-use super::vec2d::Vec2d;
+use super::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
 struct BBox {
     left: f64,
@@ -78,6 +78,14 @@ impl Projection {
     fn overlaps(&self, other: &Projection) -> bool {
         !(self.min > other.max || self.max < other.min)
     }
+
+    fn pushes(&self, other: &Projection) -> Option<Vec<f64>> {
+        if self.overlaps(&other) {
+            Some(vec![self.max - other.min, self.min - other.max])
+        } else {
+            None
+        }
+    }
 }
 
 trait Project {
@@ -126,18 +134,31 @@ trait Push<T> {
 
 impl Push<Circle> for Circle {
     fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
-        let separating_axis = other.center.sub(&self.center).unit();
-        let proj_self = self.project(&separating_axis); 
-        let proj_other = other.project(&separating_axis);
-        if proj_self.overlaps(&proj_other) {
-            Some(vec![
-                separating_axis.scale(proj_self.max - proj_other.min),
-                separating_axis.scale(proj_self.min - proj_other.max)])
-        } else {
-            None
-        }
+        pushes(self, other, vec![other.center.sub(&self.center).unit()])
     }
 }
+
+fn pushes<A: Project, B: Project>(a: &A, b: &B, separating_axes: Vec<(f64, f64)>) -> Option<Vec<(f64, f64)>> {
+    if !a.project(&UNIT_X).overlaps(&b.project(&UNIT_X)) || !a.project(&UNIT_Y).overlaps(&b.project(&UNIT_Y)) {
+        return None;
+    }
+    
+    let mut all_pushes = Vec::new();
+    for axis in &separating_axes {
+        let proj_a = a.project(axis);
+        let proj_b = b.project(axis);
+        if let Some(pushes) = proj_a.pushes(&proj_b) {
+            for push in pushes {
+                all_pushes.push(axis.scale(&push));
+            }
+        }
+        else {
+            return None;
+        }
+    }
+    Some(all_pushes)
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -154,8 +175,8 @@ mod tests {
         let bbox = Shape::bbox((1.0, 2.0), 2.0, 3.0);
         assert_eq!(bbox.project(&UNIT_X), Projection { min: 1.0, max: 3.0 });
         assert_eq!(bbox.project(&UNIT_Y), Projection { min: 2.0, max: 5.0 });
-        assert_eq!(bbox.project(&UNIT_X.scale(-1.0)), Projection { min: -3.0, max: -1.0 });
-        assert_eq!(bbox.project(&UNIT_Y.scale(-1.0)), Projection { min: -5.0, max: -2.0 });
+        assert_eq!(bbox.project(&UNIT_X.scale(&-1.0)), Projection { min: -3.0, max: -1.0 });
+        assert_eq!(bbox.project(&UNIT_Y.scale(&-1.0)), Projection { min: -5.0, max: -2.0 });
     }
 
     #[test]
