@@ -145,6 +145,14 @@ impl Project for Shape {
     }
 }
 
+fn nearest_corner((x, y): &(f64, f64), bbox: &BBox) -> (f64, f64) {
+    // we're checking against midpoint of box: our goal is if x < (left + right) / 2
+    // this is equivalent, but simpler
+    let nearest_x = if x*2.0 < bbox.left + bbox.right { bbox.left } else { bbox.right };
+    let nearest_y = if y*2.0 < bbox.bottom + bbox.top { bbox.bottom } else { bbox.top };
+    (nearest_x, nearest_y)
+}
+
 trait Push<T> {
     fn pushes(&self, other: &T) -> Option<Vec<(f64, f64)>>;
 }
@@ -152,6 +160,15 @@ trait Push<T> {
 impl Push<Circle> for Circle {
     fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
         pushes(self, other, &[&other.center.sub(&self.center).unit()])
+    }
+}
+
+impl Push<BBox> for Circle {
+    fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
+        let nearest_corner = nearest_corner(&self.center, other);
+        let corner_push = [nearest_corner.sub(&self.center).unit()];
+        let normals: Vec<&(f64, f64)> = corner_push.iter().chain(AXES).collect();
+        pushes(self, other, &normals)
     }
 }
 
@@ -228,6 +245,14 @@ mod tests {
     }
 
     #[test]
+    fn nearest_corner_on_box()
+    {
+        let bbox = BBox { left: 0.0, right: 10.0, bottom: 0.0, top: 10.0 };
+        assert_eq!(nearest_corner(&(3.0, 7.0), &bbox), (0.0, 10.0));
+        assert_eq!(nearest_corner(&(20.0, -20.0), &bbox), (10.0, 0.0));
+    }
+
+    #[test]
     fn no_overlap_when_other_is_right()
     {
         assert_eq!(Projection { min: 5.0, max: 6.0 }.overlaps(&Projection { min: 10.0, max: 12.0 }), false);
@@ -250,7 +275,6 @@ mod tests {
     {
         assert_eq!(Projection { min: 3.0, max: 4.0 }.overlaps(&Projection { min: 1.0, max: 6.0 }), true);
     }
-
 
     #[test]
     fn overlap_left_end() {
@@ -315,6 +339,36 @@ mod tests {
             some(unordered_elements_are!(
                 approx((1.0, 0.0)), approx((-5.0, 0.0)),
                 approx((0.0, 2.0)), approx((0.0, -2.0))
+            )));
+    }
+
+    #[test]
+    fn non_overlapping_circle_and_box() {
+        let bbox = BBox { left: 0.0, right: 10.0, bottom: 0.0, top: 1.0 };
+        let above = Circle { center: (5.0, 15.0), radius: 3.0 };
+        let top_right = Circle { center: (15.0, 15.0), radius: 6.0 };
+
+        assert_that!(above.pushes(&bbox), none());
+        assert_that!(top_right.pushes(&bbox), none());
+    }
+
+    #[test]
+    fn overlapping_circle_and_box() {
+        let bbox = BBox { left: 0.0, right: 8.0, bottom: 0.0, top: 6.0 };
+        let circle = Circle { center: (12.0, 9.0), radius: 10.0 };
+
+        assert_that!(
+            circle.pushes(&bbox),
+            some(unordered_elements_are!(
+                // h-pushes
+                approx((-6.0, 0.0)),
+                approx((22.0, 0.0)),
+                // v-pushes
+                approx((0.0, -7.0)),
+                approx((0.0, 19.0)),
+                // corner pushes
+                approx((-4.0, -3.0)),
+                approx((20.0, 15.0))
             )));
     }
 
