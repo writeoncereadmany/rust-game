@@ -47,7 +47,7 @@ impl Shape {
     }
 }
 
-fn centerpoint(points: &Vec<(f64, f64)>) -> (f64, f64) {
+fn center_of_gravity(points: &Vec<(f64, f64)>) -> (f64, f64) {
     let (mut tot_x, mut tot_y) = (0.0, 0.0);
     for (x, y) in points {
         tot_x += x;
@@ -57,8 +57,8 @@ fn centerpoint(points: &Vec<(f64, f64)>) -> (f64, f64) {
 }
 
 fn non_axis_normals(points: &Vec<(f64, f64)>) -> Vec<(f64, f64)> {
-    let centerpoint = centerpoint(points);
-    let sorted_points = rotation_order_around(&centerpoint, points);
+    let center_of_gravity = center_of_gravity(points);
+    let sorted_points = rotation_order_around(&center_of_gravity, points);
     let mut normals = Vec::new();
     for (i, point) in sorted_points.iter().enumerate() {
         let next_point = sorted_points.get((i + 1) % sorted_points.len()).unwrap();
@@ -145,12 +145,32 @@ impl Project for Shape {
     }
 }
 
-fn nearest_corner((x, y): &(f64, f64), bbox: &BBox) -> (f64, f64) {
+fn nearest_box_corner((x, y): &(f64, f64), bbox: &BBox) -> (f64, f64) {
     // we're checking against midpoint of box: our goal is if x < (left + right) / 2
     // this is equivalent, but simpler
     let nearest_x = if x*2.0 < bbox.left + bbox.right { bbox.left } else { bbox.right };
     let nearest_y = if y*2.0 < bbox.bottom + bbox.top { bbox.bottom } else { bbox.top };
     (nearest_x, nearest_y)
+}
+
+fn nearest_hull_corner((x, y): &(f64, f64), hull: &Convex) -> (f64, f64) {
+    let mut closest = (f64::NAN, f64::NAN);
+    let mut closest_sq_distance = f64::INFINITY;
+    for &(px, py) in &hull.points {
+        let (dx, dy) = (x - px, y - py);
+        let sq_distance = dx * dx + dy * dy;
+        if sq_distance < closest_sq_distance
+        {
+            closest = (px, py);
+            closest_sq_distance = sq_distance;
+        }
+    }
+    closest
+}
+
+fn invert(vecs: &Vec<(f64, f64)>) -> Vec<(f64, f64)>
+{
+    vecs.iter().map(|v| { v.scale(&-1.0) }).collect()
 }
 
 trait Push<T> {
@@ -165,7 +185,7 @@ impl Push<Circle> for Circle {
 
 impl Push<BBox> for Circle {
     fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
-        let nearest_corner = nearest_corner(&self.center, other);
+        let nearest_corner = nearest_box_corner(&self.center, other);
         let corner_push = [nearest_corner.sub(&self.center).unit()];
         let normals: Vec<&(f64, f64)> = corner_push.iter().chain(AXES).collect();
         pushes(self, other, &normals)
@@ -248,8 +268,15 @@ mod tests {
     fn nearest_corner_on_box()
     {
         let bbox = BBox { left: 0.0, right: 10.0, bottom: 0.0, top: 10.0 };
-        assert_eq!(nearest_corner(&(3.0, 7.0), &bbox), (0.0, 10.0));
-        assert_eq!(nearest_corner(&(20.0, -20.0), &bbox), (10.0, 0.0));
+        assert_eq!(nearest_box_corner(&(3.0, 7.0), &bbox), (0.0, 10.0));
+        assert_eq!(nearest_box_corner(&(20.0, -20.0), &bbox), (10.0, 0.0));
+    }
+
+    #[test]
+    fn nearest_corner_on_hull()
+    {
+        let hull = Convex::new(vec![(0.0, 0.0), (10.0, 0.0), (10.0, 10.0)]);
+        assert_eq!(nearest_hull_corner(&(20.0, -20.0), &hull), (10.0, 0.0));
     }
 
     #[test]
