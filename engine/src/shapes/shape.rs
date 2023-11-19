@@ -1,5 +1,7 @@
 use super::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
+const AXES : [(f64, f64); 2] = [UNIT_X, UNIT_Y];
+
 struct BBox {
     left: f64,
     right: f64,
@@ -134,17 +136,23 @@ trait Push<T> {
 
 impl Push<Circle> for Circle {
     fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
-        pushes(self, other, vec![other.center.sub(&self.center).unit()])
+        pushes(self, other, &[other.center.sub(&self.center).unit()])
     }
 }
 
-fn pushes<A: Project, B: Project>(a: &A, b: &B, separating_axes: Vec<(f64, f64)>) -> Option<Vec<(f64, f64)>> {
+impl Push<BBox> for BBox {
+    fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
+        pushes(self, other, &AXES)
+    }
+}
+
+fn pushes<A: Project, B: Project>(a: &A, b: &B, separating_axes: &[(f64, f64)]) -> Option<Vec<(f64, f64)>> {
     if !a.project(&UNIT_X).overlaps(&b.project(&UNIT_X)) || !a.project(&UNIT_Y).overlaps(&b.project(&UNIT_Y)) {
         return None;
     }
     
     let mut all_pushes = Vec::new();
-    for axis in &separating_axes {
+    for axis in separating_axes {
         let proj_a = a.project(axis);
         let proj_b = b.project(axis);
         if let Some(pushes) = proj_a.pushes(&proj_b) {
@@ -162,8 +170,8 @@ fn pushes<A: Project, B: Project>(a: &A, b: &B, separating_axes: Vec<(f64, f64)>
 
 #[cfg(test)]
 mod tests {
-    use googletest::prelude::approx_eq;
-    use googletest::{ assert_that, elements_are };
+    use googletest::prelude::{approx_eq, none};
+    use googletest::{assert_that, elements_are, unordered_elements_are};
     use googletest::matcher::{ Matcher, MatcherResult };
     use googletest::matchers::some;
     use super::*;
@@ -247,15 +255,36 @@ mod tests {
         let circle1 = Circle { center: (0.0, 0.0), radius: 5.0};
         let circle2 = Circle { center: (0.0, 10.0), radius: 3.0};
         
-        assert_eq!(circle1.pushes(&circle2), None);
+        assert_that!(circle1.pushes(&circle2), none());
     }
 
     #[test]
     fn overlapping_circles_provides_pushout_along_line_joining_centers() {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 10.0};
+        let circle2 = Circle { center: (0.0, 10.0), radius: 5.0};
         assert_that!(
-            Circle { center: (0.0, 0.0), radius: 10.0}.pushes(&Circle { center: (0.0, 10.0), radius: 5.0}),
-            some(elements_are!(approx((0.0, 5.0)), approx((0.0, -25.0))))
+            circle1.pushes(&circle2),
+            some(unordered_elements_are!(approx((0.0, 5.0)), approx((0.0, -25.0))))
         );
+    }
+
+    #[test]
+    fn overlapping_boxes_provide_pushouts_on_x_any_y_axes() {
+        let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0};
+        let box2 = BBox { left: 3.0, right: 6.0, bottom: 3.0, top: 4.0};
+        assert_that!(
+            box1.pushes(&box2),
+            some(unordered_elements_are!(
+                approx((1.0, 0.0)), approx((-5.0, 0.0)),
+                approx((0.0, 2.0)), approx((0.0, -2.0))))
+        );
+    }
+
+    #[test]
+    fn non_overlapping_boxes() {
+        let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0};
+        let box2 = BBox { left: 5.0, right: 6.0, bottom: 3.0, top: 4.0};
+        assert_that!(box1.pushes(&box2), none());
     }
 
     struct Vec2dMatcher {
