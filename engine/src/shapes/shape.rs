@@ -207,6 +207,13 @@ impl Push<BBox> for BBox {
     }
 }
 
+impl Push<Convex> for BBox {
+    fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
+        let normals: Vec<&(f64, f64)> = other.normals.iter().chain(AXES).collect();
+        pushes(self, other, &normals)
+    }
+}
+
 impl Push<Convex> for Convex {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
         let normals: Vec<&(f64, f64)> = self.normals.iter().chain(&other.normals).chain(AXES).collect();
@@ -360,6 +367,32 @@ mod tests {
     }
 
     #[test]
+    fn non_overlapping_box_and_hull() {
+        let bbox = BBox { left: 1.0, right: 3.0, bottom: 1.0, top: 3.0 };
+        let triangle = Convex::new(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
+        assert_that!(bbox.pushes(&triangle), none())
+    }
+
+    #[test]
+    fn overlapping_box_and_hull() {
+        let bbox = BBox { left: 1.0, right: 3.0, bottom: 1.0, top: 3.0 };
+        let triangle = Convex::new(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
+        assert_that!(
+            bbox.pushes(&triangle),
+            some(unordered_elements_are!(
+                // slope push
+                approx((-0.5, -0.5)),
+                approx((3.0, 3.0)),
+                // hpush
+                approx((3.0, 0.0)),
+                approx((-2.0, 0.0)),
+                // vpush
+                approx((0.0, 3.0)),
+                approx((0.0, -2.0)),
+            )));
+    }
+
+    #[test]
     fn non_overlapping_boxes() {
         let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0 };
         let box2 = BBox { left: 5.0, right: 6.0, bottom: 3.0, top: 4.0 };
@@ -367,7 +400,7 @@ mod tests {
     }
 
     #[test]
-    fn overlapping_boxes_provide_pushouts_on_x_any_y_axes() {
+    fn overlapping_boxes() {
         let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0 };
         let box2 = BBox { left: 3.0, right: 6.0, bottom: 3.0, top: 4.0 };
         assert_that!(
