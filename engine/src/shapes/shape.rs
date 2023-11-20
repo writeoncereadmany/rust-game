@@ -168,9 +168,12 @@ fn nearest_hull_corner((x, y): &(f64, f64), hull: &Convex) -> (f64, f64) {
     closest
 }
 
-fn invert(vecs: &Vec<(f64, f64)>) -> Vec<(f64, f64)>
+fn invert(maybe: &Option<Vec<(f64, f64)>>) -> Option<Vec<(f64, f64)>>
 {
-    vecs.iter().map(|v| { v.scale(&-1.0) }).collect()
+    maybe.as_ref().map(|vecs|
+        vecs.iter()
+            .map(|v| v.scale(&-1.0))
+            .collect())
 }
 
 trait Push<T> {
@@ -218,6 +221,22 @@ impl Push<Convex> for Convex {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
         let normals: Vec<&(f64, f64)> = self.normals.iter().chain(&other.normals).chain(AXES).collect();
         pushes(self, other, &normals)
+    }
+}
+
+impl Push<Shape> for Shape {
+    fn pushes(&self, other: &Shape) -> Option<Vec<(f64, f64)>> {
+        match (self, other) {
+            (Shape::Circle(this), Shape::Circle(that)) => { this.pushes(that) }
+            (Shape::Circle(this), Shape::BBox(that)) => { this.pushes(that) }
+            (Shape::Circle(this), Shape::Convex(that)) => { this.pushes(that) }
+            (Shape::BBox(this), Shape::Circle(that)) => { invert(&that.pushes(this)) }
+            (Shape::BBox(this), Shape::BBox(that)) => { this.pushes(that) }
+            (Shape::BBox(this), Shape::Convex(that)) => { this.pushes(that) }
+            (Shape::Convex(this), Shape::Circle(that)) => { invert(&that.pushes(this)) }
+            (Shape::Convex(this), Shape::BBox(that)) => { invert(&that.pushes(this)) }
+            (Shape::Convex(this), Shape::Convex(that)) => { this.pushes(that) }
+        }
     }
 }
 
@@ -350,16 +369,16 @@ mod tests {
 
     #[test]
     fn non_overlapping_circles() {
-        let circle1 = Circle { center: (0.0, 0.0), radius: 5.0 };
-        let circle2 = Circle { center: (0.0, 10.0), radius: 3.0 };
+        let circle1 = Shape::circle((0.0, 0.0), 5.0);
+        let circle2 = Shape::circle((0.0, 10.0), 3.0);
 
         assert_that!(circle1.pushes(&circle2), none());
     }
 
     #[test]
     fn overlapping_circles_provides_pushout_along_line_joining_centers() {
-        let circle1 = Circle { center: (0.0, 0.0), radius: 10.0 };
-        let circle2 = Circle { center: (0.0, 10.0), radius: 5.0 };
+        let circle1 = Shape::circle((0.0, 0.0), 10.0);
+        let circle2 = Shape::circle((0.0, 10.0), 5.0);
         assert_that!(
             circle1.pushes(&circle2),
             some(unordered_elements_are!(approx((0.0, 5.0)), approx((0.0, -25.0))))
@@ -368,15 +387,15 @@ mod tests {
 
     #[test]
     fn non_overlapping_box_and_hull() {
-        let bbox = BBox { left: 1.0, right: 3.0, bottom: 1.0, top: 3.0 };
-        let triangle = Convex::new(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
+        let bbox = Shape::bbox((2.0, 2.0), 1.0, 1.0);
+        let triangle = Shape::convex(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
         assert_that!(bbox.pushes(&triangle), none())
     }
 
     #[test]
     fn overlapping_box_and_hull() {
-        let bbox = BBox { left: 1.0, right: 3.0, bottom: 1.0, top: 3.0 };
-        let triangle = Convex::new(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
+        let bbox = Shape::bbox((1.0, 1.0), 2.0, 2.0);
+        let triangle = Shape::convex(vec![(0.0, 0.0), (3.0, 0.0), (0.0, 3.0)]);
         assert_that!(
             bbox.pushes(&triangle),
             some(unordered_elements_are!(
@@ -394,15 +413,15 @@ mod tests {
 
     #[test]
     fn non_overlapping_boxes() {
-        let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0 };
-        let box2 = BBox { left: 5.0, right: 6.0, bottom: 3.0, top: 4.0 };
+        let box1 = Shape::bbox((1.0, 2.0), 3.0, 3.0);
+        let box2 = Shape::bbox((5.0, 3.0), 1.0, 1.0);
         assert_that!(box1.pushes(&box2), none());
     }
 
     #[test]
     fn overlapping_boxes() {
-        let box1 = BBox { left: 1.0, right: 4.0, bottom: 2.0, top: 5.0 };
-        let box2 = BBox { left: 3.0, right: 6.0, bottom: 3.0, top: 4.0 };
+        let box1 = Shape::bbox((1.0, 2.0), 3.0, 3.0);
+        let box2 = Shape::bbox((3.0, 3.0), 3.0, 1.0);
         assert_that!(
             box1.pushes(&box2),
             some(unordered_elements_are!(
@@ -413,9 +432,9 @@ mod tests {
 
     #[test]
     fn non_overlapping_circle_and_box() {
-        let bbox = BBox { left: 0.0, right: 10.0, bottom: 0.0, top: 1.0 };
-        let above = Circle { center: (5.0, 15.0), radius: 3.0 };
-        let top_right = Circle { center: (15.0, 15.0), radius: 6.0 };
+        let bbox = Shape::bbox((0.0, 0.0), 10.0, 1.0);
+        let above = Shape::circle((5.0, 15.0), 3.0);
+        let top_right = Shape::circle((15.0, 15.0), 6.0);
 
         assert_that!(above.pushes(&bbox), none());
         assert_that!(top_right.pushes(&bbox), none());
@@ -423,8 +442,8 @@ mod tests {
 
     #[test]
     fn overlapping_circle_and_box() {
-        let bbox = BBox { left: 0.0, right: 8.0, bottom: 0.0, top: 6.0 };
-        let circle = Circle { center: (12.0, 9.0), radius: 10.0 };
+        let bbox = Shape::bbox((0.0, 0.0), 8.0, 6.0);
+        let circle = Shape::circle((12.0, 9.0), 10.0);
 
         assert_that!(
             circle.pushes(&bbox),
@@ -443,15 +462,15 @@ mod tests {
 
     #[test]
     fn non_overlapping_circle_and_hull() {
-        let triangle = Convex::new(vec![(0.0, 0.0), (0.0, 10.0), (10.0, 0.0)]);
-        let circle = Circle { center: (10.0, 10.0), radius: 5.0 };
+        let triangle = Shape::convex(vec![(0.0, 0.0), (0.0, 10.0), (10.0, 0.0)]);
+        let circle = Shape::circle((10.0, 10.0), 5.0);
         assert_that!(circle.pushes(&triangle), none());
     }
 
     #[test]
     fn overlapping_circle_and_hull() {
-        let triangle = Convex::new(vec![(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]);
-        let circle = Circle { center: (1.0, 1.0), radius: 2.0 };
+        let triangle = Shape::convex(vec![(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]);
+        let circle = Shape::circle((1.0, 1.0), 2.0);
         assert_that!(
             circle.pushes(&triangle),
             some(unordered_elements_are!(
@@ -472,15 +491,15 @@ mod tests {
 
     #[test]
     fn non_overlapping_convex_meshes() {
-        let triangle1 = Convex::new(vec![(4.0, 10.0), (10.0, 12.0), (7.0, 5.0)]);
-        let triangle2 = Convex::new(vec![(4.0, 2.0), (12.0, 8.0), (7.0, -2.0)]);
+        let triangle1 = Shape::convex(vec![(4.0, 10.0), (10.0, 12.0), (7.0, 5.0)]);
+        let triangle2 = Shape::convex(vec![(4.0, 2.0), (12.0, 8.0), (7.0, -2.0)]);
         assert_that!(triangle1.pushes(&triangle2), none());
     }
 
     #[test]
     fn overlapping_convex_meshes_push_on_all_axes() {
-        let triangle1 = Convex::new(vec![(0.0, 0.0), (0.0, 10.0), (10.0, 0.0)]);
-        let triangle2 = Convex::new(vec![(4.0, 4.0), (14.0, 4.0), (14.0, 14.0)]);
+        let triangle1 = Shape::convex(vec![(0.0, 0.0), (0.0, 10.0), (10.0, 0.0)]);
+        let triangle2 = Shape::convex(vec![(4.0, 4.0), (14.0, 4.0), (14.0, 14.0)]);
 
         assert_that!(
             triangle1.pushes(&triangle2),
