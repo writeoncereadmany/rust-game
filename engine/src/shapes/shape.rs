@@ -182,7 +182,7 @@ trait Push<T> {
 
 impl Push<Circle> for Circle {
     fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
-        pushes(self, other, &[&other.center.sub(&self.center).unit()])
+        pushes_no_axes(self, other, &[other.center.sub(&self.center).unit()])
     }
 }
 
@@ -190,8 +190,7 @@ impl Push<BBox> for Circle {
     fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
         let nearest_corner = nearest_box_corner(&self.center, other);
         let corner_push = [nearest_corner.sub(&self.center).unit()];
-        let normals: Vec<&(f64, f64)> = corner_push.iter().chain(AXES).collect();
-        pushes(self, other, &normals)
+        pushes_1(self, other, &corner_push)
     }
 }
 
@@ -199,28 +198,25 @@ impl Push<Convex> for Circle {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
         let nearest_corner = nearest_hull_corner(&self.center, other);
         let corner_push = [nearest_corner.sub(&self.center).unit()];
-        let normals: Vec<&(f64, f64)> = corner_push.iter().chain(&other.normals).chain(AXES).collect();
-        pushes(self, other, &normals)
+        pushes(self, other, &corner_push, &other.normals, true)
     }
 }
 
 impl Push<BBox> for BBox {
     fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
-        pushes(self, other, &AXES)
+        pushes_1(self, other, &[])
     }
 }
 
 impl Push<Convex> for BBox {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
-        let normals: Vec<&(f64, f64)> = other.normals.iter().chain(AXES).collect();
-        pushes(self, other, &normals)
+        pushes_1(self, other, &other.normals)
     }
 }
 
 impl Push<Convex> for Convex {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
-        let normals: Vec<&(f64, f64)> = self.normals.iter().chain(&other.normals).chain(AXES).collect();
-        pushes(self, other, &normals)
+        pushes(self, other, &self.normals, &other.normals, true)
     }
 }
 
@@ -240,24 +236,55 @@ impl Push<Shape> for Shape {
     }
 }
 
-fn pushes<A: Project, B: Project>(a: &A, b: &B, separating_axes: &[&(f64, f64)]) -> Option<Vec<(f64, f64)>> {
+fn pushes_no_axes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
+    pushes(a ,b, axes1, &[], false)
+}
+
+fn pushes_1<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
+    pushes(a ,b, axes1, &[], true)
+}
+
+fn pushes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)], include_cardinals: bool) -> Option<Vec<(f64, f64)>> {
     if !a.project(&UNIT_X).overlaps(&b.project(&UNIT_X)) || !a.project(&UNIT_Y).overlaps(&b.project(&UNIT_Y)) {
         return None;
     }
 
     let mut all_pushes = Vec::new();
-    for axis in separating_axes {
-        let proj_a = a.project(axis);
-        let proj_b = b.project(axis);
-        if let Some(pushes) = proj_a.pushes(&proj_b) {
-            for push in pushes {
-                all_pushes.push(axis.scale(&push));
-            }
-        } else {
+    for axis in axes1 {
+        if !add_pushes(a, b, &mut all_pushes, axis) {
             return None;
         }
     }
+
+    for axis in axes2 {
+        if !add_pushes(a, b, &mut all_pushes, axis) {
+            return None;
+        }
+    }
+
+    if include_cardinals {
+        for axis in &AXES {
+            if !add_pushes(a, b, &mut all_pushes, axis) {
+                return None;
+            }
+        }
+    }
+
+
     Some(all_pushes)
+}
+
+fn add_pushes<A: Project, B: Project>(a: &A, b: &B, all_pushes: &mut Vec<(f64, f64)>, axis: &(f64, f64)) -> bool {
+    let proj_a = a.project(axis);
+    let proj_b = b.project(axis);
+    if let Some(pushes) = proj_a.pushes(&proj_b) {
+        for push in pushes {
+            all_pushes.push(axis.scale(&push));
+        }
+        true
+    } else {
+        false
+    }
 }
 
 
