@@ -192,6 +192,15 @@ impl Push<BBox> for Circle {
     }
 }
 
+impl Push<Convex> for Circle {
+    fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
+        let nearest_corner = nearest_hull_corner(&self.center, other);
+        let corner_push = [nearest_corner.sub(&self.center).unit()];
+        let normals: Vec<&(f64, f64)> = corner_push.iter().chain(&other.normals).chain(AXES).collect();
+        pushes(self, other, &normals)
+    }
+}
+
 impl Push<BBox> for BBox {
     fn pushes(&self, other: &BBox) -> Option<Vec<(f64, f64)>> {
         pushes(self, other, &AXES)
@@ -396,6 +405,35 @@ mod tests {
                 // corner pushes
                 approx((-4.0, -3.0)),
                 approx((20.0, 15.0))
+            )));
+    }
+
+    #[test]
+    fn non_overlapping_circle_and_hull() {
+        let triangle = Convex::new(vec![(0.0, 0.0), (0.0, 10.0), (10.0, 0.0)]);
+        let circle = Circle { center: (10.0, 10.0), radius: 5.0 };
+        assert_that!(circle.pushes(&triangle), none());
+    }
+
+    #[test]
+    fn overlapping_circle_and_hull() {
+        let triangle = Convex::new(vec![(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]);
+        let circle = Circle { center: (1.0, 1.0), radius: 2.0 };
+        assert_that!(
+            circle.pushes(&triangle),
+            some(unordered_elements_are!(
+                // point-pushes: same as v-pushes
+                approx((0.0, 3.0)),
+                approx((0.0, -2.0)),
+                // slope-pushes
+                approx(((2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0), (2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0))),
+                approx((-(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0), -(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0))),
+                // h-pushes
+                approx((3.0, 0.0)),
+                approx((-2.0, 0.0)),
+                // v-pushes
+                approx((0.0, 3.0)),
+                approx((0.0, -2.0))
             )));
     }
 
