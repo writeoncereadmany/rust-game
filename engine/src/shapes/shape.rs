@@ -198,7 +198,7 @@ impl Push<Convex> for Circle {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
         let nearest_corner = nearest_hull_corner(&self.center, other);
         let corner_push = [nearest_corner.sub(&self.center).unit()];
-        pushes(self, other, &corner_push, &other.normals, true)
+        pushes_2(self, other, &corner_push, &other.normals)
     }
 }
 
@@ -216,7 +216,7 @@ impl Push<Convex> for BBox {
 
 impl Push<Convex> for Convex {
     fn pushes(&self, other: &Convex) -> Option<Vec<(f64, f64)>> {
-        pushes(self, other, &self.normals, &other.normals, true)
+        pushes_2(self, other, &self.normals, &other.normals)
     }
 }
 
@@ -242,6 +242,10 @@ fn pushes_no_axes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) ->
 
 fn pushes_1<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
     pushes(a ,b, axes1, &[], true)
+}
+
+fn pushes_2<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
+    pushes(a ,b, axes1, axes2, true)
 }
 
 fn pushes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)], include_cardinals: bool) -> Option<Vec<(f64, f64)>> {
