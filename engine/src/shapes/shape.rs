@@ -384,9 +384,9 @@ mod tests {
         assert_that!(
             non_axis_normals(&vec![(0.0, 0.0), (6.0, 8.0), (7.0, 7.0)]),
             unordered_elements_are!(
-                approx((-0.8, 0.6)),
-                approx((f64::sqrt(0.5), f64::sqrt(0.5))),
-                approx((f64::sqrt(0.5), -f64::sqrt(0.5)))
+                approx(-0.8, 0.6),
+                approx(f64::sqrt(0.5), f64::sqrt(0.5)),
+                approx(f64::sqrt(0.5), -f64::sqrt(0.5))
             ));
     }
 
@@ -395,7 +395,7 @@ mod tests {
         // note: we exclude axis normals, which is why we only get one normal
         assert_that!(
             non_axis_normals(&vec![(2.0, 2.0), (6.0, 2.0), (2.0, 5.0)]),
-            unordered_elements_are!(approx((0.6, 0.8))));
+            unordered_elements_are!(approx(0.6, 0.8)));
     }
 
     #[test]
@@ -412,7 +412,7 @@ mod tests {
         let circle2 = Shape::circle((0.0, 10.0), 5.0);
         assert_that!(
             circle1.pushes(&circle2),
-            some(unordered_elements_are!(approx((0.0, 5.0)), approx((0.0, -25.0))))
+            some(unordered_elements_are!(approx(0.0, 5.0), approx(0.0, -25.0)))
         );
     }
 
@@ -431,14 +431,14 @@ mod tests {
             bbox.pushes(&triangle),
             some(unordered_elements_are!(
                 // slope push
-                approx((-0.5, -0.5)),
-                approx((3.0, 3.0)),
+                approx(-0.5, -0.5),
+                approx(3.0, 3.0),
                 // hpush
-                approx((3.0, 0.0)),
-                approx((-2.0, 0.0)),
+                approx(3.0, 0.0),
+                approx(-2.0, 0.0),
                 // vpush
-                approx((0.0, 3.0)),
-                approx((0.0, -2.0)),
+                approx(0.0, 3.0),
+                approx(0.0, -2.0),
             )));
     }
 
@@ -456,8 +456,8 @@ mod tests {
         assert_that!(
             box1.pushes(&box2),
             some(unordered_elements_are!(
-                approx((1.0, 0.0)), approx((-5.0, 0.0)),
-                approx((0.0, 2.0)), approx((0.0, -2.0))
+                approx(1.0, 0.0), approx(-5.0, 0.0),
+                approx(0.0, 2.0), approx(0.0, -2.0)
             )));
     }
 
@@ -480,14 +480,14 @@ mod tests {
             circle.pushes(&bbox),
             some(unordered_elements_are!(
                 // h-pushes
-                approx((-6.0, 0.0)),
-                approx((22.0, 0.0)),
+                approx(-6.0, 0.0),
+                approx(22.0, 0.0),
                 // v-pushes
-                approx((0.0, -7.0)),
-                approx((0.0, 19.0)),
+                approx(0.0, -7.0),
+                approx(0.0, 19.0),
                 // corner pushes
-                approx((-4.0, -3.0)),
-                approx((20.0, 15.0))
+                approx(-4.0, -3.0),
+                approx(20.0, 15.0)
             )));
     }
 
@@ -506,17 +506,17 @@ mod tests {
             circle.pushes(&triangle),
             some(unordered_elements_are!(
                 // point-pushes: same as v-pushes
-                approx((0.0, 3.0)),
-                approx((0.0, -2.0)),
+                approx(0.0, 3.0),
+                approx(0.0, -2.0),
                 // slope-pushes
-                approx(((2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0), (2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0))),
-                approx((-(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0), -(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0))),
+                approx((2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0), (2.0 + f64::sqrt(2.0)) / f64::sqrt(2.0)),
+                approx(-(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0), -(2.0 - f64::sqrt(0.5)) / f64::sqrt(2.0)),
                 // h-pushes
-                approx((3.0, 0.0)),
-                approx((-2.0, 0.0)),
+                approx(3.0, 0.0),
+                approx(-2.0, 0.0),
                 // v-pushes
-                approx((0.0, 3.0)),
-                approx((0.0, -2.0))
+                approx(0.0, 3.0),
+                approx(0.0, -2.0)
             )));
     }
 
@@ -536,17 +536,17 @@ mod tests {
             triangle1.pushes(&triangle2),
             some(unordered_elements_are!(
                 // h-push
-                approx((6.0, 0.0)),
-                approx((-14.0, 0.0)),
+                approx(6.0, 0.0),
+                approx(-14.0, 0.0),
                 // v-pushes
-                approx((0.0, 6.0)),
-                approx((0.0, -14.0)),
+                approx(0.0, 6.0),
+                approx(0.0, -14.0),
                 // triangle 1 slope pushes
-                approx((1.0, 1.0)),
-                approx((-14.0, -14.0)),
+                approx(1.0, 1.0),
+                approx(-14.0, -14.0),
                 // triangle 2 slope pushes
-                approx((-10.0, 10.0)),
-                approx((5.0, -5.0))
+                approx(-10.0, 10.0),
+                approx(5.0, -5.0)
             )));
     }
 
@@ -554,8 +554,8 @@ mod tests {
         expected: (f64, f64),
     }
 
-    fn approx(expected: (f64, f64)) -> Vec2dMatcher {
-        Vec2dMatcher { expected }
+    fn approx(exp_x: f64, exp_y: f64) -> Vec2dMatcher {
+        Vec2dMatcher { expected: (exp_x, exp_y) }
     }
 
     impl Matcher for Vec2dMatcher {
