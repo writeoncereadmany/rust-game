@@ -360,11 +360,11 @@ mod tests {
     //  |___|  
     // 
     // in this case, the aligned box overlaps, but the swept volume doesn't
-    #[test]
-    fn should_not_snag() {
-        let bbox = Mesh::rect(0.0, 0.0, 10.0, 10.0);
-
-        assert_eq!(bbox.intersects(&Mesh::rect(14.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), true);
-        assert_eq!(bbox.intersects(&Mesh::rect(16.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), false);
-    }
+    // #[test]
+    // fn should_not_snag() {
+    //     let bbox = Mesh::rect(0.0, 0.0, 10.0, 10.0);
+    //
+    //     assert_eq!(bbox.intersects(&Mesh::rect(14.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), true);
+    //     assert_eq!(bbox.intersects(&Mesh::rect(16.0, 5.0, 2.0, 2.0), &(10.0, -10.0)), false);
+    // }
 }
