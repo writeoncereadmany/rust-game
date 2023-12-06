@@ -148,8 +148,8 @@ impl Project for Shape {
 fn nearest_box_corner((x, y): &(f64, f64), bbox: &BBox) -> (f64, f64) {
     // we're checking against midpoint of box: our goal is if x < (left + right) / 2
     // this is equivalent, but simpler
-    let nearest_x = if x*2.0 < bbox.left + bbox.right { bbox.left } else { bbox.right };
-    let nearest_y = if y*2.0 < bbox.bottom + bbox.top { bbox.bottom } else { bbox.top };
+    let nearest_x = if x * 2.0 < bbox.left + bbox.right { bbox.left } else { bbox.right };
+    let nearest_y = if y * 2.0 < bbox.bottom + bbox.top { bbox.bottom } else { bbox.top };
     (nearest_x, nearest_y)
 }
 
@@ -180,9 +180,117 @@ trait Push<T> {
     fn pushes(&self, other: &T) -> Option<Vec<(f64, f64)>>;
 }
 
+trait Intersect<T> {
+    fn intersects(&self, other: &T) -> bool;
+}
+
 impl Push<Circle> for Circle {
     fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
         pushes_no_axes(self, other, &[other.center.sub(&self.center).unit()])
+    }
+}
+
+impl Intersect<Circle> for Circle {
+    fn intersects(&self, other: &Circle) -> bool {
+        let separating_axis = self.center.sub(&other.center);
+        intersects_no_axes(self, other, &[separating_axis])
+    }
+}
+
+impl Intersect<BBox> for Circle {
+    fn intersects(&self, other: &BBox) -> bool {
+        let nearest_corner = nearest_box_corner(&self.center, other);
+        let separating_axis = self.center.sub(&nearest_corner);
+        intersects_1(self, other, &[separating_axis])
+    }
+}
+
+impl Intersect<Convex> for Circle {
+    fn intersects(&self, other: &Convex) -> bool {
+            let nearest_corner = nearest_hull_corner(&self.center, other);
+            let separating_axis = self.center.sub(&nearest_corner);
+            intersects_2(self, other, &[separating_axis], &other.normals)
+    }
+}
+
+impl Intersect<BBox> for BBox {
+    fn intersects(&self, other: &BBox) -> bool {
+        intersects_axes(self, other)
+    }
+}
+
+impl Intersect<Convex> for BBox {
+    fn intersects(&self, other: &Convex) -> bool {
+        intersects_1(self, other, &other.normals)
+    }
+}
+
+impl Intersect<Convex> for Convex {
+    fn intersects(&self, other: &Convex) -> bool {
+        intersects_2(self, other, &self.normals, &other.normals)
+    }
+}
+
+impl Intersect<Shape> for Shape {
+    fn intersects(&self, other: &Shape) -> bool {
+        match (self, other) {
+            (Shape::Circle(c1), Shape::Circle(c2)) => { c1.intersects(c2) }
+            (Shape::Circle(c), Shape::BBox(b)) => { c.intersects(b) }
+            (Shape::Circle(c), Shape::Convex(h)) => { c.intersects(h) }
+            (Shape::BBox(b), Shape::Circle(c)) => { c.intersects(b) }
+            (Shape::BBox(b1), Shape::BBox(b2)) => { b1.intersects(b2) }
+            (Shape::BBox(b), Shape::Convex(h)) => { b.intersects(h) }
+            (Shape::Convex(h), Shape::Circle(c)) => { c.intersects(h) }
+            (Shape::Convex(h), Shape::BBox(b)) => { b.intersects(h) }
+            (Shape::Convex(h1), Shape::Convex(h2)) => { h1.intersects(h2) }
+        }
+    }
+}
+
+fn intersects_no_axes<A: Project, B: Project>(a: &A, b: &B, normals: &[(f64, f64)]) -> bool {
+    intersects(a, b, normals, &[], false)
+}
+
+
+fn intersects_axes<A: Project, B: Project>(a: &A, b: &B) -> bool {
+    intersects(a, b, &[], &[], true)
+}
+
+fn intersects_1<A: Project, B: Project>(a: &A, b: &B, normals: &[(f64, f64)]) -> bool {
+    intersects(a, b, normals, &[], true)
+}
+
+fn intersects_2<A: Project, B: Project>(
+    a: &A,
+    b: &B,
+    normals_1: &[(f64, f64)],
+    normals_2: &[(f64, f64)]
+) -> bool {
+    intersects(a, b, normals_1, normals_2, true)
+}
+
+fn intersects<A: Project, B: Project>(
+    a: &A,
+    b: &B,
+    normals_1: &[(f64, f64)],
+    normals_2: &[(f64, f64)],
+    include_axes: bool,
+) -> bool {
+    for normal in normals_1 {
+        if !a.project(&normal).overlaps(&b.project(&normal)) {
+            return false;
+        }
+    }
+    for normal in normals_2 {
+        if !a.project(&normal).overlaps(&b.project(&normal)) {
+            return false;
+        }
+    }
+    if include_axes {
+        a.project(&UNIT_X).overlaps(&b.project(&UNIT_X))
+            && a.project(&UNIT_Y).overlaps(&b.project(&UNIT_Y))
+    } else {
+        true
     }
 }
 
@@ -236,16 +344,16 @@ impl Push<Shape> for Shape {
     }
 }
 
-fn pushes_no_axes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
-    pushes(a ,b, axes1, &[], false)
+fn pushes_no_axes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>> {
+    pushes(a, b, axes1, &[], false)
 }
 
-fn pushes_1<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
-    pushes(a ,b, axes1, &[], true)
+fn pushes_1<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)]) -> Option<Vec<(f64, f64)>> {
+    pushes(a, b, axes1, &[], true)
 }
 
-fn pushes_2<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)]) -> Option<Vec<(f64, f64)>>{
-    pushes(a ,b, axes1, axes2, true)
+fn pushes_2<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)]) -> Option<Vec<(f64, f64)>> {
+    pushes(a, b, axes1, axes2, true)
 }
 
 fn pushes<A: Project, B: Project>(a: &A, b: &B, axes1: &[(f64, f64)], axes2: &[(f64, f64)], include_cardinals: bool) -> Option<Vec<(f64, f64)>> {
