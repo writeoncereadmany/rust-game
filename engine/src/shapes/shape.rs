@@ -103,6 +103,13 @@ impl Projection {
             None
         }
     }
+
+    fn extend(&self, extension: f64) -> Projection {
+        Projection {
+            min: self.min + f64::min(extension, 0.0),
+            max: self.max + f64::max(extension, 0.0)
+        }
+    }
 }
 
 trait Project {
@@ -176,18 +183,8 @@ fn invert(maybe: &Option<Vec<(f64, f64)>>) -> Option<Vec<(f64, f64)>>
             .collect())
 }
 
-trait Push<T> {
-    fn pushes(&self, other: &T) -> Option<Vec<(f64, f64)>>;
-}
-
 trait Intersect<T> {
     fn intersects(&self, other: &T) -> bool;
-}
-
-impl Push<Circle> for Circle {
-    fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
-        pushes_no_axes(self, other, &[other.center.sub(&self.center).unit()])
-    }
 }
 
 impl Intersect<Circle> for Circle {
@@ -291,6 +288,56 @@ fn intersects<A: Project, B: Project>(
             && a.project(&UNIT_Y).overlaps(&b.project(&UNIT_Y))
     } else {
         true
+    }
+}
+
+trait DynIntersect<T> {
+    fn dyn_intersects(&self, other: &T, relative_movement: &(f64, f64)) -> bool;
+}
+
+impl DynIntersect<Circle> for Circle {
+    fn dyn_intersects(&self, other: &Circle, rm@(rx, ry): &(f64, f64)) -> bool {
+        let (sx, sy) = self.center;
+        let end = (sx + rx, sy + ry);
+
+        let axis_of_motion = rm.perpendicular().unit();
+        let start_separating_axis = self.center.sub(&other.center).unit();
+        let end_separating_axis = end.sub(&other.center).unit();
+
+        for axis in [axis_of_motion, start_separating_axis, end_separating_axis] {
+            let sweep = rm.dot(&axis);
+            let self_project = self.project(&axis).extend(sweep);
+            if !self_project.overlaps(&other.project(&axis)) {
+                return false
+            }
+        }
+        true
+    }
+}
+
+impl DynIntersect<Shape> for Shape {
+    fn dyn_intersects(&self, other: &Shape, relative_movement: &(f64, f64)) -> bool {
+        match(self, other) {
+            (Shape::Circle(c1), Shape::Circle(c2)) => { c1.dyn_intersects(c2, relative_movement) }
+            (Shape::Circle(_), Shape::BBox(_)) => { false }
+            (Shape::Circle(_), Shape::Convex(_)) => { false }
+            (Shape::BBox(_), Shape::Circle(_)) => { false }
+            (Shape::BBox(_), Shape::BBox(_)) => { false }
+            (Shape::BBox(_), Shape::Convex(_)) => { false }
+            (Shape::Convex(_), Shape::Circle(_)) => { false }
+            (Shape::Convex(_), Shape::BBox(_)) => { false }
+            (Shape::Convex(_), Shape::Convex(_)) => { false }
+        }
+    }
+}
+
+trait Push<T> {
+    fn pushes(&self, other: &T) -> Option<Vec<(f64, f64)>>;
+}
+
+impl Push<Circle> for Circle {
+    fn pushes(&self, other: &Circle) -> Option<Vec<(f64, f64)>> {
+        pushes_no_axes(self, other, &[other.center.sub(&self.center).unit()])
     }
 }
 
@@ -677,6 +724,22 @@ mod tests {
                 approx(-10.0, 10.0),
                 approx(5.0, -5.0)
             )));
+    }
+
+    #[test]
+    fn circle_movement_intersects(){
+        let circle1 = Shape::circle((0.0, 0.0), 2.0);
+        let circle2 = Shape::circle((5.0, 0.0), 2.0);
+
+        assert_eq!(circle1.dyn_intersects(&circle2, &(10.0, 0.0)), true);
+    }
+
+    #[test]
+    fn circle_movement_does_not_intersects(){
+        let circle1 = Shape::circle((0.0, 0.0), 1.0);
+        let circle2 = Shape::circle((5.0, 0.0), 1.0);
+
+        assert_eq!(circle1.dyn_intersects(&circle2, &(5.0, 5.0)), false);
     }
 
     struct Vec2dMatcher {
