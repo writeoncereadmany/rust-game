@@ -72,6 +72,9 @@ fn collides(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::assert_that;
+    use googletest::matchers::some;
+    use crate::shapes::shape::collision::eq_collision;
 
     // projection tests
 
@@ -135,11 +138,30 @@ mod tests {
     // collision tests
     #[test]
     fn horizontal_collision() {
-        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
-        let circle2 = Circle { center: (6.0, 0.0), radius: 2.0 };
-        assert_eq!(
+        let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
+        assert_that!(
             collides(&circle1, &circle2, &(4.0, 0.0)),
-            Some(Collision { dt: 0.5, push: (-2.0, 0.0)}));
+            some(eq_collision(0.5, (-2.0, 0.0))));
+    }
+
+    #[test]
+    fn vertical_collision_offset() {
+        let circle1 = Circle { center: (2.0, 2.0), radius: 2.0 };
+        let circle2 = Circle { center: (2.0, 9.0), radius: 2.0 };
+        assert_that!(
+            collides(&circle1, &circle2, &(0.0, 5.0)),
+            some(eq_collision(0.6, (0.0, -2.0))));
+    }
+
+    #[test]
+    fn off_axis_collision() {
+        // sum of radii = 5, collision point is at (6, 3) pushing on vector (-4, 3)
+        let circle1 = Circle { center: (0.0, 3.0), radius: 2.0 };
+        let circle2 = Circle { center: (10.0, 0.0), radius: 3.0 };
+        assert_that!(
+            collides(&circle1, &circle2, &(10.0, 0.0)),
+            some(eq_collision(0.6, (-2.56, -1.92 ))));
     }
 
 }
