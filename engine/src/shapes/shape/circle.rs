@@ -37,7 +37,7 @@ fn collides(
     // this will be normal to movement vector:
     let normal_movement: (f64, f64) = movement_vector.perpendicular().unit();
     // multiplied by the distance between the projections of the circles centers:
-    let proj_distance: f64 = normal_movement.dot(c2) - normal_movement.dot(c1);
+    let proj_distance: f64 = normal_movement.dot(c1) - normal_movement.dot(c2);
     // which gives us a separating vector of:
     let shortest_line = normal_movement.scale(&proj_distance);
     let nearest_point = c2.plus(&shortest_line);
@@ -161,7 +161,7 @@ mod tests {
         let circle2 = Circle { center: (10.0, 0.0), radius: 3.0 };
         assert_that!(
             collides(&circle1, &circle2, &(10.0, 0.0)),
-            some(eq_collision(0.6, (-2.56, -1.92 ))));
+            some(eq_collision(0.6, (-2.56, 1.92 ))));
     }
 
 }

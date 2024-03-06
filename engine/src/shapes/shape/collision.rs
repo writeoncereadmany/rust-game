@@ -7,7 +7,6 @@
  */
 use googletest::matcher::{Matcher, MatcherResult};
 use googletest::matchers::approx_eq;
-use googletest::matches_pattern;
 
 #[derive(Debug, PartialEq)]
 pub struct Collision {
