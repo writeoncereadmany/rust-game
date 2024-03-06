@@ -73,7 +73,7 @@ fn collides(
 mod tests {
     use super::*;
     use googletest::assert_that;
-    use googletest::matchers::some;
+    use googletest::matchers::{none, some};
     use crate::shapes::shape::collision::eq_collision;
 
     // projection tests
@@ -146,6 +146,15 @@ mod tests {
     }
 
     #[test]
+    fn horizontal_collision_stops_short() {
+        let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
+        assert_that!(
+            collides(&circle1, &circle2, &(1.5, 0.0)),
+            none());
+    }
+
+    #[test]
     fn vertical_collision_offset() {
         let circle1 = Circle { center: (2.0, 2.0), radius: 2.0 };
         let circle2 = Circle { center: (2.0, 9.0), radius: 2.0 };
@@ -162,6 +171,17 @@ mod tests {
         assert_that!(
             collides(&circle1, &circle2, &(10.0, 0.0)),
             some(eq_collision(0.6, (-2.56, 1.92 ))));
+    }
+
+
+    #[test]
+    fn off_axis_near_miss() {
+        // separated by 4 normal to movement, but sum of radii is 3 - sails straight past
+        let circle1 = Circle { center: (0.0, 4.0), radius: 2.0 };
+        let circle2 = Circle { center: (10.0, 0.0), radius: 1.0 };
+        assert_that!(
+            collides(&circle1, &circle2, &(20.0, 0.0)),
+            none());
     }
 
 }
