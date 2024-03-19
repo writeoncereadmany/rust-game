@@ -30,7 +30,6 @@ fn collides(
     movement_vector: &(f64, f64)
 ) -> Option<Collision> {
     let sum_of_radii = r1 + r2;
-    let movement_vector_unit = movement_vector.unit();
     // find the two points on the movement vector where the circles exactly touch
     // ie, the entry/exit points of the collision
     // first: find the nearest point on movement vector to circle2.
@@ -40,13 +39,14 @@ fn collides(
     let proj_distance: f64 = normal_movement.dot(c1) - normal_movement.dot(c2);
     // which gives us a separating vector of:
     let shortest_line = normal_movement.scale(&proj_distance);
-    let nearest_point = c2.plus(&shortest_line);
     if shortest_line.len() > sum_of_radii {
         None
     } else {
         // the vectors from c2 to points along the movement vector where radii touch exactly
         // make the hypotenuse of right-angled triangle with one side being that shortest line.
         // find their length:
+        let nearest_point = c2.plus(&shortest_line);
+        let movement_vector_unit = movement_vector.unit();
         let offset = f64::sqrt((sum_of_radii * sum_of_radii) - shortest_line.sq_len());
         let entry_point = nearest_point.sub(&movement_vector_unit.scale(&offset));
         // if entry point is not on the movement vector, no collision
