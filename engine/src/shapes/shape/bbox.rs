@@ -1,6 +1,7 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::projection;
 use crate::shapes::vec2d::{UNIT_X, UNIT_Y, Vec2d};
+
 use super::projection::{Projection, Projects, pushes};
 
 pub struct BBox {
@@ -39,7 +40,7 @@ pub fn collides(
 
 fn axis_push(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64)
 ) -> Option<Vec<(f64, f64)>> {
-    let proj_1 = bbox1.project(axis).sweep(dv, axis);
+    let proj_1 = bbox1.project_moving(dv, axis);
     let proj_2 = bbox2.project(axis);
     let pushes = pushes(&proj_1, &proj_2)?;
     Some(pushes
@@ -51,12 +52,9 @@ fn axis_push(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64)
 
 #[cfg(test)]
 mod tests {
-    use googletest::assert_that;
-    use googletest::matchers::some;
-    use crate::shapes::shape::collision::eq_collision;
     use super::*;
 
-    // projection tests
+// projection tests
 
     #[test]
     fn project_x_axis() {

@@ -8,6 +8,12 @@ pub struct Projection {
 
 pub trait Projects {
     fn project(&self, axis: &(f64, f64)) -> Projection;
+
+    fn project_moving(&self, dv: &(f64, f64), axis: &(f64, f64)) -> Projection {
+        let delta = dv.dot(axis);
+        let Projection { min, max } = self.project(axis);
+        Projection { min: min + delta.min(0.0), max: max + delta.max(0.0) }
+    }
 }
 
 pub fn intersects(a: &Projection, b: &Projection) -> bool {
@@ -24,13 +30,6 @@ pub fn pushes(a: &Projection, b: &Projection) -> Option<Vec<f64>> {
         Some(vec![b.min - a.max, b.max - a.min])
     } else {
         None
-    }
-}
-
-impl Projection {
-    pub fn sweep(&self, dv: &(f64, f64), axis: &(f64, f64)) -> Projection {
-        let delta = dv.dot(axis);
-        Projection { min: self.min + delta.min(0.0), max: self.max + delta.max(0.0) }
     }
 }
 
