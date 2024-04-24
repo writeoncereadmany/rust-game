@@ -1,18 +1,18 @@
 use crate::shapes::shape::collision::Collision;
+use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
-use super::projection::{ project_line, Projection };
+use super::projection::{Projection, Projects};
 
 struct Circle {
     pub center: (f64, f64),
     pub radius: f64
 }
 
-fn project(
-    Circle { center, radius }: &Circle,
-    axis: &(f64, f64)
-) -> Projection {
-    let center_projection = axis.dot(&center);
-    Projection { min: center_projection - radius, max: center_projection + radius }
+impl Projects for Circle {
+    fn project(&self, axis: &(f64, f64)) -> Projection {
+        let center_projection = axis.dot(&self.center);
+        Projection { min: center_projection - self.radius, max: center_projection + self.radius }
+    }
 }
 
 fn intersects(
@@ -51,7 +51,7 @@ fn collides(
         let entry_point = nearest_point.sub(&movement_vector_unit.scale(&offset));
         // if entry point is not on the movement vector, no collision
         // (or circles were already overlapping):
-        let movement_proj = project_line(c1, &c1.plus(&movement_vector), &movement_vector_unit);
+        let movement_proj = Line::new(*c1, c1.plus(&movement_vector)).project(&movement_vector_unit);
         let entry_proj = entry_point.dot(&movement_vector_unit);
         if entry_proj < movement_proj.min || entry_proj > movement_proj.max {
             None
@@ -81,19 +81,19 @@ mod tests {
     #[test]
     fn project_x_axis() {
         let circle = Circle { center: (4.0, 3.0), radius: 2.0 };
-        assert_eq!(project(&circle, &(1.0, 0.0)), Projection { min: 2.0, max: 6.0 });
+        assert_eq!(circle.project(&(1.0, 0.0)), Projection { min: 2.0, max: 6.0 });
     }
 
     #[test]
     fn project_y_axis() {
         let circle = Circle { center: (4.0, 3.0), radius: 2.0 };
-        assert_eq!(project(&circle, &(0.0, 1.0)), Projection { min: 1.0, max: 5.0 });
+        assert_eq!(circle.project(&(0.0, 1.0)), Projection { min: 1.0, max: 5.0 });
     }
 
     #[test]
     fn project_diagonal_axis() {
         let circle = Circle { center: (4.0, 3.0), radius: 2.0 };
-        assert_eq!(project(&circle, &(0.8, 0.6)), Projection { min: 3.0, max: 7.0 });
+        assert_eq!(circle.project(&(0.8, 0.6)), Projection { min: 3.0, max: 7.0 });
     }
 
     // intersection tests

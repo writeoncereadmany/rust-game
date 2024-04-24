@@ -6,14 +6,32 @@ pub struct Projection {
     pub max: f64
 }
 
-pub fn project_line(start: &(f64, f64), end: &(f64, f64), axis: &(f64, f64)) -> Projection {
-    let start_proj = start.dot(axis);
-    let end_proj = end.dot(axis);
-    Projection { min: start_proj.min(end_proj), max: start_proj.max(end_proj) }
+pub trait Projects {
+    fn project(&self, axis: &(f64, f64)) -> Projection;
 }
 
 pub fn intersects(a: &Projection, b: &Projection) -> bool {
     a.max > b.min && a.min < b.max
+}
+
+// determines pushes b would apply to a such that a is no longer intersecting with b
+// a:    |--------------|
+// b:            |---------|
+// push left is b.min - a.max (always negative), push right is b.max - a.min (always positive)
+// if b.min - a.max is positive or b.max - a.min is negative, then the shapes don't intersect
+pub fn pushes(a: &Projection, b: &Projection) -> Option<Vec<f64>> {
+    if intersects(a, b) {
+        Some(vec![b.min - a.max, b.max - a.min])
+    } else {
+        None
+    }
+}
+
+impl Projection {
+    pub fn sweep(&self, dv: &(f64, f64), axis: &(f64, f64)) -> Projection {
+        let delta = dv.dot(axis);
+        Projection { min: self.min + delta.min(0.0), max: self.max + delta.max(0.0) }
+    }
 }
 
 mod tests {
