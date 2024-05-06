@@ -21,9 +21,26 @@ impl Projects for BBox {
 }
 
 pub fn intersects(bbox1: &BBox, bbox2: &BBox) -> bool {
-    let intersects_horizontally = projection::intersects(&bbox1.project(&UNIT_X), &bbox2.project(&UNIT_X));
-    let intersects_vertically = projection::intersects(&bbox1.project(&UNIT_Y), &bbox2.project(&UNIT_Y));
-    intersects_horizontally && intersects_vertically
+    intersects_moving(bbox1, bbox2, &(0.0, 0.0))
+}
+
+pub fn intersects_moving(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64)) -> bool {
+    let intersects_horizontally = projection::intersects(
+        &bbox1.project_moving(dv, &UNIT_X),
+        &bbox2.project(&UNIT_X));
+    let intersects_vertically = projection::intersects(
+        &bbox1.project_moving(dv, &UNIT_Y),
+        &bbox2.project(&UNIT_Y));
+    if dv.sq_len() > 0.0 {
+        let normal_dv = dv.perpendicular().unit();
+        let intersects_axis_of_movement = projection::intersects(
+            &bbox1.project_moving(dv, &normal_dv),
+            &bbox2.project(&normal_dv));
+        intersects_horizontally && intersects_vertically && intersects_axis_of_movement
+    }
+    else {
+        intersects_horizontally && intersects_vertically
+    }
 }
 
 pub fn collides(
