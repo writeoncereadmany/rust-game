@@ -48,27 +48,49 @@ pub fn collides(
     bbox2: &BBox,
     dv: &(f64, f64)
 ) -> Option<Collision> {
-    match (axis_push(bbox1, bbox2, dv, &UNIT_X), axis_push(bbox1, bbox2, dv, &UNIT_Y))
+    if !intersects_moving(bbox1, bbox2, dv) {
+        return None;
+    }
+
+    match (collision_on_axis(bbox1, bbox2, dv, &UNIT_X), collision_on_axis(bbox1, bbox2, dv, &UNIT_Y))
     {
-        (Some(x_pushes), Some(y_pushes)) => None,
-        (_, _) => None
+        (Some(x_push), Some(y_push)) => Some(if x_push.dt > y_push.dt { x_push } else { y_push }),
+        (Some(x_push), None) => Some(x_push),
+        (None, Some(y_push)) => Some(y_push),
+        (None, None) => None
     }
 }
 
-fn axis_push(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64)
-) -> Option<Vec<(f64, f64)>> {
+/*
+ * Assuming that two boxes do pass through each other, at what point did they collide?
+ * This returns the point during the motion where the two boxes first collide, including
+ * both the fraction of motion required in order for them to collide and the vector required
+ * to ensure they no longer collide. Note that if the boxes were already intersecting, then
+ * no collision is reported: the boxes have not collided this frame.
+ */
+fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64)
+) -> Option<Collision> {
     let proj_1 = bbox1.project_moving(dv, axis);
     let proj_2 = bbox2.project(axis);
-    let pushes = pushes(&proj_1, &proj_2)?;
-    Some(pushes
-        .iter()
-        .map(|push| axis.scale(push))
-        .collect())
+    let proj_dv = -dv.dot(axis);
+    let (left, right) = pushes(&proj_1, &proj_2)?;
+    let (dt_left, dt_right) = (1.0 - left / proj_dv, 1.0 - right / proj_dv);
+
+    if dt_left > 0.0 && dt_left <= 1.0 {
+        Some(Collision { dt: dt_left, push: axis.scale(&left)})
+    } else if dt_right > 0.0 && dt_right <= 1.0 {
+        Some(Collision { dt: dt_right, push: axis.scale(&right)})
+    } else {
+        None
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
+    use googletest::assert_that;
+    use googletest::matchers::some;
+    use crate::shapes::shape::collision::eq_collision;
     use super::*;
 
 // projection tests
@@ -127,12 +149,12 @@ mod tests {
         assert_eq!(intersects(&bbox2, &bbox1), false);
     }
 
-    // #[test]
-    // fn horizontal_collision_from_left() {
-    //     let bbox1 = BBox { left: 1.0, right: 4.0, bottom: 0.0, top: 3.0 };
-    //     let bbox2 = BBox { left: 6.0, right: 8.0, bottom: 0.0, top: 3.0 };
-    //     assert_that!(
-    //         collides(&bbox1, &bbox2, &(4.0, 0.0)),
-    //         some(eq_collision(0.5, (-2.0, 0.0))));
-    // }
+    #[test]
+    fn horizontal_collision_from_left() {
+        let bbox1 = BBox { left: 1.0, right: 4.0, bottom: 0.0, top: 3.0 };
+        let bbox2 = BBox { left: 6.0, right: 8.0, bottom: 0.0, top: 3.0 };
+        assert_that!(
+            collides(&bbox1, &bbox2, &(4.0, 0.0)),
+            some(eq_collision(0.5, (-2.0, 0.0))));
+    }
 }

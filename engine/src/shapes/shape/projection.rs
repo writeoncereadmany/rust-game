@@ -25,9 +25,9 @@ pub fn intersects(a: &Projection, b: &Projection) -> bool {
 // b:            |---------|
 // push left is b.min - a.max (always negative), push right is b.max - a.min (always positive)
 // if b.min - a.max is positive or b.max - a.min is negative, then the shapes don't intersect
-pub fn pushes(a: &Projection, b: &Projection) -> Option<Vec<f64>> {
+pub fn pushes(a: &Projection, b: &Projection) -> Option<(f64, f64)> {
     if intersects(a, b) {
-        Some(vec![b.min - a.max, b.max - a.min])
+        Some((b.min - a.max, b.max - a.min))
     } else {
         None
     }
