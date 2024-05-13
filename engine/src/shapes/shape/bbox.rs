@@ -89,7 +89,7 @@ fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f
 #[cfg(test)]
 mod tests {
     use googletest::assert_that;
-    use googletest::matchers::some;
+    use googletest::matchers::{none, some};
     use crate::shapes::shape::collision::eq_collision;
     use super::*;
 
@@ -156,5 +156,34 @@ mod tests {
         assert_that!(
             collides(&bbox1, &bbox2, &(4.0, 0.0)),
             some(eq_collision(0.5, (-2.0, 0.0))));
+    }
+
+    #[test]
+    fn horizontal_collision_from_left_when_completely_passes() {
+        let bbox1 = BBox { left: 1.0, right: 4.0, bottom: 0.0, top: 3.0 };
+        let bbox2 = BBox { left: 6.0, right: 8.0, bottom: 0.0, top: 3.0 };
+        assert_that!(
+            collides(&bbox1, &bbox2, &(10.0, 0.0)),
+            some(eq_collision(0.2, (-8.0, 0.0))));
+    }
+
+    #[test]
+    fn no_horizontal_collision_when_already_intersecting() {
+        let bbox1 = BBox { left: 1.0, right: 4.0, bottom: 0.0, top: 3.0 };
+        let bbox2 = BBox { left: 3.0, right: 7.0, bottom: 0.0, top: 3.0 };
+        assert_that!(
+            collides(&bbox1, &bbox2, &(10.0, 0.0)),
+            none());
+    }
+
+    // intersects x-axis at dt 0.5, y-axis at 0.75. so not overlapping when intersecting x,
+    // so collision is when intersecting y
+    #[test]
+    fn collision_reported_on_axis_which_intersected_latest() {
+        let bbox1 = BBox { left: 1.0, right: 4.0, bottom: 0.0, top: 2.0 };
+        let bbox2 = BBox { left: 6.0, right: 7.0, bottom: 5.0, top: 6.0 };
+        assert_that!(
+            collides(&bbox1, &bbox2, &(4.0, 4.0)),
+            some(eq_collision(0.75, (0.0, -1.0))));
     }
 }
