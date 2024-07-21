@@ -29,9 +29,15 @@ fn intersects_moving(
     circle2: &Circle,
     dv: &(f64, f64)
 ) -> bool {
-    intersects(circle1, circle2) ||
-    intersects(&translate(circle1, dv), circle2) ||
-    sweep_intersects(circle1, circle2, dv)
+    if dv.sq_len() == 0.0
+    {
+        intersects(circle1, circle2)
+    }
+    else {
+        intersects(circle1, circle2) ||
+        intersects(&translate(circle1, dv), circle2) ||
+        sweep_intersects(circle1, circle2, dv)
+    }
 }
 
 fn sweep_intersects(
