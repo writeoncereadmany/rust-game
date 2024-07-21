@@ -16,15 +16,47 @@ impl Projects for Circle {
 }
 
 fn intersects(
-    Circle { center: c1, radius: r1}: &Circle,
-    Circle { center: c2, radius: r2}: &Circle
+    Circle { center: c1, radius: r1 }: &Circle,
+    Circle { center: c2, radius: r2 }: &Circle
 ) -> bool {
     let distance_sq = c1.sub(&c2).sq_len();
     let sum_radii_sq = (r1 + r2) * (r1 + r2);
     distance_sq < sum_radii_sq
 }
 
-fn collides(
+fn intersects_moving(
+    circle1: &Circle,
+    circle2: &Circle,
+    dv: &(f64, f64)
+) -> bool {
+    intersects(circle1, circle2) ||
+    intersects(&translate(circle1, dv), circle2) ||
+    sweep_intersects(circle1, circle2, dv)
+}
+
+fn sweep_intersects(
+    Circle { center: c1, radius: r1 }: &Circle,
+    Circle { center: c2, radius: r2 }: &Circle,
+    dv: &(f64, f64)
+) -> bool {
+    let unit_dv = dv.unit();
+    let c1_moved = c1.plus(dv);
+    let (c1_proj, c1_moved_proj, c2_proj) = (c1.dot(&unit_dv), c1_moved.dot(&unit_dv), c2.dot(&unit_dv));
+    if c2_proj < c1_proj || c2_proj > c1_moved_proj
+    {
+        return false;
+    }
+    let unit_normal_dv = unit_dv.perpendicular();
+    let separation = f64::abs(c1.dot(&unit_normal_dv) - c2.dot(&unit_normal_dv));
+
+    separation < r1 + r2
+}
+
+fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, f64)) -> Circle {
+    Circle { center: (cx + dx, cy + dy), radius }
+}
+
+fn collide(
     Circle { center: c1, radius: r1 }: &Circle,
     Circle { center: c2, radius: r2 }: &Circle,
     movement_vector: &(f64, f64)
@@ -141,7 +173,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
         let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
         assert_that!(
-            collides(&circle1, &circle2, &(4.0, 0.0)),
+            collide(&circle1, &circle2, &(4.0, 0.0)),
             some(eq_collision(0.5, (-2.0, 0.0))));
     }
 
@@ -150,7 +182,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
         let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
         assert_that!(
-            collides(&circle1, &circle2, &(1.5, 0.0)),
+            collide(&circle1, &circle2, &(1.5, 0.0)),
             none());
     }
 
@@ -159,7 +191,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 2.0), radius: 2.0 };
         let circle2 = Circle { center: (2.0, 9.0), radius: 2.0 };
         assert_that!(
-            collides(&circle1, &circle2, &(0.0, 5.0)),
+            collide(&circle1, &circle2, &(0.0, 5.0)),
             some(eq_collision(0.6, (0.0, -2.0))));
     }
 
@@ -169,10 +201,9 @@ mod tests {
         let circle1 = Circle { center: (0.0, 3.0), radius: 2.0 };
         let circle2 = Circle { center: (10.0, 0.0), radius: 3.0 };
         assert_that!(
-            collides(&circle1, &circle2, &(10.0, 0.0)),
+            collide(&circle1, &circle2, &(10.0, 0.0)),
             some(eq_collision(0.6, (-2.56, 1.92 ))));
     }
-
 
     #[test]
     fn off_axis_near_miss() {
@@ -180,8 +211,68 @@ mod tests {
         let circle1 = Circle { center: (0.0, 4.0), radius: 2.0 };
         let circle2 = Circle { center: (10.0, 0.0), radius: 1.0 };
         assert_that!(
-            collides(&circle1, &circle2, &(20.0, 0.0)),
+            collide(&circle1, &circle2, &(20.0, 0.0)),
             none());
+    }
+
+    #[test]
+    fn intersects_when_initial_circles_overlap()
+    {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (2.0, 0.0), radius: 1.0 };
+
+        assert_eq!(
+            intersects_moving(&circle1, &circle2, &(0.0, 2.0)),
+            true
+        );
+    }
+
+    #[test]
+    fn intersects_when_final_circles_overlap()
+    {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (2.0, 2.0), radius: 1.0 };
+
+        assert_eq!(
+            intersects_moving(&circle1, &circle2, &(0.0, 2.0)),
+            true
+        );
+    }
+
+    #[test]
+    fn intersects_swept_area()
+    {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (2.0, 5.0), radius: 1.0 };
+
+        assert_eq!(
+            intersects_moving(&circle1, &circle2, &(0.0, 10.0)),
+            true
+        );
+    }
+
+    #[test]
+    fn no_intersection_when_too_far_from_swept_area()
+    {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (3.5, 5.0), radius: 1.0 };
+
+        assert_eq!(
+            intersects_moving(&circle1, &circle2, &(0.0, 10.0)),
+            false
+        );
+    }
+
+    #[test]
+    fn no_intersection_when_outside_range_of_motion()
+    {
+        let circle1 = Circle { center: (0.0, 0.0), radius: 2.0 };
+        let circle2 = Circle { center: (2.0, 5.0), radius: 1.0 };
+
+        assert_eq!(
+            intersects_moving(&circle1, &circle2, &(0.0, 2.0)),
+            false
+        );
     }
 
 }
