@@ -3,7 +3,7 @@ use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
 use super::projection::{Projection, Projects};
 
-struct Circle {
+pub struct Circle {
     pub center: (f64, f64),
     pub radius: f64
 }
@@ -65,14 +65,14 @@ fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, f64)
 fn collide(
     Circle { center: c1, radius: r1 }: &Circle,
     Circle { center: c2, radius: r2 }: &Circle,
-    movement_vector: &(f64, f64)
+    dv: &(f64, f64)
 ) -> Option<Collision> {
     let sum_of_radii = r1 + r2;
     // find the two points on the movement vector where the circles exactly touch
     // ie, the entry/exit points of the collision
     // first: find the nearest point on movement vector to circle2.
     // this will be normal to movement vector:
-    let normal_movement: (f64, f64) = movement_vector.perpendicular().unit();
+    let normal_movement: (f64, f64) = dv.perpendicular().unit();
     // multiplied by the distance between the projections of the circles centers:
     let proj_distance: f64 = normal_movement.dot(c1) - normal_movement.dot(c2);
     // which gives us a separating vector of:
@@ -84,12 +84,12 @@ fn collide(
         // make the hypotenuse of right-angled triangle with one side being that shortest line.
         // find their length:
         let nearest_point = c2.plus(&shortest_line);
-        let movement_vector_unit = movement_vector.unit();
+        let movement_vector_unit = dv.unit();
         let offset = f64::sqrt((sum_of_radii * sum_of_radii) - shortest_line.sq_len());
         let entry_point = nearest_point.sub(&movement_vector_unit.scale(&offset));
         // if entry point is not on the movement vector, no collision
         // (or circles were already overlapping):
-        let movement_proj = Line::new(*c1, c1.plus(&movement_vector)).project(&movement_vector_unit);
+        let movement_proj = Line::new(*c1, c1.plus(&dv)).project(&movement_vector_unit);
         let entry_proj = entry_point.dot(&movement_vector_unit);
         if entry_proj < movement_proj.min || entry_proj > movement_proj.max {
             None

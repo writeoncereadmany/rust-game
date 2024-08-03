@@ -85,6 +85,9 @@ fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f
     }
 }
 
+pub fn corners(&BBox { left, right, top, bottom} : &BBox) -> Vec<(f64, f64)> {
+    vec![(left, top), (right, top), (left, bottom), (right, bottom)]
+}
 
 #[cfg(test)]
 mod tests {

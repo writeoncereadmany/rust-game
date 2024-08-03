@@ -16,6 +16,10 @@ pub trait Projects {
     }
 }
 
+pub fn intersects_on_axis<A: Projects, B: Projects>(a: &A, b: &B, axis: &(f64, f64)) -> bool {
+    intersects(&a.project(axis), &b.project(axis))
+}
+
 pub fn intersects(a: &Projection, b: &Projection) -> bool {
     a.max > b.min && a.min < b.max
 }
