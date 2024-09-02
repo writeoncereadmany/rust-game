@@ -1,8 +1,7 @@
 use crate::shapes::shape::collision::Collision;
-use crate::shapes::shape::projection;
-use crate::shapes::vec2d::{UNIT_X, UNIT_Y, Vec2d};
+use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
-use super::projection::{Projection, Projects, pushes};
+use super::projection::{intersects_on_axis, intersects_on_axis_moving, pushes, Projection, Projects};
 
 pub struct BBox {
     pub left: f64,
@@ -32,18 +31,19 @@ impl BBox {
 }
 
 pub fn intersects(bbox1: &BBox, bbox2: &BBox) -> bool {
-    intersects_moving(bbox1, bbox2, &(0.0, 0.0))
+    intersects_on_axis(bbox1, bbox2, &UNIT_X) &&
+    intersects_on_axis(bbox1, bbox2, &UNIT_Y)
 }
 
 pub fn intersects_moving(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64)) -> bool {
-    projection::intersects(&bbox1.project_moving(dv, &UNIT_X), &bbox2.project(&UNIT_X)) &&
-        projection::intersects(&bbox1.project_moving(dv, &UNIT_Y), &bbox2.project(&UNIT_Y)) && {
-        if dv.sq_len() > 0.0 {
-            let normal_dv = dv.perpendicular().unit();
-            projection::intersects(&bbox1.project_moving(dv, &normal_dv), &bbox2.project(&normal_dv))
-        } else {
-            true
-        }
+    if dv.sq_len() == 0.0 {
+        return intersects(bbox1, bbox2)
+    }
+
+    intersects_on_axis_moving(bbox1, bbox2, dv, &UNIT_X) &&
+    intersects_on_axis_moving(bbox1, bbox2, dv, &UNIT_Y) && {
+        let normal_dv = dv.perpendicular().unit();
+        intersects_on_axis_moving(bbox1, bbox2, dv, &normal_dv)
     }
 }
 
@@ -89,6 +89,10 @@ fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f
     }
 }
 
+pub fn corners(&BBox { left, right, top, bottom }: &BBox) -> Vec<(f64, f64)> {
+    vec![(left, top), (right, top), (left, bottom), (right, bottom)]
+}
+
 pub fn corners_2(
     &BBox { left: l1, right: r1, top: t1, bottom: b1 }: &BBox,
     &BBox { left: l2, right: r2, top: t2, bottom: b2 }: &BBox) -> Vec<(f64, f64)>
@@ -98,10 +102,10 @@ pub fn corners_2(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::shapes::shape::collision::eq_collision;
     use googletest::assert_that;
     use googletest::matchers::{none, some};
-    use crate::shapes::shape::collision::eq_collision;
-    use super::*;
 
     // projection tests
 

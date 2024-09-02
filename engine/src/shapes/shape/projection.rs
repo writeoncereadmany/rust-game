@@ -16,6 +16,22 @@ pub trait Projects {
     }
 }
 
+impl Projects for (f64, f64) {
+    fn project(&self, axis: &(f64, f64)) -> Projection {
+        Projection { min: self.dot(axis), max: self.dot(axis) }
+    }
+}
+
+pub fn intersects_on_axis<A: Projects, B: Projects>(a: &A, b: &B, axis: &(f64, f64)) -> bool {
+    intersects(&a.project(axis), &b.project(axis))
+}
+
+pub fn intersects_on_axis_moving<A: Projects, B: Projects>(
+    moving: &A, stationary: &B, dv: &(f64, f64), axis: &(f64, f64)) -> bool
+{
+    intersects(&moving.project_moving(dv, axis), &stationary.project(axis))
+}
+
 pub fn intersects(a: &Projection, b: &Projection) -> bool {
     a.max > b.min && a.min < b.max
 }

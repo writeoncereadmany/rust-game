@@ -1,7 +1,7 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
-use super::projection::{Projection, Projects};
+use super::projection::{intersects_on_axis, Projection, Projects};
 
 pub struct Circle {
     pub center: (f64, f64),
@@ -29,33 +29,18 @@ fn intersects_moving(
     circle2: &Circle,
     dv: &(f64, f64)
 ) -> bool {
-    if dv.sq_len() == 0.0
-    {
-        intersects(circle1, circle2)
+    if dv.sq_len() == 0.0 {
+        return intersects(circle1, circle2)
     }
-    else {
-        intersects(circle1, circle2) ||
-        intersects(&translate(circle1, dv), circle2) ||
-        sweep_intersects(circle1, circle2, dv)
-    }
-}
 
-fn sweep_intersects(
-    Circle { center: c1, radius: r1 }: &Circle,
-    Circle { center: c2, radius: r2 }: &Circle,
-    dv: &(f64, f64)
-) -> bool {
-    let unit_dv = dv.unit();
-    let c1_moved = c1.plus(dv);
-    let (c1_proj, c1_moved_proj, c2_proj) = (c1.dot(&unit_dv), c1_moved.dot(&unit_dv), c2.dot(&unit_dv));
-    if c2_proj < c1_proj || c2_proj > c1_moved_proj
-    {
-        return false;
+    intersects(circle1, circle2) ||
+    intersects(&translate(circle1, dv), circle2) || {
+        let unit_dv = dv.unit();
+        intersects_on_axis(circle1, circle2, &unit_dv.perpendicular()) && {
+            let sweep = Line::new(circle1.center, circle1.center.plus(dv));
+            intersects_on_axis(&sweep, &circle2.center, &unit_dv)
+        }
     }
-    let unit_normal_dv = unit_dv.perpendicular();
-    let separation = f64::abs(c1.dot(&unit_normal_dv) - c2.dot(&unit_normal_dv));
-
-    separation < r1 + r2
 }
 
 fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, f64)) -> Circle {
