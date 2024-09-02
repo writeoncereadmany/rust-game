@@ -20,6 +20,18 @@ impl Projects for BBox {
     }
 }
 
+impl BBox {
+
+    pub fn translate(&self, (dx, dy): &(f64, f64)) -> BBox {
+        BBox {
+            left: self.left + dx,
+            right: self.right + dx,
+            bottom: self.bottom + dy,
+            top: self.top + dy
+        }
+    }
+}
+
 pub fn intersects(bbox1: &BBox, bbox2: &BBox) -> bool {
     intersects_moving(bbox1, bbox2, &(0.0, 0.0))
 }

@@ -1,21 +1,30 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::circle::Circle;
 use crate::shapes::shape::bbox::{BBox, corners};
-use crate::shapes::shape::line::Line;
 use crate::shapes::shape::projection;
 use crate::shapes::vec2d::{UNIT_X, UNIT_Y, Vec2d};
-use super::projection::{intersects_on_axis, Projection, Projects};
+use super::projection::{intersects_on_axis, Projects};
 
 pub fn intersects(bbox: &BBox, circle @ Circle { center: c, radius: r }: &Circle) -> bool {
-    let closest_corner = nearest_corner(c, &corners(bbox));
-    let closest_corner_axis = c.sub(&closest_corner).unit();
-    intersects_on_axis(bbox, circle, &UNIT_X)
-        && intersects_on_axis(bbox, circle, &UNIT_Y)
-        && intersects_on_axis(bbox, circle, &closest_corner_axis)
+    intersects_on_axis(bbox, circle, &UNIT_X) &&
+    intersects_on_axis(bbox, circle, &UNIT_Y) && {
+        let closest_corner = nearest_corner(c, &corners(bbox));
+        let closest_corner_axis = c.sub(&closest_corner).unit();
+        intersects_on_axis(bbox, circle, &closest_corner_axis)
+    }
 }
 
 pub fn intersects_moving(bbox: &BBox, circle: &Circle, dv: &(f64, f64)) -> bool {
-    false
+    projection::intersects(&bbox.project_moving(dv, &UNIT_X), &circle.project(&UNIT_X)) &&
+    projection::intersects(&bbox.project_moving(dv, &UNIT_Y), &circle.project(&UNIT_Y)) && {
+        let normal_to_travel = dv.unit().perpendicular();
+        projection::intersects(&bbox.project(&normal_to_travel), &circle.project(&normal_to_travel))
+    } && {
+        let corners = corners(bbox).iter().chain(corners(&bbox.translate(dv)).iter()).map(|pt| *pt).collect();
+        let nearest_corner = nearest_corner(&circle.center, &corners);
+        let closest_corner_axis = circle.center.sub(&nearest_corner).unit();
+        projection::intersects(&bbox.project_moving(dv, &closest_corner_axis), &circle.project(&closest_corner_axis))
+    }
 }
 
 pub fn collides(
@@ -69,5 +78,69 @@ mod tests {
         let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
         let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
         assert_eq!(intersects(&bbox, &circle), false);
+    }
+
+    #[test]
+    fn intersects_and_moves_away() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (5.0, 5.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 10.0)), true)
+    }
+
+    #[test]
+    fn moves_into_intersection() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (15.0, 15.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 10.0)), true)
+    }
+
+    #[test]
+    fn moves_through_intersection() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (10.0, 10.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 10.0)), true)
+    }
+
+    #[test]
+    fn moves_past_horizontally() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (10.0, 10.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 0.0)), false)
+    }
+
+    #[test]
+    fn moves_past_vertically() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (10.0, 10.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(0.0, 10.0)), false)
+    }
+
+    #[test]
+    fn moves_past_diagonally() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (15.0, 5.0), radius: 2.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 10.0)), false)
+    }
+
+    #[test]
+    fn separated_on_initial_corner() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(10.0, 10.0)), false);
+    }
+
+    #[test]
+    fn separated_on_final_corner() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 16.0, bottom: 14.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+
+        assert_eq!(intersects_moving(&bbox, &circle, &(0.0, -10.0)), false);
     }
 }
