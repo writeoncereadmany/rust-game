@@ -1,7 +1,7 @@
+use super::projection::{collision_on_axis, intersects_on_axis, Projection, Projects};
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
-use super::projection::{collision_on_axis, intersects_on_axis, Projection, Projects};
 
 pub struct Circle {
     pub center: (f64, f64),
@@ -69,9 +69,9 @@ fn collide(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::shapes::shape::collision::eq_collision;
     use googletest::assert_that;
     use googletest::matchers::{none, some};
-    use crate::shapes::shape::collision::eq_collision;
 
     // projection tests
 

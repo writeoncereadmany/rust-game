@@ -1,7 +1,7 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
-use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, pushes, Projection, Projects};
+use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, Projection, Projects};
 
 pub struct BBox {
     pub left: f64,
