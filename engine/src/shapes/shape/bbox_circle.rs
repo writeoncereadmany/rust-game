@@ -1,26 +1,25 @@
-use crate::shapes::shape::collision::Collision;
+use super::projection::Projects;
+use crate::shapes::shape::bbox::{corners_2, BBox};
 use crate::shapes::shape::circle::Circle;
-use crate::shapes::shape::bbox::{BBox, corners};
+use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::projection;
-use crate::shapes::vec2d::{UNIT_X, UNIT_Y, Vec2d};
-use super::projection::{intersects_on_axis, Projects};
+use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
 pub fn intersects(bbox: &BBox, circle @ Circle { center: c, radius: r }: &Circle) -> bool {
-    intersects_on_axis(bbox, circle, &UNIT_X) &&
-    intersects_on_axis(bbox, circle, &UNIT_Y) && {
-        let closest_corner = nearest_corner(c, &corners(bbox));
-        let closest_corner_axis = c.sub(&closest_corner).unit();
-        intersects_on_axis(bbox, circle, &closest_corner_axis)
-    }
+    intersects_moving(bbox, circle, &(0.0, 0.0))
 }
 
 pub fn intersects_moving(bbox: &BBox, circle: &Circle, dv: &(f64, f64)) -> bool {
     projection::intersects(&bbox.project_moving(dv, &UNIT_X), &circle.project(&UNIT_X)) &&
     projection::intersects(&bbox.project_moving(dv, &UNIT_Y), &circle.project(&UNIT_Y)) && {
-        let normal_to_travel = dv.unit().perpendicular();
-        projection::intersects(&bbox.project(&normal_to_travel), &circle.project(&normal_to_travel))
+        if dv.sq_len() > 0.0 {
+            let normal_to_travel = dv.unit().perpendicular();
+            projection::intersects(&bbox.project(&normal_to_travel), &circle.project(&normal_to_travel))
+        } else {
+            true
+        }
     } && {
-        let corners = corners(bbox).iter().chain(corners(&bbox.translate(dv)).iter()).map(|pt| *pt).collect();
+        let corners = corners_2(bbox, &bbox.translate(dv));
         let nearest_corner = nearest_corner(&circle.center, &corners);
         let closest_corner_axis = circle.center.sub(&nearest_corner).unit();
         projection::intersects(&bbox.project_moving(dv, &closest_corner_axis), &circle.project(&closest_corner_axis))
@@ -51,9 +50,6 @@ pub fn nearest_corner(point: &(f64, f64), candidates: &Vec<(f64, f64)>) -> (f64,
 #[cfg(test)]
 mod tests {
     use super::*;
-    use googletest::assert_that;
-    use googletest::matchers::{none, some};
-    use crate::shapes::shape::collision::eq_collision;
 
     #[test]
     fn find_nearest_corner() {

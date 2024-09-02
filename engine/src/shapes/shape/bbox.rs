@@ -8,12 +8,12 @@ pub struct BBox {
     pub left: f64,
     pub right: f64,
     pub bottom: f64,
-    pub top: f64
+    pub top: f64,
 }
 
 impl Projects for BBox {
-    fn project(&self, axis@(x, y): &(f64, f64)) -> Projection {
-        let &BBox { left: l, right: r, bottom: b, top: t} = self;
+    fn project(&self, axis @ (x, y): &(f64, f64)) -> Projection {
+        let &BBox { left: l, right: r, bottom: b, top: t } = self;
         let (first_x, second_x) = if x < &0.0 { (r, l) } else { (l, r) };
         let (first_y, second_y) = if y < &0.0 { (t, b) } else { (b, t) };
         Projection { min: (first_x, first_y).dot(axis), max: (second_x, second_y).dot(axis) }
@@ -21,13 +21,12 @@ impl Projects for BBox {
 }
 
 impl BBox {
-
     pub fn translate(&self, (dx, dy): &(f64, f64)) -> BBox {
         BBox {
             left: self.left + dx,
             right: self.right + dx,
             bottom: self.bottom + dy,
-            top: self.top + dy
+            top: self.top + dy,
         }
     }
 }
@@ -37,28 +36,21 @@ pub fn intersects(bbox1: &BBox, bbox2: &BBox) -> bool {
 }
 
 pub fn intersects_moving(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64)) -> bool {
-    let intersects_horizontally = projection::intersects(
-        &bbox1.project_moving(dv, &UNIT_X),
-        &bbox2.project(&UNIT_X));
-    let intersects_vertically = projection::intersects(
-        &bbox1.project_moving(dv, &UNIT_Y),
-        &bbox2.project(&UNIT_Y));
-    if dv.sq_len() > 0.0 {
-        let normal_dv = dv.perpendicular().unit();
-        let intersects_axis_of_movement = projection::intersects(
-            &bbox1.project_moving(dv, &normal_dv),
-            &bbox2.project(&normal_dv));
-        intersects_horizontally && intersects_vertically && intersects_axis_of_movement
-    }
-    else {
-        intersects_horizontally && intersects_vertically
+    projection::intersects(&bbox1.project_moving(dv, &UNIT_X), &bbox2.project(&UNIT_X)) &&
+        projection::intersects(&bbox1.project_moving(dv, &UNIT_Y), &bbox2.project(&UNIT_Y)) && {
+        if dv.sq_len() > 0.0 {
+            let normal_dv = dv.perpendicular().unit();
+            projection::intersects(&bbox1.project_moving(dv, &normal_dv), &bbox2.project(&normal_dv))
+        } else {
+            true
+        }
     }
 }
 
 pub fn collides(
     bbox1: &BBox,
     bbox2: &BBox,
-    dv: &(f64, f64)
+    dv: &(f64, f64),
 ) -> Option<Collision> {
     if !intersects_moving(bbox1, bbox2, dv) {
         return None;
@@ -80,7 +72,7 @@ pub fn collides(
  * to ensure they no longer collide. Note that if the boxes were already intersecting, then
  * no collision is reported: the boxes have not collided this frame.
  */
-fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64)
+fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64),
 ) -> Option<Collision> {
     let proj_1 = bbox1.project_moving(dv, axis);
     let proj_2 = bbox2.project(axis);
@@ -89,16 +81,19 @@ fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f
     let (dt_left, dt_right) = (1.0 - left / proj_dv, 1.0 - right / proj_dv);
 
     if dt_left > 0.0 && dt_left <= 1.0 {
-        Some(Collision { dt: dt_left, push: axis.scale(&left)})
+        Some(Collision { dt: dt_left, push: axis.scale(&left) })
     } else if dt_right > 0.0 && dt_right <= 1.0 {
-        Some(Collision { dt: dt_right, push: axis.scale(&right)})
+        Some(Collision { dt: dt_right, push: axis.scale(&right) })
     } else {
         None
     }
 }
 
-pub fn corners(&BBox { left, right, top, bottom} : &BBox) -> Vec<(f64, f64)> {
-    vec![(left, top), (right, top), (left, bottom), (right, bottom)]
+pub fn corners_2(
+    &BBox { left: l1, right: r1, top: t1, bottom: b1 }: &BBox,
+    &BBox { left: l2, right: r2, top: t2, bottom: b2 }: &BBox) -> Vec<(f64, f64)>
+{
+    vec![(l1, t1), (r1, t1), (l1, b1), (r1, b1), (l2, t2), (r2, t2), (l2, b2), (r2, b2)]
 }
 
 #[cfg(test)]
@@ -108,7 +103,7 @@ mod tests {
     use crate::shapes::shape::collision::eq_collision;
     use super::*;
 
-// projection tests
+    // projection tests
 
     #[test]
     fn project_x_axis() {
