@@ -1,7 +1,7 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
-use super::projection::{intersects_on_axis, Projection, Projects};
+use super::projection::{collision_on_axis, intersects_on_axis, Projection, Projects};
 
 pub struct Circle {
     pub center: (f64, f64),
@@ -48,48 +48,22 @@ pub fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, 
 }
 
 fn collide(
-    Circle { center: c1, radius: r1 }: &Circle,
-    Circle { center: c2, radius: r2 }: &Circle,
+    circle1 @ Circle { center: c1, radius: r1 }: &Circle,
+    circle2 @ Circle { center: c2, radius: r2 }: &Circle,
     dv: &(f64, f64)
 ) -> Option<Collision> {
-    let sum_of_radii = r1 + r2;
-    // find the two points on the movement vector where the circles exactly touch
-    // ie, the entry/exit points of the collision
-    // first: find the nearest point on movement vector to circle2.
-    // this will be normal to movement vector:
-    let normal_movement: (f64, f64) = dv.perpendicular().unit();
-    // multiplied by the distance between the projections of the circles centers:
-    let proj_distance: f64 = normal_movement.dot(c1) - normal_movement.dot(c2);
-    // which gives us a separating vector of:
-    let shortest_line = normal_movement.scale(&proj_distance);
-    if shortest_line.len() > sum_of_radii {
-        None
-    } else {
-        // the vectors from c2 to points along the movement vector where radii touch exactly
-        // make the hypotenuse of right-angled triangle with one side being that shortest line.
-        // find their length:
-        let nearest_point = c2.plus(&shortest_line);
-        let movement_vector_unit = dv.unit();
-        let offset = f64::sqrt((sum_of_radii * sum_of_radii) - shortest_line.sq_len());
-        let entry_point = nearest_point.sub(&movement_vector_unit.scale(&offset));
-        // if entry point is not on the movement vector, no collision
-        // (or circles were already overlapping):
-        let movement_proj = Line::new(*c1, c1.plus(&dv)).project(&movement_vector_unit);
-        let entry_proj = entry_point.dot(&movement_vector_unit);
-        if entry_proj < movement_proj.min || entry_proj > movement_proj.max {
-            None
-        } else {
-            // push is vector from c2 to entry point, scaled by push
-            let overlap = movement_proj.max - entry_proj;
-            let push_vec_unit = entry_point.sub(&c2).unit();
-            let push_vec_scale = -overlap * push_vec_unit.dot(&movement_vector_unit);
-            let dist_to_collision = entry_proj - movement_proj.min;
-            let total_dist_to_move = movement_proj.max - movement_proj.min;
-            let dt = dist_to_collision / total_dist_to_move;
-            let push = push_vec_unit.scale(&push_vec_scale);
-            Some(Collision { dt, push })
-        }
+    if (!intersects_moving(circle1, circle2, dv) || intersects(circle1, circle2)) {
+        return None;
     }
+
+    let sum_of_radii = r1 + r2;
+    let movement_vector_unit = dv.unit();
+    let normal_movement_unit = movement_vector_unit.perpendicular();
+    let opposite_length = normal_movement_unit.dot(c1) - normal_movement_unit.dot(c2);
+    let adjacent_length = f64::sqrt((sum_of_radii * sum_of_radii) - (opposite_length * opposite_length));
+    let separation_axis = normal_movement_unit.scale(&opposite_length).sub(&movement_vector_unit.scale(&adjacent_length));
+
+    collision_on_axis(circle1, circle2, dv, &separation_axis.unit())
 }
 
 #[cfg(test)]

@@ -1,5 +1,5 @@
 use super::projection::{intersects_on_axis, intersects_on_axis_moving, Projects};
-use crate::shapes::shape::bbox::{corners, BBox};
+use crate::shapes::shape::bbox::{corners, corners_2, translate, BBox};
 use crate::shapes::shape::circle::Circle;
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
@@ -25,7 +25,7 @@ pub fn intersects_moving(bbox: &BBox, circle: &Circle, dv: &(f64, f64)) -> bool 
         // instead of intersects moving.
         intersects_on_axis(bbox, circle, &normal_to_travel)
     } && {
-        let corners = corners(bbox).iter().chain(corners(&bbox.translate(dv)).iter()).map(|pt| *pt).collect();
+        let corners = corners_2(bbox, &translate(bbox, dv));
         let nearest_corner = nearest_corner(&circle.center, &corners);
         let closest_corner_axis = circle.center.sub(&nearest_corner).unit();
         intersects_on_axis_moving(bbox, circle, dv, &closest_corner_axis)

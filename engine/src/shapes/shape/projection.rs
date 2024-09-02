@@ -1,3 +1,4 @@
+use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::Vec2d;
 
 #[derive(Debug, PartialEq)]
@@ -44,6 +45,30 @@ pub fn intersects(a: &Projection, b: &Projection) -> bool {
 pub fn pushes(a: &Projection, b: &Projection) -> Option<(f64, f64)> {
     if intersects(a, b) {
         Some((b.min - a.max, b.max - a.min))
+    } else {
+        None
+    }
+}
+
+/*
+ * Assuming that two shapes do pass through each other, at what point did they collide?
+ * This returns the point during the motion where the two boxes first collide, including
+ * both the fraction of motion required in order for them to collide and the vector required
+ * to ensure they no longer collide. Note that if the boxes were already intersecting, then
+ * no collision is reported: the boxes have not collided (on this axis) this frame.
+ */
+pub fn collision_on_axis<A: Projects, B: Projects>(a: &A, b: &B, dv: &(f64, f64), axis: &(f64, f64),
+) -> Option<Collision> {
+    let proj_1 = a.project_moving(dv, axis);
+    let proj_2 = b.project(axis);
+    let proj_dv = -dv.dot(axis);
+    let (left, right) = pushes(&proj_1, &proj_2)?;
+    let (dt_left, dt_right) = (1.0 - left / proj_dv, 1.0 - right / proj_dv);
+
+    if dt_left > 0.0 && dt_left <= 1.0 {
+        Some(Collision { dt: dt_left, push: axis.scale(&left) })
+    } else if dt_right > 0.0 && dt_right <= 1.0 {
+        Some(Collision { dt: dt_right, push: axis.scale(&right) })
     } else {
         None
     }

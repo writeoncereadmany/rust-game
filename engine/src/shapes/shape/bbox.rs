@@ -1,7 +1,7 @@
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
-use super::projection::{intersects_on_axis, intersects_on_axis_moving, pushes, Projection, Projects};
+use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, pushes, Projection, Projects};
 
 pub struct BBox {
     pub left: f64,
@@ -19,14 +19,12 @@ impl Projects for BBox {
     }
 }
 
-impl BBox {
-    pub fn translate(&self, (dx, dy): &(f64, f64)) -> BBox {
-        BBox {
-            left: self.left + dx,
-            right: self.right + dx,
-            bottom: self.bottom + dy,
-            top: self.top + dy,
-        }
+pub fn translate(bbox : &BBox, (dx, dy): &(f64, f64)) -> BBox {
+    BBox {
+        left: bbox.left + dx,
+        right: bbox.right + dx,
+        bottom: bbox.bottom + dy,
+        top: bbox.top + dy,
     }
 }
 
@@ -52,7 +50,7 @@ pub fn collides(
     bbox2: &BBox,
     dv: &(f64, f64),
 ) -> Option<Collision> {
-    if !intersects_moving(bbox1, bbox2, dv) {
+    if !intersects_moving(bbox1, bbox2, dv) || intersects(bbox1, bbox2) {
         return None;
     }
 
@@ -62,30 +60,6 @@ pub fn collides(
         (Some(x_push), None) => Some(x_push),
         (None, Some(y_push)) => Some(y_push),
         (None, None) => None
-    }
-}
-
-/*
- * Assuming that two boxes do pass through each other, at what point did they collide?
- * This returns the point during the motion where the two boxes first collide, including
- * both the fraction of motion required in order for them to collide and the vector required
- * to ensure they no longer collide. Note that if the boxes were already intersecting, then
- * no collision is reported: the boxes have not collided this frame.
- */
-fn collision_on_axis(bbox1: &BBox, bbox2: &BBox, dv: &(f64, f64), axis: &(f64, f64),
-) -> Option<Collision> {
-    let proj_1 = bbox1.project_moving(dv, axis);
-    let proj_2 = bbox2.project(axis);
-    let proj_dv = -dv.dot(axis);
-    let (left, right) = pushes(&proj_1, &proj_2)?;
-    let (dt_left, dt_right) = (1.0 - left / proj_dv, 1.0 - right / proj_dv);
-
-    if dt_left > 0.0 && dt_left <= 1.0 {
-        Some(Collision { dt: dt_left, push: axis.scale(&left) })
-    } else if dt_right > 0.0 && dt_right <= 1.0 {
-        Some(Collision { dt: dt_right, push: axis.scale(&right) })
-    } else {
-        None
     }
 }
 

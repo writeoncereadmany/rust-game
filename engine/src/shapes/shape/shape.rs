@@ -9,8 +9,8 @@ enum Shape {
 impl Shape {
     pub fn translate(&self, dp: &(f64, f64)) -> Shape {
         match self {
-            Shape::Circle(circle) => { circle.translate(dp) }
-            Shape::BBox(bbox) => { bbox.translate(dp) }
+            Shape::Circle(circle) => { Shape::Circle(circle::translate(circle, dp)) }
+            Shape::BBox(bbox) => { Shape::BBox(bbox::translate(bbox, dp)) }
         }
     }
 
