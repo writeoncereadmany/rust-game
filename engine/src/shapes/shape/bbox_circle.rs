@@ -1,14 +1,15 @@
-use super::projection::{intersects_on_axis, intersects_on_axis_moving, Projects};
+use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, Projects};
 use crate::shapes::shape::bbox::{corners, corners_2, translate, BBox};
+use crate::shapes::shape::circle;
 use crate::shapes::shape::circle::Circle;
 use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
-pub fn intersects(bbox: &BBox, circle @ Circle { center: c, radius: r }: &Circle) -> bool {
+pub fn intersects(bbox: &BBox, circle: &Circle) -> bool {
     intersects_on_axis(bbox, circle, &UNIT_X) &&
-    intersects_on_axis(bbox, circle, &UNIT_Y) && {
-        let closest_corner = nearest_corner(c, &corners(bbox));
-        let closest_corner_axis = c.sub(&closest_corner).unit();
+        intersects_on_axis(bbox, circle, &UNIT_Y) && {
+        let closest_corner = nearest_corner(&circle.center, &corners(bbox));
+        let closest_corner_axis = circle.center.sub(&closest_corner).unit();
         intersects_on_axis(bbox, circle, &closest_corner_axis)
     }
 }
@@ -19,7 +20,7 @@ pub fn intersects_moving(bbox: &BBox, circle: &Circle, dv: &(f64, f64)) -> bool 
     }
 
     intersects_on_axis_moving(bbox, circle, dv, &UNIT_X) &&
-    intersects_on_axis_moving(bbox, circle, dv, &UNIT_Y) && {
+        intersects_on_axis_moving(bbox, circle, dv, &UNIT_Y) && {
         let normal_to_travel = dv.unit().perpendicular();
         // no movement normal to the direction of movement, so we can just use intersects,
         // instead of intersects moving.
@@ -37,7 +38,49 @@ pub fn collides(
     circle: &Circle,
     dv: &(f64, f64),
 ) -> Option<Collision> {
-    None
+    match (collision_on_axis(bbox, circle, dv, &UNIT_X), collision_on_axis(bbox, circle, dv, &UNIT_Y))
+    {
+        (Some(x_push), Some(y_push)) => if x_push.dt > y_push.dt {
+            corner_collision(bbox, circle, dv, x_push)
+        } else {
+            corner_collision(bbox, circle, dv, y_push)
+        },
+        (Some(x_push), None) => corner_collision(bbox, circle, dv, x_push),
+        (None, Some(y_push)) => corner_collision(bbox, circle, dv, y_push),
+        (None, None) => None
+    }
+}
+
+// at the point where the box/bounding box collision occurs, is the side that hits the circle
+// flush to the circle, or below, or above?
+// if flush, use that collision
+// if not flush, then take the appropriate corner and use that for
+// circle/point (ie 0-radius circle) collisions
+pub fn corner_collision(
+    bbox: &BBox,
+    circle: &Circle,
+    dv: &(f64, f64),
+    side_collision: Collision
+) -> Option<Collision> {
+    let box_at_time_of_collision = translate(bbox, &dv.scale(&side_collision.dt));
+    let side_axis = &side_collision.push.unit().perpendicular();
+    let side_projection = box_at_time_of_collision.project(side_axis);
+    let center_proj = circle.center.dot(side_axis);
+    if side_projection.min <= center_proj && center_proj <= side_projection.max {
+        Some(side_collision)
+    } else {
+        let box_center = (
+            (box_at_time_of_collision.left + box_at_time_of_collision.right) / 2.0,
+            (box_at_time_of_collision.bottom + box_at_time_of_collision.top) / 2.0);
+        // cdx: center diff x, cdy: center diff y - this is the vector from the box's center
+        // to the circle's center at time of axis collision.
+        let (cdx, cdy) = circle.center.sub(&box_center);
+        let nearest_corner = (
+            if cdx < 0.0 { bbox.left} else { bbox.right},
+            if cdy < 0.0 { bbox.bottom} else { bbox.top}
+        );
+        circle::collide(&Circle {center: nearest_corner, radius: 0.0 }, circle, dv)
+    }
 }
 
 pub fn nearest_corner(point: &(f64, f64), candidates: &Vec<(f64, f64)>) -> (f64, f64) {
@@ -56,10 +99,12 @@ pub fn nearest_corner(point: &(f64, f64), candidates: &Vec<(f64, f64)>) -> (f64,
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::shapes::shape::collision::eq_collision;
+    use googletest::assert_that;
+    use googletest::matchers::{none, some};
 
     #[test]
     fn find_nearest_corner() {
-        let circle = Circle { center: (4.0, 3.0), radius: 2.0 };
         assert_eq!(nearest_corner(&(0.0, 0.0), &vec![(0.0, 2.0), (3.0, 0.0), (1.0, 1.0)]), (1.0, 1.0));
     }
 
@@ -144,5 +189,67 @@ mod tests {
         let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
 
         assert_eq!(intersects_moving(&bbox, &circle, &(0.0, -10.0)), false);
+    }
+
+    #[test]
+    fn already_intersecting_vertically_hits_side() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (0.0, 5.0), radius: 3.0 };
+
+        assert_that!(
+            collides(&bbox, &circle, &(-4.0, 0.0)),
+            some(eq_collision(0.25, (3.0, 0.0)))
+        )
+    }
+
+    #[test]
+    fn already_intersecting_horizontally_hits_bottom() {
+        let bbox = BBox { left: 4.0, right: 6.0, top: 6.0, bottom: 4.0 };
+        let circle = Circle { center: (5.0, 0.0), radius: 2.0 };
+
+        assert_that!(
+            collides(&bbox, &circle, &(0.0, -4.0)),
+            some(eq_collision(0.5, (0.0, 2.0)))
+        )
+    }
+
+    #[test]
+    fn separated_on_corner_for_collision() {
+        let bbox = BBox { left: 6.0, right: 8.0, top: 8.0, bottom: 6.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+        assert_that!(
+            collides(&bbox, &circle, &(-2.0, -2.0)),
+            none()
+        )
+    }
+
+    #[test]
+    fn hits_on_corner() {
+        let bbox = BBox { left: 8.0, right: 12.0, bottom: 6.0, top: 8.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+        assert_that!(
+            collides(&bbox, &circle, &(-8.0, -6.0)),
+            some(eq_collision(0.5, (4.0, 3.0)))
+        )
+    }
+
+    #[test]
+    fn hits_on_corner_from_the_other_direction() {
+        let bbox = BBox { left: -12.0, right: -8.0, bottom: -8.0, top: -6.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+        assert_that!(
+            collides(&bbox, &circle, &(8.0, 6.0)),
+            some(eq_collision(0.5, (-4.0, -3.0)))
+        )
+    }
+
+    #[test]
+    fn overpasses_and_hits_on_reverse_side() {
+        let bbox = BBox { left: 2.0, right: 3.0, top: 22.0, bottom: 16.0 };
+        let circle = Circle { center: (0.0, 0.0), radius: 5.0 };
+        assert_that!(
+            collides(&bbox, &circle, &(-8.0, -16.0)),
+            some(eq_collision(0.75, (-1.2, 1.6)))
+        )
     }
 }

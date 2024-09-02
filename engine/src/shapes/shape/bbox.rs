@@ -50,10 +50,6 @@ pub fn collides(
     bbox2: &BBox,
     dv: &(f64, f64),
 ) -> Option<Collision> {
-    if !intersects_moving(bbox1, bbox2, dv) || intersects(bbox1, bbox2) {
-        return None;
-    }
-
     match (collision_on_axis(bbox1, bbox2, dv, &UNIT_X), collision_on_axis(bbox1, bbox2, dv, &UNIT_Y))
     {
         (Some(x_push), Some(y_push)) => Some(if x_push.dt > y_push.dt { x_push } else { y_push }),

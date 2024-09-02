@@ -47,15 +47,11 @@ pub fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, 
     Circle { center: (cx + dx, cy + dy), radius }
 }
 
-fn collide(
+pub fn collide(
     circle1 @ Circle { center: c1, radius: r1 }: &Circle,
     circle2 @ Circle { center: c2, radius: r2 }: &Circle,
     dv: &(f64, f64)
 ) -> Option<Collision> {
-    if (!intersects_moving(circle1, circle2, dv) || intersects(circle1, circle2)) {
-        return None;
-    }
-
     let sum_of_radii = r1 + r2;
     let movement_vector_unit = dv.unit();
     let normal_movement_unit = movement_vector_unit.perpendicular();
