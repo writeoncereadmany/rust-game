@@ -15,7 +15,7 @@ impl Projects for Circle {
     }
 }
 
-fn intersects(
+pub fn intersects(
     Circle { center: c1, radius: r1 }: &Circle,
     Circle { center: c2, radius: r2 }: &Circle
 ) -> bool {
@@ -24,7 +24,7 @@ fn intersects(
     distance_sq < sum_radii_sq
 }
 
-fn intersects_moving(
+pub fn intersects_moving(
     circle1: &Circle,
     circle2: &Circle,
     dv: &(f64, f64)
@@ -43,7 +43,7 @@ fn intersects_moving(
     }
 }
 
-fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, f64)) -> Circle {
+pub fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, f64)) -> Circle {
     Circle { center: (cx + dx, cy + dy), radius }
 }
 
