@@ -69,7 +69,7 @@ impl Shape {
                 bbox::collides(bbox1, bbox2, dv)
             }
             (Shape::Circle(circle), Shape::BBox(bbox)) => {
-                bbox_circle::collides(bbox, circle, &dv.scale(&-1.0)).map(Collision::invert)
+                bbox_circle::collides(bbox, circle, &dv.scale(&-1.0)).map(|col| col.invert())
             }
             (Shape::BBox(bbox), Shape::Circle(circle)) => {
                 bbox_circle::collides(bbox, circle, dv)

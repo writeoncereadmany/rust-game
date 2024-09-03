@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 
-use super::bbox::BBox;
 use super::push::{Push, Projectable};
 use super::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
@@ -22,7 +21,6 @@ where A: Clone {
 #[derive(Clone)]
 pub enum Mesh {
     Convex(ConvexMesh),
-    AABB(BBox),
 }
 
 impl ConvexMesh {
@@ -56,9 +54,7 @@ impl Push<Mesh> for Mesh {
 
     fn push(&self, other: &Mesh, relative_translation: &(f64, f64)) -> Option<(f64, f64)> {
         match (self, other) {
-            (Mesh::Convex(this), Mesh::Convex(other)) => this.push(other, relative_translation),
-            (Mesh::AABB(this), Mesh::AABB(that)) => this.push(that, relative_translation),
-            _ => None
+            (Mesh::Convex(this), Mesh::Convex(other)) => this.push(other, relative_translation)
         }
     }
 }
@@ -66,15 +62,13 @@ impl Push<Mesh> for Mesh {
 impl Projectable for Mesh {
     fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
         match self {
-            Mesh::AABB(aabb) => aabb.project(normal, trans),
             Mesh::Convex(convex) => convex.project(normal, trans)
         }
     }
 
     fn additional_separable_axes(&self) -> Vec<(f64, f64)> {
         match self {
-            Mesh::Convex(this) => this.additional_separable_axes(),
-            Mesh::AABB(this) => this.additional_separable_axes()
+            Mesh::Convex(this) => this.additional_separable_axes()
         }
     }
 }
@@ -111,15 +105,13 @@ impl Mesh {
 
     pub fn project(&self, normal: &(f64, f64), trans: &(f64, f64)) -> (f64, f64) {
         match self {
-            Mesh::Convex(mesh) => mesh.project(normal, trans),
-            Mesh::AABB(mesh) => mesh.project(normal, trans)
+            Mesh::Convex(mesh) => mesh.project(normal, trans)
         }
     }
 
     pub fn translate(&self, dx: f64, dy: f64) -> Mesh {
         match self {
-            Mesh::Convex(mesh) => Mesh::Convex(mesh.translate(dx, dy)),
-            Mesh::AABB(mesh) => Mesh::AABB(mesh.translate(dx, dy))
+            Mesh::Convex(mesh) => Mesh::Convex(mesh.translate(dx, dy))
         }
     }
 }
