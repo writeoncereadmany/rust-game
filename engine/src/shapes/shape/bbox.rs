@@ -3,7 +3,7 @@ use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
 use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, Projection, Projects};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BBox {
     pub left: f64,
     pub right: f64,
@@ -53,7 +53,9 @@ pub fn collides(
 ) -> Option<Collision> {
     match (collision_on_axis(bbox1, bbox2, dv, &UNIT_X), collision_on_axis(bbox1, bbox2, dv, &UNIT_Y))
     {
-        (Some(x_push), Some(y_push)) => Some(if x_push.dt > y_push.dt { x_push } else { y_push }),
+        (Some(x_push), Some(y_push)) => {
+            Some(if x_push.dt > y_push.dt { x_push } else { y_push })
+        },
         (Some(x_push), None) => Some(x_push),
         (None, Some(y_push)) => Some(y_push),
         (None, None) => None

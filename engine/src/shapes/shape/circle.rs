@@ -3,7 +3,7 @@ use crate::shapes::shape::collision::Collision;
 use crate::shapes::shape::line::Line;
 use crate::shapes::vec2d::Vec2d;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Circle {
     pub center: (f64, f64),
     pub radius: f64

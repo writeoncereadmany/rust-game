@@ -4,7 +4,7 @@ use crate::shapes::shape::{bbox, bbox_circle, circle};
 use crate::shapes::shape::shape::Shape::{ BBox, Circle };
 use crate::shapes::vec2d::Vec2d;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Shape {
     Circle(circle::Circle),
     BBox(bbox::BBox),
