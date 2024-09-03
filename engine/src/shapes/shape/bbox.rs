@@ -3,6 +3,7 @@ use crate::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 
 use super::projection::{collision_on_axis, intersects_on_axis, intersects_on_axis_moving, Projection, Projects};
 
+#[derive(Clone)]
 pub struct BBox {
     pub left: f64,
     pub right: f64,

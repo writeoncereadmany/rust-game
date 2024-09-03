@@ -1,6 +1,5 @@
 use std::ops::Index;
 
-use crate::shapes::push::Push;
 use crate::shapes::shape::projection::Projects;
 use crate::shapes::vec2d::{UNIT_X, UNIT_Y};
 

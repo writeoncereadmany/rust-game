@@ -3,6 +3,7 @@ use crate::shapes::shape::projection::{Projection, Projects};
 use crate::shapes::shape::{bbox, bbox_circle, circle};
 use crate::shapes::vec2d::Vec2d;
 
+#[derive(Clone)]
 pub enum Shape {
     Circle(circle::Circle),
     BBox(bbox::BBox),
