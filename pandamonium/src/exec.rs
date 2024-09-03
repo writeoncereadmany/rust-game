@@ -23,7 +23,7 @@ pub fn run() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let game_controller_subsystem = sdl_context.game_controller()?;
-    let audio_device = initialise_audio(&sdl_context)?;
+    // let audio_device = initialise_audio(&sdl_context)?;
 
     image::init(InitFlag::PNG | InitFlag::JPG)?;
 
@@ -62,7 +62,7 @@ pub fn run() -> Result<(), String> {
     let app = App {
         video_subsystem,
         game_controller_subsystem, 
-        audio_device,
+        // audio_device,
         active_controller: None,
         controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift),
         assets: &assets,

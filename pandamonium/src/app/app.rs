@@ -29,7 +29,7 @@ pub struct HiScore {
 pub struct App<'a> {
     pub video_subsystem: VideoSubsystem,
     pub game_controller_subsystem: GameControllerSubsystem,
-    pub audio_device: AudioDevice<AudioPlayer>,
+    // pub audio_device: AudioDevice<AudioPlayer>,
     pub active_controller: Option<GameController>,
     pub controller: Controller,
     pub assets: &'a Assets<'a>,
@@ -78,8 +78,8 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
                 _ => {}
             }
         }
-        event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
-        event.apply(|tune| play_tune(&mut self.audio_device, tune));
+        // event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
+        // event.apply(|tune| play_tune(&mut self.audio_device, tune));
         event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events))});
         event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone()))});
         event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone()))});
