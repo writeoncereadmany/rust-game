@@ -214,13 +214,12 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 }
 
 fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
-    // todo: collisions go here
     entities.apply(|(Collidable, TranslatedMesh(shape), Translation(tx, ty))| {
         let (mut new_tx, mut new_ty) = (tx, ty);
         let (mut tot_px, mut tot_py) = (0.0, 0.0);
         while let Some(Collision { push: (px, py), .. }) = next_collision(map, &shape, &(new_tx, new_ty)) {
             (new_tx, new_ty) = (new_tx + px, new_ty + py);
-            (tot_px, tot_py) = (tot_px + px, tot_py + py)
+            (tot_px, tot_py) = (tot_px + px, tot_py + py);
         }
         (Translation(new_tx, new_ty), LastPush(tot_px, tot_py))
     });
@@ -243,7 +242,8 @@ fn next_collision(map: &Map<Tile>, moving: &Shape, dv: &(f64, f64)) -> Option<Co
         .map(|tile| moving.collides(&tile, dv))
         .flatten()
         .collect();
-    collisions.sort_unstable_by(|c1, c2| c1.dt.total_cmp(&c2.dt));
+    // reverse sort so earliest collisions are at the end, so we can pop
+    collisions.sort_unstable_by(|c1, c2| c1.dt.total_cmp(&c2.dt).reverse());
     collisions.pop()
 }
 

@@ -53,9 +53,7 @@ pub fn collides(
 ) -> Option<Collision> {
     match (collision_on_axis(bbox1, bbox2, dv, &UNIT_X), collision_on_axis(bbox1, bbox2, dv, &UNIT_Y))
     {
-        (Some(x_push), Some(y_push)) => {
-            Some(if x_push.dt > y_push.dt { x_push } else { y_push })
-        },
+        (Some(x_push), Some(y_push)) => Some(if x_push.dt > y_push.dt { x_push } else { y_push }),
         (Some(x_push), None) => Some(x_push),
         (None, Some(y_push)) => Some(y_push),
         (None, None) => None

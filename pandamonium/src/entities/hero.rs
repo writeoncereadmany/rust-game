@@ -121,7 +121,6 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     clamp(entities, dt);
     integrate(entities, dt);
     translate(entities, dt);
-    update_box(entities, dt);
     facing(entities, dt);
     animate(entities, dt);
 }
@@ -272,11 +271,6 @@ fn clamp(entities: &mut Entities, _dt: &Duration) {
         }
     })
 }
-
-fn update_box(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))))
-}
-
 
 fn offset_sprite((x, y): (i32, i32), panda_type: &PandaType, flip_x: bool) -> Sprite {
     Sprite::sprite(x, y + match panda_type {

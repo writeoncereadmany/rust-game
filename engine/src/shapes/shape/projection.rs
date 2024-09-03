@@ -50,6 +50,8 @@ pub fn pushes(a: &Projection, b: &Projection) -> Option<(f64, f64)> {
     }
 }
 
+const EPSILON: f64 = 1e-12;
+
 /*
  * Assuming that two shapes do pass through each other, at what point did they collide?
  * This returns the point during the motion where the two boxes first collide, including
@@ -65,9 +67,9 @@ pub fn collision_on_axis<A: Projects, B: Projects>(a: &A, b: &B, dv: &(f64, f64)
     let (left, right) = pushes(&proj_1, &proj_2)?;
     let (dt_left, dt_right) = (1.0 - left / proj_dv, 1.0 - right / proj_dv);
 
-    if dt_left > 0.0 && dt_left <= 1.0 {
+    if dt_left >= -EPSILON && dt_left <= 1.0 + EPSILON {
         Some(Collision { dt: dt_left, push: axis.scale(&left) })
-    } else if dt_right > 0.0 && dt_right <= 1.0 {
+    } else if dt_right >= -EPSILON && dt_right <= 1.0 + EPSILON {
         Some(Collision { dt: dt_right, push: axis.scale(&right) })
     } else {
         None
