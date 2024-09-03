@@ -1,7 +1,8 @@
+pub mod collision;
+pub mod projection;
+pub mod shape;
+
 mod bbox;
-mod circle;
-mod collision;
-mod projection;
-mod line;
 mod bbox_circle;
-mod shape;
+mod circle;
+mod line;

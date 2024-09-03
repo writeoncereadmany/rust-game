@@ -1,28 +1,15 @@
 use std::ops::Index;
 
-use crate::graphics::renderer::Renderer;
-use crate::graphics::sprite::Sprite;
-
-use crate::shapes::convex_mesh::{Meshed, Mesh};
 use crate::shapes::push::Push;
+use crate::shapes::shape::projection::Projects;
 use crate::shapes::vec2d::{UNIT_X, UNIT_Y};
 
-pub trait Tiled {
-    fn tile(&self) -> (i32, i32);
-}
-
 pub struct Map<Tile>
-where Tile: Clone 
+where Tile: Clone
 {
     grid: Vec<Vec<Option<Tile>>>,
     columns: usize,
     rows: usize,
-}
-
-impl <A> Tiled for Meshed<A> where A: Clone + Tiled {
-    fn tile(&self) -> (i32, i32) {
-        self.item.tile()
-    }
 }
 
 pub struct Position {
@@ -67,13 +54,13 @@ where Tile: Clone {
         self
     }
 
-    pub fn overlapping(&self, bbox: &Mesh, relative_motion: &(f64, f64)) -> MapIter<Tile> {
-        let (left, right) = bbox.project(&UNIT_X, relative_motion);
-        let (bottom, top) = bbox.project(&UNIT_Y, relative_motion);
-        let grid_min_x = constrain(f64::floor(left), 0, self.columns - 1);
-        let grid_max_x = constrain(f64::floor(right), 0, self.columns - 1);
-        let grid_min_y = constrain(f64::floor(bottom), 0, self.rows - 1);
-        let grid_max_y = constrain(f64::floor(top), 0, self.rows - 1);
+    pub fn overlapping<A: Projects>(&self, bbox: &A, relative_motion: &(f64, f64)) -> MapIter<Tile> {
+        let x_project = bbox.project_moving(relative_motion, &UNIT_X);
+        let y_project = bbox.project_moving(relative_motion, &UNIT_Y);
+        let grid_min_x = constrain(f64::floor(x_project.min), 0, self.columns - 1);
+        let grid_max_x = constrain(f64::floor(x_project.max), 0, self.columns - 1);
+        let grid_min_y = constrain(f64::floor(y_project.min), 0, self.rows - 1);
+        let grid_max_y = constrain(f64::floor(y_project.max), 0, self.rows - 1);
 
         MapIter {
             map: self,
@@ -85,50 +72,15 @@ where Tile: Clone {
         }
     }
 
-    pub fn draw(&self, renderer: &mut Renderer) 
-    where Tile : Clone + Tiled,
-    {
-        for (pos, t) in self {
-            let (x, y) = t.tile();
-            renderer.draw_sprite(&Sprite::new(x, y, 0.0), pos.x as f64, pos.y as f64);
+    pub fn tiles(&self) -> MapIter<Tile> {
+        MapIter {
+            map: self,
+            x: 0,
+            y: 0,
+            min_x: 0,
+            max_x: self.columns - 1,
+            max_y: self.rows - 1
         }
-    }
-}
-
-impl <Tile> Push<Mesh> for Map<Meshed<Tile>> where Tile: Clone {
-
-    fn push(&self, original_mesh: &Mesh, relative_motion: &(f64, f64)) -> Option<(f64, f64)> {
-        let (mut tot_x_push, mut tot_y_push) = (0.0, 0.0);
-        let (mut rel_x, mut rel_y) = relative_motion;
-        let mut updated_mesh = original_mesh.clone();
-        for (_pos, t) in self.overlapping(&updated_mesh, relative_motion) {
-            let push = t.mesh.push(&updated_mesh, &(rel_x, rel_y));
-            match push {
-                None => {},
-                Some((x, y)) => {
-                    if x != 0.0 {
-                        updated_mesh = updated_mesh.translate(x, 0.0);
-                        tot_x_push += x;
-                        rel_x += x;
-                    }
-                    if y != 0.0 {
-                        updated_mesh = updated_mesh.translate(0.0, y);
-                        tot_y_push += y;
-                        rel_y += y;
-                    }
-                }
-            }
-        }
-        if tot_x_push == 0.0 && tot_y_push == 0.0 { None } else { Some((tot_x_push, tot_y_push)) }
-    }
-
-    fn intersects(&self, other: &Mesh, relative_translation: &(f64, f64)) -> bool {
-        for (_pos, t) in self.overlapping(other, relative_translation) {
-            if t.mesh.intersects(other, relative_translation) {
-                return true;
-            }
-        }
-        false
     }
 }
 
@@ -215,8 +167,8 @@ where Tile: Clone {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+    use crate::shapes::shape::shape::Shape;
 
     #[test]
     fn should_iterate_only_over_subset(){
@@ -228,7 +180,7 @@ mod tests {
 
         let mut iterated : Vec<(i32, i32)> = Vec::new();
 
-        for (pos, _tile) in map.overlapping(&Mesh::rect(2.5, 3.5, 2.0, 3.0), &(0.0, 0.0)) {
+        for (pos, _tile) in map.overlapping(&Shape::bbox(2.5, 3.5, 2.0, 3.0), &(0.0, 0.0)) {
             iterated.push((pos.x, pos.y));
         }
 

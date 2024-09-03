@@ -1,8 +1,9 @@
 use crate::shapes::shape::{bbox, bbox_circle, circle};
 use crate::shapes::shape::collision::Collision;
+use crate::shapes::shape::projection::{Projection, Projects};
 use crate::shapes::vec2d::Vec2d;
 
-enum Shape {
+pub enum Shape {
     Circle(circle::Circle),
     BBox(bbox::BBox),
 }
@@ -74,6 +75,15 @@ impl Shape {
             (Shape::BBox(bbox), Shape::Circle(circle)) => {
                 bbox_circle::collides(bbox, circle, dv)
             }
+        }
+    }
+}
+
+impl Projects for Shape {
+    fn project(&self, axis: &(f64, f64)) -> Projection {
+        match self {
+            Shape::Circle(circle) => { circle.project(axis) }
+            Shape::BBox(bbox) => { bbox.project(axis) }
         }
     }
 }
