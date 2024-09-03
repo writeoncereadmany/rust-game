@@ -62,25 +62,22 @@ pub fn corner_collision(
     dv: &(f64, f64),
     side_collision: Collision
 ) -> Option<Collision> {
-    let box_at_time_of_collision = translate(bbox, &dv.scale(&side_collision.dt));
-    let side_axis = &side_collision.push.unit().perpendicular();
-    let side_projection = box_at_time_of_collision.project(side_axis);
-    let center_proj = circle.center.dot(side_axis);
-    if side_projection.min <= center_proj && center_proj <= side_projection.max {
+    let dv_to_collision = dv.scale(&side_collision.dt);
+    let box_at_time_of_collision = translate(bbox, &dv_to_collision);
+    if hits_circle_side_flush(circle, &box_at_time_of_collision, side_collision.push) {
         Some(side_collision)
     } else {
-        let box_center = (
-            (box_at_time_of_collision.left + box_at_time_of_collision.right) / 2.0,
-            (box_at_time_of_collision.bottom + box_at_time_of_collision.top) / 2.0);
-        // cdx: center diff x, cdy: center diff y - this is the vector from the box's center
-        // to the circle's center at time of axis collision.
-        let (cdx, cdy) = circle.center.sub(&box_center);
-        let nearest_corner = (
-            if cdx < 0.0 { bbox.left} else { bbox.right},
-            if cdy < 0.0 { bbox.bottom} else { bbox.top}
-        );
-        circle::collide(&Circle {center: nearest_corner, radius: 0.0 }, circle, dv)
+        let nearest_corner = nearest_corner(&circle.center, &corners(&box_at_time_of_collision));
+        let nearest_corner_start_point = nearest_corner.sub(&dv_to_collision);
+        circle::collide(&Circle { center: nearest_corner_start_point, radius: 0.0}, circle, dv)
     }
+}
+
+fn hits_circle_side_flush(circle: &Circle, box_at_time_of_collision: &BBox, push: (f64, f64)) -> bool {
+    let side_axis = &push.unit().perpendicular();
+    let side_projection = box_at_time_of_collision.project(side_axis);
+    let center_proj = circle.center.dot(side_axis);
+    side_projection.min <= center_proj && center_proj <= side_projection.max
 }
 
 pub fn nearest_corner(point: &(f64, f64), candidates: &Vec<(f64, f64)>) -> (f64, f64) {
