@@ -53,9 +53,9 @@ where Tile: Clone {
         self
     }
 
-    pub fn overlapping<A: Projects>(&self, bbox: &A, relative_motion: &(f64, f64)) -> MapIter<Tile> {
-        let x_project = bbox.project_moving(relative_motion, &UNIT_X);
-        let y_project = bbox.project_moving(relative_motion, &UNIT_Y);
+    pub fn overlapping<A: Projects>(&self, shape: &A, relative_motion: &(f64, f64)) -> MapIter<Tile> {
+        let x_project = shape.project_moving(relative_motion, &UNIT_X);
+        let y_project = shape.project_moving(relative_motion, &UNIT_Y);
         let grid_min_x = constrain(f64::floor(x_project.min), 0, self.columns - 1);
         let grid_max_x = constrain(f64::floor(x_project.max), 0, self.columns - 1);
         let grid_min_y = constrain(f64::floor(y_project.min), 0, self.rows - 1);

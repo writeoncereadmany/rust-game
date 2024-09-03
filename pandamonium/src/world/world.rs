@@ -1,50 +1,49 @@
-use std::time::Duration;
 use std::collections::HashSet;
+use std::time::Duration;
 
-use image::RgbImage;
 use image::Rgb;
+use image::RgbImage;
 
 use entity::Entities;
 use entity::Id;
 
-use engine::graphics::renderer::Renderer;
-use engine::graphics::sprite::Sprite;
-use engine::events::*;
-use engine::game_loop::*;
-use engine::map::{ Map };
-
 use crate::app::assets::Assets;
 use crate::app::events::*;
-use crate::entities::entity_events;
-use crate::entities::spring::spawn_spring;
-use crate::music::countdown::countdown;
-use crate::entities::flagpole::*;
 use crate::entities::bell::*;
 use crate::entities::chest::*;
-use crate::entities::key::*;
 use crate::entities::coin::*;
-use crate::entities::timer::*;
-use crate::entities::hero::*;
-use crate::entities::pickup::*;
-use crate::entities::lockbox::*;
 use crate::entities::components::*;
+use crate::entities::entity_events;
+use crate::entities::flagpole::*;
+use crate::entities::hero::*;
+use crate::entities::key::*;
+use crate::entities::lockbox::*;
 use crate::entities::particle::*;
+use crate::entities::pickup::*;
+use crate::entities::spring::spawn_spring;
+use crate::entities::timer::*;
+use crate::music::countdown::countdown;
+use crate::world::world::TileType::LEDGE;
+use engine::events::*;
+use engine::game_loop::*;
+use engine::graphics::renderer::Renderer;
+use engine::graphics::sprite::Sprite;
+use engine::map::Map;
+use engine::shapes::shape::collision::Collision;
+use engine::shapes::shape::shape::{Shape, BLOCK};
+use TileType::STONE;
 
 #[derive(Clone)]
-pub enum Tile {
-    STONE((i32, i32)),
-    LEDGE((i32, i32))
+pub enum TileType {
+    STONE, LEDGE
 }
 
-impl Tile {
-    pub fn sprite(&self) -> Sprite {
-        match self {
-            Tile::STONE((x, y)) => Sprite::new(*x, *y, -1.0),
-            Tile::LEDGE((x, y)) => Sprite::new(*x, *y, -1.0),
-        }
-    }
+#[derive(Clone)]
+pub struct Tile {
+    sprite: Sprite,
+    shape: Shape,
+    tile: TileType
 }
-
 
 pub struct World {
     pub map: Map<Tile>,
@@ -64,14 +63,22 @@ impl World {
         
         for &(x, y) in &tiles {
             let neighbours = neighbours(&tiles, x, y);
-            let item = Tile::STONE(tile_from_neighbours(&neighbours));
+            let item = Tile {
+                sprite: tile_from_neighbours(&neighbours),
+                shape: BLOCK.translate(&(x as f64, y as f64)),
+                tile: STONE
+            };
             map.put(x, y, item);
         }
 
         let ledges = pixels(image, &Rgb([128, 128, 128]));
         for &(x, y) in &ledges {
             let neighbours = neighbours(&ledges, x, y);
-            let item = Tile::LEDGE(ledge_from_neighbours(&neighbours));
+            let item = Tile {
+                sprite: ledge_from_neighbours(&neighbours),
+                shape: BLOCK.translate(&(x as f64, y as f64)),
+                tile: LEDGE
+            };
             map.put(x, y, item);
         }
 
@@ -139,7 +146,7 @@ fn neighbours(pixels: &HashSet<(i32, i32)>, x: i32, y: i32) -> Neighbours {
     }
 }
  
-fn tile_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
+fn tile_from_neighbours(neighbours: &Neighbours) -> Sprite {
     let tx = match (neighbours.left, neighbours.right) {
         (false, true) => 4,
         (true, true) => 5,
@@ -154,10 +161,10 @@ fn tile_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
         (false, false) => 3
     };
 
-    (tx, ty)
+    Sprite::new(tx, ty, -1.0)
 }
 
-fn ledge_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
+fn ledge_from_neighbours(neighbours: &Neighbours) -> Sprite {
     let tx = match (neighbours.left, neighbours.right) {
         (false, true) => 4,
         (true, true) => 5,
@@ -165,14 +172,14 @@ fn ledge_from_neighbours(neighbours: &Neighbours) -> (i32, i32) {
         (false, false) => 7 
     };
 
-    (tx, 4)
+    Sprite::new(tx, 4, -1.0)
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
     
     fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
         self.map.tiles().for_each(|(position, tile)|
-            renderer.draw_sprite(&tile.sprite(), position.x as f64, position.y as f64)
+            renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
         );
 
         renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 14.0, 19.0);
@@ -208,6 +215,15 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
 
 fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
     // todo: collisions go here
+    entities.apply(|(Collidable, TranslatedMesh(shape), Translation(tx, ty))| {
+        let (mut new_tx, mut new_ty) = (tx, ty);
+        let (mut tot_px, mut tot_py) = (0.0, 0.0);
+        while let Some(Collision { push: (px, py), .. }) = next_collision(map, &shape, &(new_tx, new_ty)) {
+            (new_tx, new_ty) = (new_tx + px, new_ty + py);
+            (tot_px, tot_py) = (tot_px + px, tot_py + py)
+        }
+        (Translation(new_tx, new_ty), LastPush(tot_px, tot_py))
+    });
 
     entities.apply(|(Position(x, y), LastPush(px, py))| {
         Position(x + px, y + py)
@@ -219,6 +235,16 @@ fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
         )
     );
     entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))));
+}
+
+fn next_collision(map: &Map<Tile>, moving: &Shape, dv: &(f64, f64)) -> Option<Collision> {
+    let mut collisions : Vec<Collision> = map.overlapping(moving, dv)
+        .map(|(_, tile)| tile.shape)
+        .map(|tile| moving.collides(&tile, dv))
+        .flatten()
+        .collect();
+    collisions.sort_unstable_by(|c1, c2| c1.dt.total_cmp(&c2.dt));
+    collisions.pop()
 }
 
 fn item_collisions(entities: &Entities, events: &mut Events) {
