@@ -7,11 +7,18 @@
  */
 use googletest::matcher::{Matcher, MatcherResult};
 use googletest::matchers::approx_eq;
+use crate::shapes::vec2d::Vec2d;
 
 #[derive(Debug, PartialEq)]
 pub struct Collision {
     pub dt: f64,
     pub push: (f64, f64)
+}
+
+impl Collision {
+    pub fn invert(&self) -> Collision {
+        Collision { dt: self.dt, push: self.push.scale(&-1.0) }
+    }
 }
 
 pub struct CollisionMatcher {

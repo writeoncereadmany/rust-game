@@ -69,7 +69,7 @@ pub fn corner_collision(
     } else {
         let nearest_corner = nearest_corner(&circle.center, &corners(&box_at_time_of_collision));
         let nearest_corner_start_point = nearest_corner.sub(&dv_to_collision);
-        circle::collide(&Circle { center: nearest_corner_start_point, radius: 0.0}, circle, dv)
+        circle::collides(&Circle { center: nearest_corner_start_point, radius: 0.0}, circle, dv)
     }
 }
 

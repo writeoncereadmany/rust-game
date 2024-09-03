@@ -47,7 +47,7 @@ pub fn translate(&Circle { center: (cx, cy), radius}: &Circle, (dx, dy): &(f64, 
     Circle { center: (cx + dx, cy + dy), radius }
 }
 
-pub fn collide(
+pub fn collides(
     circle1 @ Circle { center: c1, radius: r1 }: &Circle,
     circle2 @ Circle { center: c2, radius: r2 }: &Circle,
     dv: &(f64, f64)
@@ -134,7 +134,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
         let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
         assert_that!(
-            collide(&circle1, &circle2, &(4.0, 0.0)),
+            collides(&circle1, &circle2, &(4.0, 0.0)),
             some(eq_collision(0.5, (-2.0, 0.0))));
     }
 
@@ -143,7 +143,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 0.0), radius: 2.0 };
         let circle2 = Circle { center: (8.0, 0.0), radius: 2.0 };
         assert_that!(
-            collide(&circle1, &circle2, &(1.5, 0.0)),
+            collides(&circle1, &circle2, &(1.5, 0.0)),
             none());
     }
 
@@ -152,7 +152,7 @@ mod tests {
         let circle1 = Circle { center: (2.0, 2.0), radius: 2.0 };
         let circle2 = Circle { center: (2.0, 9.0), radius: 2.0 };
         assert_that!(
-            collide(&circle1, &circle2, &(0.0, 5.0)),
+            collides(&circle1, &circle2, &(0.0, 5.0)),
             some(eq_collision(0.6, (0.0, -2.0))));
     }
 
@@ -162,7 +162,7 @@ mod tests {
         let circle1 = Circle { center: (0.0, 3.0), radius: 2.0 };
         let circle2 = Circle { center: (10.0, 0.0), radius: 3.0 };
         assert_that!(
-            collide(&circle1, &circle2, &(10.0, 0.0)),
+            collides(&circle1, &circle2, &(10.0, 0.0)),
             some(eq_collision(0.6, (-2.56, 1.92 ))));
     }
 
@@ -172,7 +172,7 @@ mod tests {
         let circle1 = Circle { center: (0.0, 4.0), radius: 2.0 };
         let circle2 = Circle { center: (10.0, 0.0), radius: 1.0 };
         assert_that!(
-            collide(&circle1, &circle2, &(20.0, 0.0)),
+            collides(&circle1, &circle2, &(20.0, 0.0)),
             none());
     }
 

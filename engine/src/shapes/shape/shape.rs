@@ -1,4 +1,5 @@
 use crate::shapes::shape::{bbox, bbox_circle, circle};
+use crate::shapes::shape::collision::Collision;
 use crate::shapes::vec2d::Vec2d;
 
 enum Shape {
@@ -7,6 +8,17 @@ enum Shape {
 }
 
 impl Shape {
+
+    pub fn bbox(left: f64, bottom: f64, width: f64, height: f64) -> Self {
+        let right = left + width;
+        let top = bottom + height;
+        Shape::BBox(bbox::BBox { left, right, bottom, top})
+    }
+
+    pub fn circle(center: (f64, f64), radius: f64) -> Self {
+        Shape::Circle(circle::Circle { center, radius })
+    }
+
     pub fn translate(&self, dp: &(f64, f64)) -> Shape {
         match self {
             Shape::Circle(circle) => { Shape::Circle(circle::translate(circle, dp)) }
@@ -44,6 +56,23 @@ impl Shape {
             }
             (Shape::BBox(bbox), Shape::Circle(circle)) => {
                 bbox_circle::intersects_moving(bbox, circle, dv)
+            }
+        }
+    }
+
+    pub fn collides(&self, other: &Shape, dv: &(f64, f64)) -> Option<Collision> {
+        match (self, other) {
+            (Shape::Circle(circle1), Shape::Circle(circle2)) => {
+                circle::collides(circle1, circle2, dv)
+            }
+            (Shape::BBox(bbox1), Shape::BBox(bbox2)) => {
+                bbox::collides(bbox1, bbox2, dv)
+            }
+            (Shape::Circle(circle), Shape::BBox(bbox)) => {
+                bbox_circle::collides(bbox, circle, &dv.scale(&-1.0)).map(Collision::invert)
+            }
+            (Shape::BBox(bbox), Shape::Circle(circle)) => {
+                bbox_circle::collides(bbox, circle, dv)
             }
         }
     }
