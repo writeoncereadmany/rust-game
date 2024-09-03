@@ -31,9 +31,10 @@ use engine::graphics::sprite::Sprite;
 use engine::map::Map;
 use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
+use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::STONE;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
     STONE, LEDGE
 }
@@ -238,8 +239,17 @@ fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
 
 fn next_collision(map: &Map<Tile>, moving: &Shape, dv: &(f64, f64)) -> Option<Collision> {
     let mut collisions : Vec<Collision> = map.overlapping(moving, dv)
-        .map(|(_, tile)| tile.shape)
-        .map(|tile| moving.collides(&tile, dv))
+        .map(|(_, tile)| tile)
+        .map(|tile| {
+            let maybe_collision = moving.collides(&tile.shape, dv);
+            if let Some(Collision { push, ..}) = maybe_collision {
+                if tile.tile == LEDGE && (push.dot(&UNIT_X).abs() > 1e-6 || push.dot(&UNIT_Y) < 0.0)
+                {
+                    return None;
+                }
+            }
+            maybe_collision
+        })
         .flatten()
         .collect();
     // reverse sort so earliest collisions are at the end, so we can pop
