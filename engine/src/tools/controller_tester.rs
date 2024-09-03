@@ -1,4 +1,4 @@
-use sdl2::{EventPump, event::Event, keyboard::Keycode, controller::GameController};
+use sdl2::{controller::GameController, event::Event, keyboard::Keycode, EventPump};
 
 pub fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;

@@ -3,12 +3,12 @@ use std::time::Instant;
 
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::render::{BlendMode, WindowCanvas, TargetRenderError, Texture, TextureCreator, TextureValueError};
+use sdl2::render::{BlendMode, TargetRenderError, Texture, TextureCreator, TextureValueError, WindowCanvas};
 use sdl2::video::WindowContext;
 
 use component_derive::Variable;
 
-use super::sprite::{ Sprite, SpriteBatch, SpriteSheet };
+use super::sprite::{Sprite, SpriteBatch, SpriteSheet};
 
 pub mod align {
     pub const CENTER: u8 = 0b_0000_0001;

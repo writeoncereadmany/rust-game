@@ -1,6 +1,6 @@
-use std::time::Duration;
-use super::instrument::*;
 use super::audio::*;
+use super::instrument::*;
+use std::time::Duration;
 
 pub struct Tempo {
     beats: usize,
@@ -77,11 +77,10 @@ pub fn tuplet(note_length: f32, notes: Vec<f32>) -> Phrase {
 
 #[cfg(test)]
 mod tests {
-
-    use std::time::Duration;
     use super::*;
     use crate::audio::instrument::BELL;
     use crate::audio::notes::*;
+    use std::time::Duration;
 
     #[test]
     fn converts_beats_into_times() {

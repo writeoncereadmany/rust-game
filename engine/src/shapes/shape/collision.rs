@@ -5,9 +5,9 @@
  * push: the minimal vector that needs to be applied to the first object so it no longer
  * intersects with the second.
  */
+use crate::shapes::vec2d::Vec2d;
 use googletest::matcher::{Matcher, MatcherResult};
 use googletest::matchers::approx_eq;
-use crate::shapes::vec2d::Vec2d;
 
 #[derive(Debug, PartialEq)]
 pub struct Collision {

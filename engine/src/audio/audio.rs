@@ -1,16 +1,16 @@
+use std::cmp::{Ord, Ordering};
 use std::collections::BinaryHeap;
 use std::time::Duration;
-use std::cmp::{Ord, Ordering};
 
-use rand::SeedableRng;
+use rand::distributions::{Distribution, Uniform};
 use rand::rngs::SmallRng;
-use rand::distributions::{ Distribution, Uniform };
+use rand::SeedableRng;
 
 use derivative::Derivative;
 
-use sdl2::audio::{AudioDevice, AudioSpecDesired, AudioCallback};
-use component_derive::Event;
 use crate::events::EventTrait;
+use component_derive::Event;
+use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 
 #[derive(Event, Debug, PartialEq, Clone)]
 pub struct PlayTune(pub usize, pub Vec<(Duration, Note)>);
@@ -322,7 +322,6 @@ impl Waveform {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
     #[test]

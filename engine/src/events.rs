@@ -1,8 +1,8 @@
 use core::any::*;
 
-use std::collections::{ BinaryHeap, VecDeque };
 use std::cmp::Ordering;
-use std::time::{ Instant, Duration };
+use std::collections::{BinaryHeap, VecDeque};
+use std::time::{Duration, Instant};
 
 use sdl2::event::Event as SdlEvent;
 
