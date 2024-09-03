@@ -1,9 +1,8 @@
 use std::time::Duration;
 
-use engine::shapes::convex_mesh::Mesh;
 use engine::graphics::sprite::Sprite;
 use component_derive::{Constant, Variable};
-
+use engine::shapes::shape::shape::Shape;
 use entity::*;
 
 
@@ -37,10 +36,10 @@ pub fn animation_cycle(entities: &mut Entities) {
 }
 
 #[derive(Clone, Constant)]
-pub struct ReferenceMesh(pub Mesh);
+pub struct ReferenceMesh(pub Shape);
 
 #[derive(Clone, Variable)]
-pub struct TranslatedMesh(pub Mesh);
+pub struct TranslatedMesh(pub Shape);
 
 #[derive(Clone, Constant)]
 pub struct Obstacle;

@@ -5,8 +5,7 @@ use engine::graphics::sprite::Sprite;
 
 use entity::Id;
 use engine::events::{ EventTrait, Events, Event };
-use engine::shapes::convex_mesh::Mesh;
-
+use engine::shapes::shape::shape::Shape;
 use crate::app::events::*;
 use super::components::*;
 use super::pickup::*;
@@ -29,7 +28,7 @@ pub fn spawn_open_chest(x: f64, y: f64, entities: &mut Entities, events: &mut Ev
     let chest_id = entities.spawn(entity()
         .with(Position(x, y))
         .with(Sprite::new(3, 7, 0.5))
-        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
     );
 
     events.schedule(Duration::from_secs(1), Destroy(chest_id));
@@ -46,7 +45,7 @@ pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {
         .with(OnPickupDo::Score(100))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("100"))
-        .with(ReferenceMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0)))
+        .with(ReferenceMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0)))
     );
 }
 

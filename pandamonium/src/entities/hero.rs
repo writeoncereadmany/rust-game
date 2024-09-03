@@ -4,8 +4,7 @@ use component_derive::{ Event, Constant, Variable };
 use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
 use engine::events::*;
-use engine::shapes::convex_mesh::Mesh;
-
+use engine::shapes::shape::shape::Shape;
 use crate::app::events::{SpawnHero, Interaction};
 use crate::controller::{ ButtonPress, ControllerState };
 use crate::sign::{ Sign, Signed };
@@ -83,8 +82,8 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(Gravity)
         .with(Collidable)
         .with(Position(x, y))
-        .with(ReferenceMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0)))
-        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(ReferenceMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0)))
+        .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
         .with(offset_sprite(STANDING, &panda_type, false))
         .with(MovingX(Sign::ZERO))
         .with(Velocity(0.0, 0.0))
@@ -275,7 +274,7 @@ fn clamp(entities: &mut Entities, _dt: &Duration) {
 }
 
 fn update_box(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(x, y)))
+    entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))))
 }
 
 

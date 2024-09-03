@@ -4,8 +4,7 @@ use engine::graphics::sprite::Sprite;
 use engine::audio::notes::*;
 use engine::audio::instrument::BELL;
 use engine::audio::tempo::Tempo;
-use engine::shapes::convex_mesh::Mesh;
-
+use engine::shapes::shape::shape::Shape;
 use super::components::*;
 use super::pickup::*;
 
@@ -21,7 +20,7 @@ pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
         .with(Position(x, y))
         .with(next_frame(phase, &animation_cycle))
         .with(Period(0.7))
-        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
         .with(Phase(phase_offset(x, y)))
         .with(animation_cycle)
         .with(OnPickupEffect::Sparkles)

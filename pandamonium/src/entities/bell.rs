@@ -4,8 +4,7 @@ use engine::graphics::sprite::Sprite;
 use engine::audio::notes::*;
 use engine::audio::instrument::BELL;
 use engine::audio::tempo::Tempo;
-use engine::shapes::convex_mesh::Mesh;
-
+use engine::shapes::shape::shape::Shape;
 use super::components::*;
 use super::pickup::*;
 
@@ -14,7 +13,7 @@ pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
         .with(Pickup)
         .with(Position(x, y))
         .with(Sprite::new(1, 0, 0.5))
-        .with(TranslatedMesh(Mesh::rect(0.0, 0.0, 1.0, 1.0).translate(x, y)))
+        .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("x2"))
         .with(OnPickupDo::DoubleScore)
