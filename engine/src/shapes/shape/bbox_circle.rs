@@ -38,6 +38,10 @@ pub fn collides(
     circle: &Circle,
     dv: &(f64, f64),
 ) -> Option<Collision> {
+    if (!intersects_moving(bbox, circle, dv) || intersects(bbox, circle)) {
+        return None;
+    }
+
     match (collision_on_axis(bbox, circle, dv, &UNIT_X), collision_on_axis(bbox, circle, dv, &UNIT_Y))
     {
         (Some(x_push), Some(y_push)) => if x_push.dt > y_push.dt {
