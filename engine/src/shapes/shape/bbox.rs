@@ -51,13 +51,29 @@ pub fn collides(
     bbox2: &BBox,
     dv: &(f64, f64),
 ) -> Option<Collision> {
+    if (!intersects_moving(bbox1, bbox2, dv) || intersects(bbox1, bbox2)) {
+        return None;
+    }
+
     match (collision_on_axis(bbox1, bbox2, dv, &UNIT_X), collision_on_axis(bbox1, bbox2, dv, &UNIT_Y))
     {
-        (Some(x_push), Some(y_push)) => Some(if x_push.dt > y_push.dt { x_push } else { y_push }),
+        (Some(x_push), Some(y_push)) => Some(pick_push(x_push, y_push)),
         (Some(x_push), None) => Some(x_push),
         (None, Some(y_push)) => Some(y_push),
         (None, None) => None
     }
+}
+
+fn pick_push(x_push: Collision, y_push: Collision) -> Collision {
+    // sliding factor: if the pushout on either axis is *tiny*, favour that over
+    // the earlier push. this
+    if x_push.push.sq_len() < 0.1 {
+        return x_push;
+    }
+    if y_push.push.sq_len() < 0.1 {
+        return y_push;
+    }
+    if x_push.dt > y_push.dt { x_push } else { y_push }
 }
 
 pub fn corners(&BBox { left, right, top, bottom }: &BBox) -> Vec<(f64, f64)> {
