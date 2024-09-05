@@ -12,7 +12,7 @@ pub fn spawn_bell(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Pickup)
         .with(Position(x, y))
-        .with(Sprite::new(1, 0, 0.5))
+        .with(Sprite::new(1, 0, 0.5, "Sprites"))
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("x2"))

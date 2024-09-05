@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::time::Instant;
 
 use sdl2::pixels::Color;
@@ -29,14 +30,15 @@ pub struct Renderer<'a>
 {
     canvas: WindowCanvas,
     surface: Texture<'a>,
-    spritesheet: SpriteSheet<'a>,
-    spritefont: SpriteSheet<'a>,
-    batch: SpriteBatch<'a>,
-    textbatch: SpriteBatch<'a>,
+    spritesheets: HashMap<String, SpriteSheet<'a>>,
+    batch: SpriteBatch,
+    textbatch: SpriteBatch,
     source_rect: Rect,
     target_rect: Rect,
     text_width: f64,
     text_height: f64,
+    tile_width: f64,
+    tile_height: f64,
     fps_counter: FpsCounter
 }
 
@@ -53,41 +55,48 @@ impl <'a> Renderer<'a>
     {
         let width = columns * spritesheet.tile_width;
         let height = rows * spritesheet.tile_height;
+        let tile_width = spritesheet.tile_width as f64;
+        let tile_height = spritesheet.tile_height as f64;
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
-        let batch = spritesheet.batch();
-        let textbatch = spritefont.batch();
+        let batch = SpriteBatch::new();
+        let textbatch = SpriteBatch::new();
         let text_width = spritefont.tile_width as f64 / spritesheet.tile_width as f64;
         let text_height = spritefont.tile_height as f64 / spritesheet.tile_height as f64;
         let fps_counter = FpsCounter::new(30);
+
+        let mut spritesheets = HashMap::new();
+        spritesheets.insert("Text".to_string(), spritefont);
+        spritesheets.insert("Sprites".to_string(), spritesheet);
 
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
             canvas,
             surface,
-            spritesheet,
-            spritefont,
+            spritesheets,
             source_rect,
             target_rect,
             batch,
             textbatch,
             text_width,
             text_height,
+            tile_width,
+            tile_height,
             fps_counter
         })
     }
 
     pub fn draw_sprite(&mut self, sprite: &Sprite, x: f64, y: f64) {
         self.batch.blit(
-            *sprite, 
-            x * self.spritesheet.tile_width as f64, 
-            y * self.spritesheet.tile_height as f64,
+            sprite.clone(),
+            x * self.tile_width,
+            y * self.tile_height,
         );
     }
 
     pub fn draw_text(&mut self, Text { text, justification }: &Text, x: f64, y: f64) {
-        let text_width = text.len() as f64 * self.text_width as f64;
+        let text_width = text.len() as f64 * self.text_width;
         let mut current_x = match (justification & align::LEFT > 0, justification & align::RIGHT > 0) {
             (true, false) => x,
             (false, true) => x - text_width,
@@ -103,37 +112,39 @@ impl <'a> Renderer<'a>
         for ch in text.chars() {
             let (tx, ty) = char_tile(ch);
             self.textbatch.blit(
-                Sprite::new(tx, ty, 2.0), 
-                current_x * self.spritesheet.tile_width as f64, 
-                y * self.spritesheet.tile_height as f64,
+                Sprite::new(tx, ty, 2.0, "Text"),
+                current_x * self.tile_width,
+                y * self.tile_height,
             );
-            current_x += self.text_width as f64;
+            current_x += self.text_width;
         }
     }
 
-    fn draw_batch(&mut self, mut batch: SpriteBatch<'a>) {
+    fn draw_batch(&mut self, mut batch: SpriteBatch) {
         let height = self.source_rect.height() as i32;
         batch.blits.sort_by(|(sprite1, _), (sprite2, _)| compare(&sprite1.z, &sprite2.z));
+        let spritesheets = &self.spritesheets;
         self.canvas.with_texture_canvas(&mut self.surface, |c| { 
-            for &(sprite, (x, y)) in &batch.blits {
-                let Sprite { flip_x, flip_y, .. } = sprite;
-                let source_rect = batch.source_rect(sprite);
+            for (sprite, (x, y)) in &batch.blits {
+                let Sprite { flip_x, flip_y, tileset, .. } = sprite;
+                let spritesheet = spritesheets.get(tileset).unwrap();
+                let source_rect = spritesheet.source_rect(&sprite);
                 let corrected_y = (height - y) - source_rect.height() as i32;
-                if (false, false) == (flip_x, flip_y) {
+                if (false, false) == (*flip_x, *flip_y) {
                     c.copy(
-                        batch.spritesheet, 
+                        spritesheet.spritesheet,
                         source_rect, 
-                        Rect::new(x, corrected_y, source_rect.width(), source_rect.height()),
+                        Rect::new(*x, corrected_y, source_rect.width(), source_rect.height()),
                     ).unwrap();
                 } else {
                     c.copy_ex(
-                        batch.spritesheet, 
+                        spritesheet.spritesheet,
                         source_rect, 
-                        Rect::new(x, corrected_y, source_rect.width(), source_rect.height()),
+                        Rect::new(*x, corrected_y, source_rect.width(), source_rect.height()),
                         0.0,
                         None,
-                        flip_x, 
-                        flip_y
+                        *flip_x,
+                        *flip_y
                     ).unwrap();
                 }
             }
@@ -151,10 +162,10 @@ impl <'a> Renderer<'a>
     pub fn present(&mut self) -> Result<(), String>
     where
     {
-        let batch = std::mem::replace(&mut self.batch, self.spritesheet.batch());
+        let batch = std::mem::replace(&mut self.batch, SpriteBatch::new());
         self.draw_batch(batch);
 
-        let textbatch = std::mem::replace(&mut self.textbatch, self.spritefont.batch());
+        let textbatch = std::mem::replace(&mut self.textbatch, SpriteBatch::new());
         self.draw_batch(textbatch);
 
         self.canvas.set_draw_color(Color::BLACK);

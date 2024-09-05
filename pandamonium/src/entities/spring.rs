@@ -10,10 +10,6 @@ use crate::app::events::Interaction;
 use super::components::*;
 
 const TOTAL_SPRING_TIME : f64 = 0.7;
-const SPRING_DOWN : Sprite = Sprite::new(0, 8, 0.7);
-const SPRING_MID : Sprite = Sprite::new(1, 8, 0.7);
-const SPRING_UP : Sprite = Sprite::new(2, 8, 0.7);
-
 
 #[derive(Clone, Variable)]
 struct SinceLastTrigger(f64);
@@ -27,7 +23,7 @@ pub fn spawn_spring(x: f64, y: f64, entities: &mut Entities) {
         .with(Position(x, y))
         .with(Interacts::Spring)
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
-        .with(SPRING_DOWN)
+        .with(Sprite::new(0, 8, 0.7, "Sprites"))
     );
 }
 
@@ -55,17 +51,17 @@ pub fn spring_events(event: &Event, entities: &mut Entities, _events: &mut Event
 fn animate_spring(last_trigger: Option<SinceLastTrigger>) -> Sprite {
     if let Some(SinceLastTrigger(t)) = last_trigger {
         if t < 0.05 {
-            SPRING_MID
+            Sprite::new(1, 8, 0.7, "Sprites")
         } else if t < 0.15 {
-            SPRING_UP
+            Sprite::new(2, 8, 0.7, "Sprites")
         } else if t < 0.3 {
-            SPRING_MID
+            Sprite::new(1, 8, 0.7, "Sprites")
         } else if t < 0.5 {
-            SPRING_UP
+            Sprite::new(2, 8, 0.7, "Sprites")
         } else {
-            SPRING_MID
+            Sprite::new(1, 8, 0.7, "Sprites")
         }
     } else {
-        SPRING_DOWN
+        Sprite::new(0, 8, 0.7, "Sprites")
     }
 }

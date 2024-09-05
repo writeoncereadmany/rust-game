@@ -20,14 +20,14 @@ pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Chest)
         .with(Position(x, y))
-        .with(Sprite::new(2, 7, 0.5))
+        .with(Sprite::new(2, 7, 0.5, "Sprites"))
     );
 }
 
 pub fn spawn_open_chest(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
     let chest_id = entities.spawn(entity()
         .with(Position(x, y))
-        .with(Sprite::new(3, 7, 0.5))
+        .with(Sprite::new(3, 7, 0.5, "Sprites"))
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
     );
 
@@ -41,7 +41,7 @@ pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {
         .with(Position(x, y + 0.1))
         .with(Velocity(0.0, 20.0))
         .with(Gravity)
-        .with(Sprite::new(3, 8, 0.75))
+        .with(Sprite::new(3, 8, 0.75, "Sprites"))
         .with(OnPickupDo::Score(100))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupText("100"))

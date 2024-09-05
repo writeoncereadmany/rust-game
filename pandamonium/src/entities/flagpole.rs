@@ -11,16 +11,16 @@ use super::pickup::*;
 pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Position(x,y))
-        .with(Sprite::new(5, 7, 0.3)));
+        .with(Sprite::new(5, 7, 0.3, "Sprites")));
 
     let animation_cycle = AnimationCycle(vec!(
-        (0.5, Sprite::new(6, 7, 0.5)), 
-        (1.0, Sprite::new(7, 7, 0.5)))); 
+        (0.5, Sprite::new(6, 7, 0.5, "Sprites")),
+        (1.0, Sprite::new(7, 7, 0.5, "Sprites"))));
 
     entities.spawn(entity()
         .with(Pickup)
         .with(Position(x, y))
-        .with(Sprite::new(6, 7, 0.5))
+        .with(Sprite::new(6, 7, 0.5, "Sprites"))
         .with(animation_cycle)
         .with(Period(0.2))
         .with(Phase(0.0))

@@ -162,7 +162,7 @@ fn tile_from_neighbours(neighbours: &Neighbours) -> Sprite {
         (false, false) => 3
     };
 
-    Sprite::new(tx, ty, -1.0)
+    Sprite::new(tx, ty, -1.0, "Sprites")
 }
 
 fn ledge_from_neighbours(neighbours: &Neighbours) -> Sprite {
@@ -173,7 +173,7 @@ fn ledge_from_neighbours(neighbours: &Neighbours) -> Sprite {
         (false, false) => 7 
     };
 
-    Sprite::new(tx, 4, -1.0)
+    Sprite::new(tx, 4, -1.0, "Sprites")
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
@@ -183,7 +183,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
             renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
         );
 
-        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1), 14.0, 19.0);
+        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1, "Sprites"), 14.0, 19.0);
 
         self.entities.for_each(|(Position(x, y), sprite)| {
             renderer.draw_sprite(&sprite, x, y);

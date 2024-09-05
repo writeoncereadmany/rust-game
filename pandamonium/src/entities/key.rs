@@ -16,7 +16,7 @@ pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
         .with(Pickup)
         .with(Position(x, y))
-        .with(Sprite::new(4, 7, 0.5))
+        .with(Sprite::new(4, 7, 0.5, "Sprites"))
         .with(OnPickupEffect::Sparkles)
         .with(OnPickupTune(PlayTune(3, vec![
             (Duration::from_millis(0), CYMBAL.note(C4, 0.5)),

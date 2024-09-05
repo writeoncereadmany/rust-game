@@ -56,10 +56,10 @@ pub fn next_frame(phase: f64, AnimationCycle(frames): &AnimationCycle) -> Sprite
     let phase = phase % 1.0;
     for (frame_limit, sprite) in frames {
         if &phase < frame_limit {
-            return *sprite
+            return sprite.clone()
         }
     }
-    Sprite::new(0, 0, 0.0)
+    Sprite::new(0, 0, 0.0, "Sprites")
 }
 
 #[derive(Debug, Clone, Variable)]
