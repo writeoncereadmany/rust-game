@@ -9,7 +9,7 @@ use sdl2::video::WindowContext;
 
 use component_derive::Variable;
 
-use super::sprite::{Sprite, SpriteBatch, SpriteSheet};
+use super::sprite::{Sprite, SpriteSheet};
 
 pub mod align {
     pub const CENTER: u8 = 0b_0000_0001;
@@ -31,8 +31,7 @@ pub struct Renderer<'a>
     canvas: WindowCanvas,
     surface: Texture<'a>,
     spritesheets: &'a HashMap<String, SpriteSheet<'a>>,
-    batch: SpriteBatch,
-    textbatch: SpriteBatch,
+    batch: Vec<(Sprite, (i32, i32))>,
     source_rect: Rect,
     target_rect: Rect,
     text_width: f64,
@@ -59,8 +58,6 @@ impl <'a> Renderer<'a>
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
-        let batch = SpriteBatch::new();
-        let textbatch = SpriteBatch::new();
         let text_width = 8.0 / tile_width as f64;
         let text_height = 8.0 / tile_height as f64;
         let fps_counter = FpsCounter::new(30);
@@ -72,8 +69,7 @@ impl <'a> Renderer<'a>
             spritesheets,
             source_rect,
             target_rect,
-            batch,
-            textbatch,
+            batch : Vec::new(),
             text_width,
             text_height,
             tile_width: tile_width as f64,
@@ -83,11 +79,9 @@ impl <'a> Renderer<'a>
     }
 
     pub fn draw_sprite(&mut self, sprite: &Sprite, x: f64, y: f64) {
-        self.batch.blit(
+        self.batch.push((
             sprite.clone(),
-            x * self.tile_width,
-            y * self.tile_height,
-        );
+            ((x * self.tile_width).round() as i32, (y * self.tile_height).round() as i32)));
     }
 
     pub fn draw_text(&mut self, Text { text, justification }: &Text, x: f64, y: f64) {
@@ -106,21 +100,22 @@ impl <'a> Renderer<'a>
 
         for ch in text.chars() {
             let (tx, ty) = char_tile(ch);
-            self.textbatch.blit(
+            self.batch.push((
                 Sprite::new(tx, ty, 2.0, "Text"),
-                current_x * self.tile_width,
-                y * self.tile_height,
+                ((current_x * self.tile_width).round() as i32, (y * self.tile_height).round() as i32),
+            )
             );
             current_x += self.text_width;
         }
     }
 
-    fn draw_batch(&mut self, mut batch: SpriteBatch) {
+    fn draw_batch(&mut self) {
         let height = self.source_rect.height() as i32;
-        batch.blits.sort_by(|(sprite1, _), (sprite2, _)| compare(&sprite1.z, &sprite2.z));
+        self.batch.sort_by(|(sprite1, _), (sprite2, _)| compare(&sprite1.z, &sprite2.z));
+        let batch = &self.batch;
         let spritesheets = &self.spritesheets;
         self.canvas.with_texture_canvas(&mut self.surface, |c| { 
-            for (sprite, (x, y)) in &batch.blits {
+            for (sprite, (x, y)) in batch {
                 let Sprite { flip_x, flip_y, tileset, .. } = sprite;
                 let spritesheet = spritesheets.get(tileset).unwrap();
                 let source_rect = spritesheet.source_rect(&sprite);
@@ -144,6 +139,8 @@ impl <'a> Renderer<'a>
                 }
             }
         }).unwrap();
+
+        self.batch.clear();
     }
 
     pub fn clear(&mut self) -> Result<(), TargetRenderError> {
@@ -157,11 +154,7 @@ impl <'a> Renderer<'a>
     pub fn present(&mut self) -> Result<(), String>
     where
     {
-        let batch = std::mem::replace(&mut self.batch, SpriteBatch::new());
-        self.draw_batch(batch);
-
-        let textbatch = std::mem::replace(&mut self.textbatch, SpriteBatch::new());
-        self.draw_batch(textbatch);
+        self.draw_batch();
 
         self.canvas.set_draw_color(Color::BLACK);
         self.canvas.clear();

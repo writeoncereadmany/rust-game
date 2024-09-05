@@ -29,22 +29,6 @@ impl Sprite {
     }
 }
 
-pub struct SpriteBatch {
-    pub blits: Vec<(Sprite, (i32, i32))>
-}
-
-impl SpriteBatch{
-    pub fn new() -> Self {
-        SpriteBatch { blits: Vec::new() }
-    }
-
-    pub fn blit(&mut self, source: Sprite, x: f64, y: f64) {
-        let x = x.round() as i32;
-        let y = y.round() as i32;
-        self.blits.push((source, (x, y)));
-    }
-}
-
 pub struct SpriteSheet<'a> {
     pub spritesheet: Texture<'a>,
     pub tile_width: u32,
