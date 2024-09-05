@@ -1,10 +1,9 @@
-use image::RgbImage;
-use std::collections::HashMap;
-use std::path::PathBuf;
 use engine::graphics::sprite::SpriteSheet;
+use image::RgbImage;
 use sdl2::image::LoadTexture;
-use sdl2::render::{Texture, TextureCreator};
+use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
+use std::collections::HashMap;
 use tiled::TileId;
 
 pub struct Assets<'a> {

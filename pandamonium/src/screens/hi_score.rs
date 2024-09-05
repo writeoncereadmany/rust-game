@@ -1,13 +1,13 @@
-use sdl2::keyboard::Keycode;
 use sdl2::event::Event as SdlEvent;
+use sdl2::keyboard::Keycode;
 
-use engine::graphics::renderer::{Renderer, Text, align};
-use engine::events::{ Event, Events };
+use engine::events::{Event, Events};
 use engine::game_loop::GameLoop;
+use engine::graphics::renderer::{align, Renderer, Text};
 
-use crate::entities::hero::PandaType;
-use crate::app::events::{ NewGame, ShowTitleScreen, UpdateHiScores };
 use crate::app::app::HiScore;
+use crate::app::events::{NewGame, ShowTitleScreen, UpdateHiScores};
+use crate::entities::hero::PandaType;
 
 pub struct Scores{ new_hiscore_index: usize, scores: Vec<HiScore> }
 

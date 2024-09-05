@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use component_derive::Variable;
-use engine::graphics::renderer::{ Text, align };
 use engine::events::Events;
+use engine::graphics::renderer::{align, Text};
 
 use super::components::Position;
 use crate::app::events::TimeLimitExpired;

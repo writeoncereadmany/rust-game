@@ -1,16 +1,16 @@
 use std::time::Duration;
 
-use entity::{ entity, Entities };
-use engine::graphics::sprite::Sprite;
-use engine::audio::audio::PlayTune;
-use engine::audio::instrument::*;
-use engine::audio::notes::C4;
-use engine::shapes::shape::shape::Shape;
 use super::components::*;
 use super::pickup::OnPickupDo;
 use super::pickup::OnPickupEffect;
 use super::pickup::OnPickupTune;
 use super::pickup::Pickup;
+use engine::audio::audio::PlayTune;
+use engine::audio::instrument::*;
+use engine::audio::notes::C4;
+use engine::graphics::sprite::Sprite;
+use engine::shapes::shape::shape::Shape;
+use entity::{entity, Entities};
 
 pub fn spawn_key(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()

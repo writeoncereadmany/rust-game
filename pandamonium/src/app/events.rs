@@ -1,8 +1,8 @@
 use component_derive::Event;
 use engine::events::EventTrait;
 
-use crate::entities::hero::PandaType;
 use crate::entities::components::Interacts;
+use crate::entities::hero::PandaType;
 
 use super::app::HiScore;
 

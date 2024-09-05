@@ -1,10 +1,10 @@
-use component_derive::Constant;
-use entity::{ entity, Entities, Id };
-use engine::graphics::sprite::Sprite;
-use engine::events::*;
-use engine::shapes::shape::shape::Shape;
-use crate::app::events::{KeyCollected, Destroy, SpawnParticle};
 use super::components::*;
+use crate::app::events::{Destroy, KeyCollected, SpawnParticle};
+use component_derive::Constant;
+use engine::events::*;
+use engine::graphics::sprite::Sprite;
+use engine::shapes::shape::shape::Shape;
+use entity::{entity, Entities, Id};
 
 #[derive(Clone, Constant)]
 pub struct Lockbox;

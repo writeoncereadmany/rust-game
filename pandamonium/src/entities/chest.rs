@@ -1,14 +1,14 @@
-use std::time::Duration;
-use component_derive::{ Constant, Event };
-use entity::{ entity, Entities };
+use component_derive::{Constant, Event};
 use engine::graphics::sprite::Sprite;
+use entity::{entity, Entities};
+use std::time::Duration;
 
-use entity::Id;
-use engine::events::{ EventTrait, Events, Event };
-use engine::shapes::shape::shape::Shape;
-use crate::app::events::*;
 use super::components::*;
 use super::pickup::*;
+use crate::app::events::*;
+use engine::events::{Event, EventTrait, Events};
+use engine::shapes::shape::shape::Shape;
+use entity::Id;
 
 #[derive(Clone, Constant)]
 pub struct Chest;

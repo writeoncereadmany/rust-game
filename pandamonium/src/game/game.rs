@@ -1,14 +1,14 @@
 use std::time::Duration;
 
 use component_derive::Event;
-use engine::graphics::renderer::{ Renderer, Text, align };
-use engine::game_loop::*;
 use engine::events::*;
+use engine::game_loop::*;
+use engine::graphics::renderer::{align, Renderer, Text};
 
 use crate::app::assets::Assets;
-use crate::world::world::World;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
+use crate::world::world::World;
 
 pub struct Game<'a> {
     pub assets: &'a Assets<'a>,

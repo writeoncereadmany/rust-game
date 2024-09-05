@@ -1,12 +1,12 @@
-use std::time::Duration;
-use engine::graphics::sprite::Sprite;
-use engine::graphics::renderer::{align, Text};
 use engine::events::Events;
+use engine::graphics::renderer::{align, Text};
+use engine::graphics::sprite::Sprite;
+use std::time::Duration;
 
 use super::components::*;
 use super::hero::PandaType;
 use crate::app::events::Destroy;
-use entity::{ Entities, entity };
+use entity::{entity, Entities};
 
 pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Events) {
     let spangle_id = entities.spawn(entity()

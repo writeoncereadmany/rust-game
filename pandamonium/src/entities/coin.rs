@@ -1,12 +1,12 @@
-use entity::{ entity, Entities, };
 use engine::graphics::sprite::Sprite;
+use entity::{entity, Entities, };
 
-use engine::audio::notes::*;
-use engine::audio::instrument::BELL;
-use engine::audio::tempo::Tempo;
-use engine::shapes::shape::shape::Shape;
 use super::components::*;
 use super::pickup::*;
+use engine::audio::instrument::BELL;
+use engine::audio::notes::*;
+use engine::audio::tempo::Tempo;
+use engine::shapes::shape::shape::Shape;
 
 pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
     let phase = phase_offset(x, y);

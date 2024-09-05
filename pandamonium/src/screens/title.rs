@@ -1,14 +1,14 @@
-use sdl2::keyboard::Keycode;
 use sdl2::event::Event as SdlEvent;
+use sdl2::keyboard::Keycode;
 
-use engine::graphics::renderer::align;
-use engine::graphics::renderer::Text;
-use engine::graphics::renderer::Renderer;
-use engine::events::{ Event, Events };
+use engine::events::{Event, Events};
 use engine::game_loop::GameLoop;
+use engine::graphics::renderer::align;
+use engine::graphics::renderer::Renderer;
+use engine::graphics::renderer::Text;
 
-use crate::entities::hero::PandaType;
 use crate::app::events::{NewGame, ShowHighScores};
+use crate::entities::hero::PandaType;
 
 pub struct Title;
 

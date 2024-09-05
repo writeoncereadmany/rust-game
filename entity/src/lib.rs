@@ -281,7 +281,6 @@ impl Entities {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use std::collections::HashSet;
     use std::hash::Hash;

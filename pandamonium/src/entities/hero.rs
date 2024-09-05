@@ -1,14 +1,14 @@
 use std::time::Duration;
 
-use component_derive::{ Event, Constant, Variable };
-use entity::{ entity, Entities };
-use engine::graphics::sprite::Sprite;
-use engine::events::*;
-use engine::shapes::shape::shape::Shape;
-use crate::app::events::{SpawnHero, Interaction};
-use crate::controller::{ ButtonPress, ControllerState };
-use crate::sign::{ Sign, Signed };
 use super::components::*;
+use crate::app::events::{Interaction, SpawnHero};
+use crate::controller::{ButtonPress, ControllerState};
+use crate::sign::{Sign, Signed};
+use component_derive::{Constant, Event, Variable};
+use engine::events::*;
+use engine::graphics::sprite::Sprite;
+use engine::shapes::shape::shape::Shape;
+use entity::{entity, Entities};
 
 const ACCEL: f64 = 60.0;
 const REVERSE_ACCEL: f64 = 80.0;

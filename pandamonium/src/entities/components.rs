@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use engine::graphics::sprite::Sprite;
 use component_derive::{Constant, Variable};
+use engine::graphics::sprite::Sprite;
 use engine::shapes::shape::shape::Shape;
 use entity::*;
 

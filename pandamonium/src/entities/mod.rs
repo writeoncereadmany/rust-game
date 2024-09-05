@@ -13,7 +13,7 @@ pub mod lockbox;
 
 use entity::Entities;
 
-use engine::events::{ Event, Events };
+use engine::events::{Event, Events};
 
 use crate::app::events::*;
 

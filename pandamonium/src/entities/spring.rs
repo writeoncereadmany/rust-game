@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use component_derive::{ Constant, Variable };
-use entity::{ entity, Entities };
-use engine::graphics::sprite::Sprite;
-use engine::events::{ Event, Events };
-use engine::shapes::shape::shape::Shape;
 use crate::app::events::Interaction;
+use component_derive::{Constant, Variable};
+use engine::events::{Event, Events};
+use engine::graphics::sprite::Sprite;
+use engine::shapes::shape::shape::Shape;
+use entity::{entity, Entities};
 
 use super::components::*;
 

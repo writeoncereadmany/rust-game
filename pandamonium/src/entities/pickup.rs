@@ -1,7 +1,7 @@
-use component_derive::{ Constant, Event };
-use entity::Entities;
-use engine::events::{ EventTrait, Events };
+use component_derive::{Constant, Event};
 use engine::audio::audio::*;
+use engine::events::{EventTrait, Events};
+use entity::Entities;
 
 use crate::app::events::*;
 

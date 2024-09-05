@@ -1,12 +1,12 @@
-use entity::{ entity, Entities };
 use engine::graphics::sprite::Sprite;
+use entity::{entity, Entities};
 
-use engine::audio::notes::*;
-use engine::audio::instrument::*;
-use engine::audio::tempo::Tempo;
-use engine::shapes::shape::shape::Shape;
 use super::components::*;
 use super::pickup::*;
+use engine::audio::instrument::*;
+use engine::audio::notes::*;
+use engine::audio::tempo::Tempo;
+use engine::shapes::shape::shape::Shape;
 
 pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()

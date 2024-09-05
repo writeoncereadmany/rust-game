@@ -1,9 +1,9 @@
-use sdl2::controller::{ Button };
+use sdl2::controller::Button;
 use sdl2::event::Event as SdlEvent;
 use sdl2::keyboard::Keycode;
 
 use component_derive::Event;
-use engine::events::{Event, Events, EventTrait};
+use engine::events::{Event, EventTrait, Events};
 use engine::game_loop::CascadeInputs;
 
 use crate::sign::Sign;
