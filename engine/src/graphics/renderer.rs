@@ -30,7 +30,7 @@ pub struct Renderer<'a>
 {
     canvas: WindowCanvas,
     surface: Texture<'a>,
-    spritesheets: HashMap<String, SpriteSheet<'a>>,
+    spritesheets: &'a HashMap<String, SpriteSheet<'a>>,
     batch: SpriteBatch,
     textbatch: SpriteBatch,
     source_rect: Rect,
@@ -47,28 +47,23 @@ impl <'a> Renderer<'a>
     pub fn new(
         canvas: WindowCanvas, 
         texture_creator: &'a TextureCreator<WindowContext>, 
-        spritesheet: SpriteSheet<'a>, 
-        spritefont: SpriteSheet<'a>,
-        columns: u32, 
-        rows: u32
+        spritesheets: &'a HashMap<String, SpriteSheet<'a>>,
+        columns: u32,
+        rows: u32,
+        tile_width: u32,
+        tile_height: u32,
     ) -> Result<Self, TextureValueError>
     {
-        let width = columns * spritesheet.tile_width;
-        let height = rows * spritesheet.tile_height;
-        let tile_width = spritesheet.tile_width as f64;
-        let tile_height = spritesheet.tile_height as f64;
+        let width = columns * tile_width;
+        let height = rows * tile_height;
         let source_rect = Rect::new(0, 0, width, height);
         let target_rect = calculate_target_rect(&canvas, width, height);
         let mut surface: Texture<'a> = texture_creator.create_texture_target(None, width, height)?;
         let batch = SpriteBatch::new();
         let textbatch = SpriteBatch::new();
-        let text_width = spritefont.tile_width as f64 / spritesheet.tile_width as f64;
-        let text_height = spritefont.tile_height as f64 / spritesheet.tile_height as f64;
+        let text_width = 8.0 / tile_width as f64;
+        let text_height = 8.0 / tile_height as f64;
         let fps_counter = FpsCounter::new(30);
-
-        let mut spritesheets = HashMap::new();
-        spritesheets.insert("Text".to_string(), spritefont);
-        spritesheets.insert("Sprites".to_string(), spritesheet);
 
         surface.set_blend_mode(BlendMode::Blend);
         Ok(Renderer {
@@ -81,8 +76,8 @@ impl <'a> Renderer<'a>
             textbatch,
             text_width,
             text_height,
-            tile_width,
-            tile_height,
+            tile_width: tile_width as f64,
+            tile_height: tile_height as f64,
             fps_counter
         })
     }
@@ -132,13 +127,13 @@ impl <'a> Renderer<'a>
                 let corrected_y = (height - y) - source_rect.height() as i32;
                 if (false, false) == (*flip_x, *flip_y) {
                     c.copy(
-                        spritesheet.spritesheet,
+                        &spritesheet.spritesheet,
                         source_rect, 
                         Rect::new(*x, corrected_y, source_rect.width(), source_rect.height()),
                     ).unwrap();
                 } else {
                     c.copy_ex(
-                        spritesheet.spritesheet,
+                        &spritesheet.spritesheet,
                         source_rect, 
                         Rect::new(*x, corrected_y, source_rect.width(), source_rect.height()),
                         0.0,

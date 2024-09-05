@@ -1,19 +1,17 @@
 use image::RgbImage;
 use std::collections::HashMap;
 use std::path::PathBuf;
-
+use engine::graphics::sprite::SpriteSheet;
 use sdl2::image::LoadTexture;
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
 use tiled::TileId;
 
 pub struct Assets<'a> {
-    pub spritesheet : Texture<'a>,
-    pub spritefont: Texture<'a>,
     pub levels: Vec<RgbImage>,
     pub countdown: RgbImage,
     pub go: RgbImage,
-    pub sheets : HashMap<String, Texture<'a>>,
+    pub sheets : HashMap<String, SpriteSheet<'a>>,
     pub tiles : HashMap<(usize, TileId), (String, (u32, u32), Option<String>)>,
     pub map : Vec<HashMap<(u32, u32), (usize, TileId)>>
 }
@@ -30,6 +28,9 @@ impl <'a> Assets<'a> {
         let go = image::open(graphics.join("go.png")).unwrap().to_rgb8();
 
         let mut sheets = HashMap::new();
+
+        sheets.insert("Sprites".to_string(), SpriteSheet::new(spritesheet, 12, 12));
+        sheets.insert("Text".to_string(), SpriteSheet::new(spritefont, 8, 8));
         let mut tiles = HashMap::new();
         let mut map = Vec::new();
 
@@ -46,7 +47,12 @@ impl <'a> Assets<'a> {
             }
 
             if let Some(image) = &tileset.image {
-                sheets.insert(name, texture_creator.load_texture(&image.source)?);
+                sheets.insert(
+                    name,
+                    SpriteSheet::new(
+                        texture_creator.load_texture(&image.source)?,
+                        tileset.tile_width,
+                        tileset.tile_height));
             }
         }
 
@@ -77,8 +83,6 @@ impl <'a> Assets<'a> {
         
 
         Ok(Assets {
-            spritesheet,
-            spritefont,
             levels,
             countdown,
             go,

@@ -7,7 +7,6 @@ use sdl2::EventPump;
 use engine::events::Events;
 use engine::game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
-use engine::graphics::sprite::SpriteSheet;
 
 use crate::app::app::App;
 use crate::app::assets::Assets;
@@ -43,17 +42,14 @@ pub fn run() -> Result<(), String> {
 
     let assets = Assets::new(&texture_creator)?;
 
-    let spritesheet = SpriteSheet::new(&assets.spritesheet, 12, 12);
-
-    let spritefont = SpriteSheet::new(&assets.spritefont, 8, 8);
-
     let mut renderer = Renderer::new(
         canvas,
         &texture_creator,
-        spritesheet,
-        spritefont,
+        &assets.sheets,
         COLUMNS as u32,
         ROWS as u32,
+        12,
+        12
     ).unwrap(); 
 
     let events = Events::new();

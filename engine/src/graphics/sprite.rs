@@ -46,13 +46,13 @@ impl SpriteBatch{
 }
 
 pub struct SpriteSheet<'a> {
-    pub spritesheet: &'a Texture<'a>,
+    pub spritesheet: Texture<'a>,
     pub tile_width: u32,
     pub tile_height: u32,
 }
 
 impl <'a> SpriteSheet<'a> {
-    pub fn new(spritesheet: &'a Texture<'a>, tile_width: u32, tile_height: u32) -> Self {
+    pub fn new(spritesheet: Texture<'a>, tile_width: u32, tile_height: u32) -> Self {
         SpriteSheet { spritesheet, tile_width, tile_height }
     }
 
