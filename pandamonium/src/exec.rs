@@ -1,20 +1,19 @@
-use sdl2::EventPump;
 use sdl2::image::{self, InitFlag};
 use sdl2::keyboard::Keycode;
-use sdl2::render::{Canvas};
+use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::EventPump;
 
 use engine::events::Events;
-use engine::audio::audio::initialise_audio;
 use engine::game_loop::run_game_loop;
 use engine::graphics::renderer::Renderer;
 use engine::graphics::sprite::SpriteSheet;
 
-use crate::controller::Controller;
-use crate::screens::title::Title;
 use crate::app::app::App;
 use crate::app::assets::Assets;
+use crate::controller::Controller;
 use crate::screens::screens::Screen;
+use crate::screens::title::Title;
 
 const COLUMNS: usize = 30;
 const ROWS: usize = 20;

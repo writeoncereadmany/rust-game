@@ -1,14 +1,12 @@
-use sdl2::VideoSubsystem;
-use sdl2::event::Event as SdlEvent;
-use sdl2::audio::AudioDevice;
-use sdl2::GameControllerSubsystem;
-use sdl2::keyboard::Keycode;
 use sdl2::controller::GameController;
+use sdl2::event::Event as SdlEvent;
+use sdl2::keyboard::Keycode;
+use sdl2::GameControllerSubsystem;
+use sdl2::VideoSubsystem;
 
-use engine::graphics::renderer::Renderer;
-use engine::audio::audio::*;
 use engine::events::*;
 use engine::game_loop::*;
+use engine::graphics::renderer::Renderer;
 
 use crate::controller::Controller;
 use crate::game::game::Game;
@@ -18,7 +16,7 @@ use crate::screens::title::Title;
 
 use super::assets::Assets;
 use super::events::UpdateHiScores;
-use super::events::{ ClearAudio, GameOver, NewGame, ShowHighScores, ShowTitleScreen };
+use super::events::{GameOver, NewGame, ShowHighScores, ShowTitleScreen};
 
 #[derive(Clone)]
 pub struct HiScore {

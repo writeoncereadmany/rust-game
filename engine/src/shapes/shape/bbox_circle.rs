@@ -38,7 +38,7 @@ pub fn collides(
     circle: &Circle,
     dv: &(f64, f64),
 ) -> Option<Collision> {
-    if (!intersects_moving(bbox, circle, dv) || intersects(bbox, circle)) {
+    if !intersects_moving(bbox, circle, dv) || intersects(bbox, circle) {
         return None;
     }
 

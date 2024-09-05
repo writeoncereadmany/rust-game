@@ -51,7 +51,7 @@ pub fn collides(
     bbox2: &BBox,
     dv: &(f64, f64),
 ) -> Option<Collision> {
-    if (!intersects_moving(bbox1, bbox2, dv) || intersects(bbox1, bbox2)) {
+    if !intersects_moving(bbox1, bbox2, dv) || intersects(bbox1, bbox2) {
         return None;
     }
 
