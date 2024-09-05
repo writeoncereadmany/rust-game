@@ -80,7 +80,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
 
 
             self.level = self.level + 1;
-            if self.level < self.assets.levels.len() {
+            if self.level < 3 {
                 events.fire(Pause(0.5));
                 events.schedule(Duration::from_secs_f64(0.5), NewLevel);
             } else {

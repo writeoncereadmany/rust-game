@@ -8,7 +8,6 @@ use sdl2::video::WindowContext;
 use tiled::TileId;
 
 pub struct Assets<'a> {
-    pub levels: Vec<RgbImage>,
     pub countdown: RgbImage,
     pub go: RgbImage,
     pub sheets : HashMap<String, SpriteSheet<'a>>,
@@ -72,20 +71,7 @@ impl <'a> Assets<'a> {
             }
         }
 
-
-        let mut levels: Vec<PathBuf> = assets.join("levels").read_dir()
-            .map_err(|_e| "Failed")?
-            .map(|result| result.unwrap().path())
-            .collect();
-
-        levels.sort();
-        let levels: Vec<RgbImage> = levels.iter()    
-            .map(|file| { image::open(file).unwrap().to_rgb8() })
-            .collect();
-        
-
         Ok(Assets {
-            levels,
             countdown,
             go,
             sheets,

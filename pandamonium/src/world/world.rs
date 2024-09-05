@@ -32,7 +32,6 @@ use engine::map::Map;
 use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
-use image::imageops::tile;
 use TileType::STONE;
 
 #[derive(Clone, Eq, PartialEq)]
@@ -130,51 +129,6 @@ fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {
         }
     }
     pixels
-}
-
-struct Neighbours {
-    above: bool,
-    below: bool,
-    left: bool,
-    right: bool
-}
-
-fn neighbours(pixels: &HashSet<(i32, i32)>, x: i32, y: i32) -> Neighbours {
-    Neighbours {
-        left: pixels.contains(&(x - 1, y)),
-        right: pixels.contains(&(x + 1, y)),
-        below: pixels.contains(&(x, y - 1)),
-        above: pixels.contains(&(x, y + 1)),
-    }
-}
- 
-fn tile_from_neighbours(neighbours: &Neighbours) -> Sprite {
-    let tx = match (neighbours.left, neighbours.right) {
-        (false, true) => 4,
-        (true, true) => 5,
-        (true, false) => 6,
-        (false, false) => 7 
-    };
-
-    let ty = match (neighbours.above, neighbours.below) {
-        (false, true) => 0,
-        (true, true) => 1,
-        (true, false) => 2,
-        (false, false) => 3
-    };
-
-    Sprite::new(tx, ty, -1.0, "Sprites")
-}
-
-fn ledge_from_neighbours(neighbours: &Neighbours) -> Sprite {
-    let tx = match (neighbours.left, neighbours.right) {
-        (false, true) => 4,
-        (true, true) => 5,
-        (true, false) => 6,
-        (false, false) => 7 
-    };
-
-    Sprite::new(tx, 4, -1.0, "Sprites")
 }
 
 impl <'a> GameLoop<'a, Renderer<'a>> for World {
