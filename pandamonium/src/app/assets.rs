@@ -38,17 +38,17 @@ impl <'a> Assets<'a> {
         let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
         for (index, tileset) in tile_map.tilesets().iter().enumerate() {
 
-            let name = tileset.name.to_string();
+            let tileset_name = tileset.name.to_string();
 
             let columns = tileset.columns;
 
             for (tile_id, tile) in tileset.tiles() {
-                tiles.insert((index, tile_id), (name.clone(), (tile_id % columns, tile_id / columns), tile.user_type.clone()));
+                tiles.insert((index, tile_id), (tileset_name.clone(), (tile_id % columns, tile_id / columns), tile.user_type.clone()));
             }
 
             if let Some(image) = &tileset.image {
                 sheets.insert(
-                    name,
+                    tileset_name,
                     SpriteSheet::new(
                         texture_creator.load_texture(&image.source)?,
                         tileset.tile_width,
@@ -59,10 +59,12 @@ impl <'a> Assets<'a> {
         for layer in tile_map.layers() {
             if let Some(tiles) = layer.as_tile_layer() {
                 let mut map_layer = HashMap::new();
-                for x in 0..tiles.width().unwrap() {
-                    for y in 0..tiles.height().unwrap() {
+                let width = tiles.width().unwrap();
+                let height = tiles.height().unwrap();
+                for x in 0..width {
+                    for y in 0..height {
                         if let Some(tile) = tiles.get_tile(x as i32, y as i32) {
-                            map_layer.insert((x, y), (tile.tileset_index(), tile.id()));
+                            map_layer.insert((x, (height - 1) - y), (tile.tileset_index(), tile.id()));
                         }
                     }
                 }

@@ -32,6 +32,7 @@ use engine::map::Map;
 use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
+use image::imageops::tile;
 use TileType::STONE;
 
 #[derive(Clone, Eq, PartialEq)]
@@ -54,49 +55,49 @@ pub struct World {
 impl World {
 
     pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
-        let image = &assets.levels[level];
-        let width = image.width();
-        let height = image.height();
-        let mut map : Map<Tile> = Map::new(width as usize, height as usize);
+
+        let mut map : Map<Tile> = Map::new(30, 20);
         let mut entities = Entities::new();
 
-        let tiles = pixels(image, &Rgb([255, 255, 255]));
-        
-        for &(x, y) in &tiles {
-            let neighbours = neighbours(&tiles, x, y);
-            let item = Tile {
-                sprite: tile_from_neighbours(&neighbours),
-                shape: BLOCK.translate(&(x as f64, y as f64)),
-                tile: STONE
-            };
-            map.put(x, y, item);
+        for layer in &assets.map {
+            for ((x, y), t) in layer.iter() {
+                if let Some((tileset_name, (sx, sy), tile_type)) = assets.tiles.get(&t) {
+                    if let Some(tile_type) = tile_type {
+                        match tile_type.as_str() {
+                            "Wall" => {
+                                map.put(*x as i32, *y as i32, Tile {
+                                    sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, tileset_name),
+                                    shape: BLOCK.translate(&(*x as f64, *y as f64)),
+                                    tile: STONE
+                                });
+                            }
+                            "Ledge" => {
+                                map.put(*x as i32, *y as i32, Tile {
+                                    sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, tileset_name),
+                                    shape: BLOCK.translate(&(*x as f64, *y as f64)),
+                                    tile: LEDGE
+                                });
+                            }
+                            "Hero" => {
+                                spawn_shadow(*x as f64, *y as f64, panda_type, &mut entities, events);
+                                events.schedule(Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
+                            }
+                            "Coin" => spawn_coin(*x as f64, *y as f64, &mut entities),
+                            "Lockbox" => spawn_lockbox(*x as f64, *y as f64, &mut entities),
+                            "Bell" => spawn_bell(*x as f64, *y as f64, &mut entities),
+                            "Chest" => spawn_chest(*x as f64, *y as f64, &mut entities),
+                            "Key" => spawn_key(*x as f64, *y as f64, &mut entities),
+                            "Spring" => spawn_spring(*x as f64, *y as f64, &mut entities),
+                            "Flag" => spawn_flagpole(*x as f64, *y as f64, &mut entities),
+                            "Ruby" => spawn_ruby(*x as f64, *y as f64, &mut entities),
+
+                            _otherwise => {}
+                        }
+                    }
+                }
+            }
         }
 
-        let ledges = pixels(image, &Rgb([128, 128, 128]));
-        for &(x, y) in &ledges {
-            let neighbours = neighbours(&ledges, x, y);
-            let item = Tile {
-                sprite: ledge_from_neighbours(&neighbours),
-                shape: BLOCK.translate(&(x as f64, y as f64)),
-                tile: LEDGE
-            };
-            map.put(x, y, item);
-        }
-
-        for (x, y) in pixels(image, &Rgb([255, 255, 0])) { spawn_coin(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([255, 0, 0])) { spawn_flagpole(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([255,0,255])) { spawn_bell(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([0,255,255])) { spawn_key(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([255,127,0])) { spawn_chest(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([127,0,255])) { spawn_lockbox(x as f64, y as f64, &mut entities); }
-        for (x, y) in pixels(image, &Rgb([255,0,127])) { spawn_spring(x as f64, y as f64, &mut entities); }
-
-
-        for (x, y) in pixels(image, &Rgb([0, 255, 0])) { 
-            spawn_shadow(x as f64, y as f64, panda_type, &mut entities, events);
-            events.schedule(Duration::from_millis(2400), SpawnHero(x as f64, y as f64, panda_type)); 
-        }
-       
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64))}
         for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64))}
