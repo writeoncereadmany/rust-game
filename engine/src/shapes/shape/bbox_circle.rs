@@ -9,8 +9,13 @@ pub fn intersects(bbox: &BBox, circle: &Circle) -> bool {
     intersects_on_axis(bbox, circle, &UNIT_X) &&
         intersects_on_axis(bbox, circle, &UNIT_Y) && {
         let closest_corner = nearest_corner(&circle.center, &corners(bbox));
-        let closest_corner_axis = circle.center.sub(&closest_corner).unit();
-        intersects_on_axis(bbox, circle, &closest_corner_axis)
+        let separation = circle.center.sub(&closest_corner);
+        if separation.sq_len() == 0.0 {
+            true
+        } else {
+            let closest_corner_axis = separation.unit();
+            intersects_on_axis(bbox, circle, &closest_corner_axis)
+        }
     }
 }
 
@@ -28,8 +33,13 @@ pub fn intersects_moving(bbox: &BBox, circle: &Circle, dv: &(f64, f64)) -> bool 
     } && {
         let corners = corners_2(bbox, &translate(bbox, dv));
         let nearest_corner = nearest_corner(&circle.center, &corners);
-        let closest_corner_axis = circle.center.sub(&nearest_corner).unit();
-        intersects_on_axis_moving(bbox, circle, dv, &closest_corner_axis)
+        let separation = circle.center.sub(&nearest_corner);
+        if separation.sq_len() == 0.0 {
+            true
+        } else {
+            let closest_corner_axis = separation.unit();
+            intersects_on_axis_moving(bbox, circle, dv, &closest_corner_axis)
+        }
     }
 }
 
