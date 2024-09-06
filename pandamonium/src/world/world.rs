@@ -32,11 +32,11 @@ use engine::map::Map;
 use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
-use TileType::STONE;
+use TileType::{DECORATION, STONE};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
-    STONE, LEDGE
+    STONE, LEDGE, DECORATION
 }
 
 #[derive(Clone)]
@@ -92,6 +92,12 @@ impl World {
 
                             _otherwise => {}
                         }
+                    } else {
+                        map.put(*x as i32, *y as i32, Tile {
+                            sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, tileset_name),
+                            shape: BLOCK.translate(&(*x as f64, *y as f64)),
+                            tile: DECORATION
+                        });
                     }
                 }
             }
@@ -197,6 +203,9 @@ fn next_collision(map: &Map<Tile>, obstacles: &Vec<Shape>, moving: &Shape, dv: &
     let mut map_collisions: Vec<Collision> = map.overlapping(moving, dv)
         .map(|(_, tile)| tile)
         .map(|tile| {
+            if tile.tile == DECORATION {
+                return None
+            }
             let maybe_collision = moving.collides(&tile.shape, dv);
             if let Some(Collision { push, ..}) = maybe_collision {
                 if tile.tile == LEDGE && (push.dot(&UNIT_X).abs() > 1e-6 || push.dot(&UNIT_Y) < 0.0)
