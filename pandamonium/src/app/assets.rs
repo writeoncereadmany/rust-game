@@ -10,8 +10,8 @@ pub struct Assets<'a> {
     pub countdown: RgbImage,
     pub go: RgbImage,
     pub sheets : HashMap<String, SpriteSheet<'a>>,
-    pub tiles : HashMap<(usize, TileId), (String, (u32, u32), Option<String>)>,
-    pub map : Vec<HashMap<(u32, u32), (usize, TileId)>>
+    pub tiles : HashMap<(String, TileId), ((u32, u32), Option<String>)>,
+    pub map : Vec<HashMap<(u32, u32), (String, TileId)>>
 }
 
 impl <'a> Assets<'a> {
@@ -34,14 +34,14 @@ impl <'a> Assets<'a> {
 
         let mut map_loader = tiled::Loader::new();
         let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
-        for (index, tileset) in tile_map.tilesets().iter().enumerate() {
+        for tileset in tile_map.tilesets() {
 
             let tileset_name = tileset.name.to_string();
 
             let columns = tileset.columns;
 
             for (tile_id, tile) in tileset.tiles() {
-                tiles.insert((index, tile_id), (tileset_name.clone(), (tile_id % columns, tile_id / columns), tile.user_type.clone()));
+                tiles.insert((tileset.name.clone(), tile_id), ((tile_id % columns, tile_id / columns), tile.user_type.clone()));
             }
 
             if let Some(image) = &tileset.image {
@@ -62,7 +62,7 @@ impl <'a> Assets<'a> {
                 for x in 0..width {
                     for y in 0..height {
                         if let Some(tile) = tiles.get_tile(x as i32, y as i32) {
-                            map_layer.insert((x, (height - 1) - y), (tile.tileset_index(), tile.id()));
+                            map_layer.insert((x, (height - 1) - y), (tile.get_tileset().name.to_string(), tile.id()));
                         }
                     }
                 }
