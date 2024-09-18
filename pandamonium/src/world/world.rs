@@ -58,21 +58,21 @@ impl World {
         let mut map : Map<Tile> = Map::new(30, 20);
         let mut entities = Entities::new();
 
-        for layer in &assets.map {
-            for ((x, y), tile) in layer.iter() {
-                if let Some(((tile_x, tile_y), tile_type)) = assets.tiles.get(&tile) {
-                    if let Some(tile_type) = tile_type {
+        for layer in &assets.map.layers {
+            for ((x, y), tile_ref) in layer.iter() {
+                if let Some(tile) = assets.tiles.get(&tile_ref) {
+                    if let Some(tile_type) = &tile.user_type {
                         match tile_type.as_str() {
                             "Wall" => {
                                 map.put(*x as i32, *y as i32, Tile {
-                                    sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
+                                    sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
                                     tile: STONE
                                 });
                             }
                             "Ledge" => {
                                 map.put(*x as i32, *y as i32, Tile {
-                                    sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
+                                    sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
                                     tile: LEDGE
                                 });
@@ -94,7 +94,7 @@ impl World {
                         }
                     } else {
                         map.put(*x as i32, *y as i32, Tile {
-                            sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
+                            sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                             shape: BLOCK.translate(&(*x as f64, *y as f64)),
                             tile: DECORATION
                         });

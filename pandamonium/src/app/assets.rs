@@ -12,12 +12,22 @@ pub struct TileRef {
     pub tile_id: TileId
 }
 
+pub struct TileDef {
+    pub x: u32,
+    pub y: u32,
+    pub user_type: Option<String>
+}
+
+pub struct MapDef {
+    pub layers : Vec<HashMap<(u32, u32), TileRef>>
+}
+
 pub struct Assets<'a> {
     pub countdown: RgbImage,
     pub go: RgbImage,
     pub sheets : HashMap<String, SpriteSheet<'a>>,
-    pub tiles : HashMap<TileRef, ((u32, u32), Option<String>)>,
-    pub map : Vec<HashMap<(u32, u32), TileRef>>
+    pub tiles : HashMap<TileRef, TileDef>,
+    pub map : MapDef
 }
 
 impl <'a> Assets<'a> {
@@ -36,7 +46,7 @@ impl <'a> Assets<'a> {
         sheets.insert("Sprites".to_string(), SpriteSheet::new(spritesheet, 12, 12));
         sheets.insert("Text".to_string(), SpriteSheet::new(spritefont, 8, 8));
         let mut tiles = HashMap::new();
-        let mut map = Vec::new();
+        let mut layers = Vec::new();
 
         let mut map_loader = tiled::Loader::new();
         let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
@@ -49,7 +59,7 @@ impl <'a> Assets<'a> {
             for (tile_id, tile) in tileset.tiles() {
                 tiles.insert(
                     TileRef { sheet: sheet.clone(), tile_id },
-                    ((tile_id % columns, tile_id / columns), tile.user_type.clone()));
+                    TileDef { x: tile_id % columns, y: tile_id / columns, user_type: tile.user_type.clone() });
             }
 
             if let Some(image) = &tileset.image {
@@ -77,7 +87,7 @@ impl <'a> Assets<'a> {
                         }
                     }
                 }
-                map.push(map_layer);
+                layers.push(map_layer);
             }
         }
 
@@ -86,7 +96,7 @@ impl <'a> Assets<'a> {
             go,
             sheets,
             tiles,
-            map
+            map: MapDef { layers }
         })
     }
 }
