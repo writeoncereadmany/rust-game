@@ -18,7 +18,16 @@ pub struct TileDef {
     pub user_type: Option<String>,
 }
 
-pub struct MapDef {
+pub struct TileSheet(HashMap<TileRef, TileDef>);
+
+impl TileSheet {
+    pub fn get(&self, tile_ref: &TileRef) -> Option<&TileDef> {
+        let TileSheet(tiles) = self;
+        tiles.get(tile_ref)
+    }
+}
+
+pub struct Level {
     pub layers: Vec<HashMap<(u32, u32), TileRef>>,
 }
 
@@ -26,8 +35,8 @@ pub struct Assets<'a> {
     pub countdown: RgbImage,
     pub go: RgbImage,
     pub sheets: HashMap<String, SpriteSheet<'a>>,
-    pub tiles: HashMap<TileRef, TileDef>,
-    pub levels: Vec<MapDef>,
+    pub tiles: TileSheet,
+    pub levels: Vec<Level>,
 }
 
 impl<'a> Assets<'a> {
@@ -94,8 +103,8 @@ impl<'a> Assets<'a> {
             countdown,
             go,
             sheets,
-            tiles,
-            levels: vec![MapDef { layers }],
+            tiles: TileSheet(tiles),
+            levels: vec![Level { layers }],
         })
     }
 }
