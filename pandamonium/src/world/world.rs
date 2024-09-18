@@ -59,20 +59,20 @@ impl World {
         let mut entities = Entities::new();
 
         for layer in &assets.map {
-            for ((x, y), t@(sheet, _)) in layer.iter() {
-                if let Some(((sx, sy), tile_type)) = assets.tiles.get(&t) {
+            for ((x, y), tile) in layer.iter() {
+                if let Some(((tile_x, tile_y), tile_type)) = assets.tiles.get(&tile) {
                     if let Some(tile_type) = tile_type {
                         match tile_type.as_str() {
                             "Wall" => {
                                 map.put(*x as i32, *y as i32, Tile {
-                                    sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, sheet),
+                                    sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
                                     tile: STONE
                                 });
                             }
                             "Ledge" => {
                                 map.put(*x as i32, *y as i32, Tile {
-                                    sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, sheet),
+                                    sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
                                     tile: LEDGE
                                 });
@@ -94,7 +94,7 @@ impl World {
                         }
                     } else {
                         map.put(*x as i32, *y as i32, Tile {
-                            sprite: Sprite::new(*sx as i32, *sy as i32, -1.0, sheet),
+                            sprite: Sprite::new(*tile_x as i32, *tile_y as i32, -1.0, &tile.sheet),
                             shape: BLOCK.translate(&(*x as f64, *y as f64)),
                             tile: DECORATION
                         });
