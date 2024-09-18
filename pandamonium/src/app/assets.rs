@@ -27,7 +27,7 @@ pub struct Assets<'a> {
     pub go: RgbImage,
     pub sheets : HashMap<String, SpriteSheet<'a>>,
     pub tiles : HashMap<TileRef, TileDef>,
-    pub map : MapDef
+    pub levels: Vec<MapDef>
 }
 
 impl <'a> Assets<'a> {
@@ -96,7 +96,7 @@ impl <'a> Assets<'a> {
             go,
             sheets,
             tiles,
-            map: MapDef { layers }
+            levels: vec![MapDef { layers }]
         })
     }
 }

@@ -58,7 +58,7 @@ impl World {
         let mut map : Map<Tile> = Map::new(30, 20);
         let mut entities = Entities::new();
 
-        for layer in &assets.map.layers {
+        for layer in &assets.levels[level].layers {
             for ((x, y), tile_ref) in layer.iter() {
                 if let Some(tile) = assets.tiles.get(&tile_ref) {
                     if let Some(tile_type) = &tile.user_type {
