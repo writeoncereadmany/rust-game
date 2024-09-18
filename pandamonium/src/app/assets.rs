@@ -4,7 +4,7 @@ use sdl2::image::LoadTexture;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 use std::collections::HashMap;
-use tiled::TileId;
+use tiled::{Map, TileId};
 
 #[derive(Hash, Eq, PartialEq, Debug)]
 pub struct TileRef {
@@ -18,11 +18,11 @@ pub struct TileDef {
     pub user_type: Option<String>,
 }
 
-pub struct TileSheet(HashMap<TileRef, TileDef>);
+pub struct TileSet(HashMap<TileRef, TileDef>);
 
-impl TileSheet {
+impl TileSet {
     pub fn get(&self, tile_ref: &TileRef) -> Option<&TileDef> {
-        let TileSheet(tiles) = self;
+        let TileSet(tiles) = self;
         tiles.get(tile_ref)
     }
 }
@@ -35,7 +35,7 @@ pub struct Assets<'a> {
     pub countdown: RgbImage,
     pub go: RgbImage,
     pub sheets: HashMap<String, SpriteSheet<'a>>,
-    pub tiles: TileSheet,
+    pub tiles: TileSet,
     pub levels: Vec<Level>,
 }
 
@@ -55,56 +55,76 @@ impl<'a> Assets<'a> {
         sheets.insert("Sprites".to_string(), SpriteSheet::new(spritesheet, 12, 12));
         sheets.insert("Text".to_string(), SpriteSheet::new(spritefont, 8, 8));
         let mut tiles = HashMap::new();
-        let mut layers = Vec::new();
+        let mut levels = Vec::new();
 
         let mut map_loader = tiled::Loader::new();
+
         let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
-        for tileset in tile_map.tilesets() {
-            let sheet = tileset.name.to_string();
-
-            let columns = tileset.columns;
-
-            for (tile_id, tile) in tileset.tiles() {
-                tiles.insert(
-                    TileRef { sheet: sheet.clone(), tile_id },
-                    TileDef { x: tile_id % columns, y: tile_id / columns, user_type: tile.user_type.clone() });
-            }
-
-            if let Some(image) = &tileset.image {
-                sheets.insert(
-                    sheet,
-                    SpriteSheet::new(
-                        texture_creator.load_texture(&image.source)?,
-                        tileset.tile_width,
-                        tileset.tile_height));
-            }
-        }
-
-        for layer in tile_map.layers() {
-            if let Some(tiles) = layer.as_tile_layer() {
-                let mut map_layer = HashMap::new();
-                let width = tiles.width().unwrap();
-                let height = tiles.height().unwrap();
-                for x in 0..width {
-                    for y in 0..height {
-                        if let Some(tile) = tiles.get_tile(x as i32, y as i32) {
-                            map_layer.insert(
-                                (x, (height - 1) - y),
-                                TileRef { sheet: tile.get_tileset().name.to_string(), tile_id: tile.id() },
-                            );
-                        }
-                    }
-                }
-                layers.push(map_layer);
-            }
-        }
+        load_level(tile_map, texture_creator, &mut sheets, &mut tiles, &mut levels)?;
 
         Ok(Assets {
             countdown,
             go,
             sheets,
-            tiles: TileSheet(tiles),
-            levels: vec![Level { layers }],
+            tiles: TileSet(tiles),
+            levels,
         })
     }
+}
+
+fn load_level<'a>(
+    tile_map: Map,
+    texture_creator: &'a TextureCreator<WindowContext>,
+    sheets: &mut HashMap<String, SpriteSheet<'a>>,
+    tiles: &mut HashMap<TileRef, TileDef>,
+    levels: &mut Vec<Level>
+) -> Result<(), String> {
+    for tileset in tile_map.tilesets() {
+        let sheet = tileset.name.to_string();
+
+        if sheets.contains_key(&sheet) {
+            continue;
+        }
+
+        let columns = tileset.columns;
+
+        for (tile_id, tile) in tileset.tiles() {
+            tiles.insert(
+                TileRef { sheet: sheet.clone(), tile_id },
+                TileDef { x: tile_id % columns, y: tile_id / columns, user_type: tile.user_type.clone() });
+        }
+
+        if let Some(image) = &tileset.image {
+            sheets.insert(
+                sheet,
+                SpriteSheet::new(
+                    texture_creator.load_texture(&image.source)?,
+                    tileset.tile_width,
+                    tileset.tile_height));
+        }
+    }
+
+    let mut layers = Vec::new();
+
+    for layer in tile_map.layers() {
+        if let Some(tiles) = layer.as_tile_layer() {
+            let mut map_layer = HashMap::new();
+            let width = tiles.width().unwrap();
+            let height = tiles.height().unwrap();
+            for x in 0..width {
+                for y in 0..height {
+                    if let Some(tile) = tiles.get_tile(x as i32, y as i32) {
+                        let sheet = tile.get_tileset().name.clone();
+                        let tile_id = tile.id();
+
+                        map_layer.insert((x, (height - 1) - y), TileRef { sheet, tile_id });
+                    }
+                }
+            }
+            layers.push(map_layer);
+        }
+    }
+
+    levels.push(Level { layers });
+    Ok(())
 }
