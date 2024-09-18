@@ -9,11 +9,11 @@
     ],
     "fileStates": {
         "001.tmx": {
-            "scale": 1.0575,
-            "selectedLayer": 1,
+            "scale": 3.26,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 102.12765957446805,
-                "y": 114.89361702127655
+                "x": 153.0674846625767,
+                "y": 124.69325153374233
             }
         },
         "002.tmx": {
@@ -26,11 +26,11 @@
         },
         "Objects.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 7.9488
+            "scaleInEditor": 2.69
         },
         "Walls.tsx": {
-            "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInDock": 3.5518,
+            "scaleInEditor": 2.69
         }
     },
     "last.imagePath": "/Users/tomj/Projects/rust/sdl2-experiments/assets/graphics",
@@ -45,10 +45,10 @@
     ],
     "project": "Maps.tiled-project",
     "recentFiles": [
-        "002.tmx",
         "Walls.tsx",
         "Objects.tsx",
-        "001.tmx"
+        "001.tmx",
+        "002.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
