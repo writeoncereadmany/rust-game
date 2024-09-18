@@ -23,7 +23,7 @@ pub struct ControllerItem {
     key: Keycode,
     pad: Button,
     pressed: bool,
-    on_press: Option<ButtonPress>
+    on_press: Option<ButtonPress>,
 }
 
 impl ControllerItem {
@@ -36,12 +36,12 @@ impl ControllerItem {
                         events.fire(x);
                     }
                 }
-            },
+            }
             SdlEvent::KeyUp { keycode: Some(key_released), repeat: false, .. } => {
                 if key_released == &self.key {
                     self.pressed = false;
                 }
-            },
+            }
             SdlEvent::ControllerButtonDown { button, .. } => {
                 if button == &self.pad {
                     self.pressed = true;
@@ -65,16 +65,16 @@ pub struct Controller {
     id: u64,
     left: ControllerItem,
     right: ControllerItem,
-    jump: ControllerItem
+    jump: ControllerItem,
 }
 
 impl Controller {
     pub fn new(left: Keycode, right: Keycode, jump: Keycode) -> Self {
         Controller {
             id: 1,
-            left: ControllerItem{ key: left, pad: Button::DPadLeft, pressed: false, on_press: None },
-            right: ControllerItem{ key: right, pad: Button::DPadRight, pressed: false, on_press: None },
-            jump: ControllerItem{ key: jump, pad: Button::A, pressed: false, on_press: Some(ButtonPress(1)) }
+            left: ControllerItem { key: left, pad: Button::DPadLeft, pressed: false, on_press: None },
+            right: ControllerItem { key: right, pad: Button::DPadRight, pressed: false, on_press: None },
+            jump: ControllerItem { key: jump, pad: Button::A, pressed: false, on_press: Some(ButtonPress(1)) },
         }
     }
 
@@ -101,7 +101,7 @@ impl Controller {
         events.fire(ControllerState {
             id: self.id,
             x: self.x(),
-            jump_held: self.jump_held()
+            jump_held: self.jump_held(),
         });
     }
 }

@@ -21,7 +21,7 @@ use super::events::{GameOver, NewGame, ShowHighScores, ShowTitleScreen};
 #[derive(Clone)]
 pub struct HiScore {
     pub name: String,
-    pub score: u32
+    pub score: u32,
 }
 
 pub struct App<'a> {
@@ -32,28 +32,27 @@ pub struct App<'a> {
     pub controller: Controller,
     pub assets: &'a Assets<'a>,
     pub screen: Screen<'a>,
-    pub scores: Vec<HiScore>
+    pub scores: Vec<HiScore>,
 }
 
-impl <'a> App<'a> {
+impl<'a> App<'a> {
     pub fn starting_scores() -> Vec<HiScore> {
         vec![
-            HiScore { name: "Anne".to_string(), score: 1000},
-            HiScore { name: "Bill".to_string(), score: 900},
-            HiScore { name: "Carl".to_string(), score: 800},
-            HiScore { name: "Dina".to_string(), score: 700},
-            HiScore { name: "Elsa".to_string(), score: 600},
-            HiScore { name: "Fred".to_string(), score: 500},
-            HiScore { name: "Gwen".to_string(), score: 400},
-            HiScore { name: "Hank".to_string(), score: 300},
-            HiScore { name: "Iris".to_string(), score: 200},
-            HiScore { name: "Jake".to_string(), score: 100},
+            HiScore { name: "Anne".to_string(), score: 1000 },
+            HiScore { name: "Bill".to_string(), score: 900 },
+            HiScore { name: "Carl".to_string(), score: 800 },
+            HiScore { name: "Dina".to_string(), score: 700 },
+            HiScore { name: "Elsa".to_string(), score: 600 },
+            HiScore { name: "Fred".to_string(), score: 500 },
+            HiScore { name: "Gwen".to_string(), score: 400 },
+            HiScore { name: "Hank".to_string(), score: 300 },
+            HiScore { name: "Iris".to_string(), score: 200 },
+            HiScore { name: "Jake".to_string(), score: 100 },
         ]
     }
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
-
+impl<'a> GameLoop<'a, Renderer<'a>> for App<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         renderer.clear().unwrap();
 
@@ -65,23 +64,22 @@ impl <'a> GameLoop<'a, Renderer<'a>> for App<'a> {
     }
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
-        
         if let Some(e) = event.unwrap() {
             match e {
-                SdlEvent::Quit {..} => return Err("Escape pressed: ending game".into()),
-                SdlEvent::KeyDown { keycode: Some(Keycode::Escape), ..} => return Err("Esc pressed: ending game".into()),
-                SdlEvent::ControllerDeviceAdded{ which, .. } => { 
+                SdlEvent::Quit { .. } => return Err("Escape pressed: ending game".into()),
+                SdlEvent::KeyDown { keycode: Some(Keycode::Escape), .. } => return Err("Esc pressed: ending game".into()),
+                SdlEvent::ControllerDeviceAdded { which, .. } => {
                     self.active_controller = self.game_controller_subsystem.open(*which).ok();
-                },
+                }
                 _ => {}
             }
         }
         // event.apply(|ClearAudio()| { self.audio_device.lock().clear(); } );
         // event.apply(|tune| play_tune(&mut self.audio_device, tune));
-        event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events))});
-        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone()))});
-        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone()))});
-        event.apply(|ShowTitleScreen()| { self.screen = Screen::TitleScreen(Title)});
+        event.apply(|NewGame(panda_type)| { self.screen = Screen::GameScreen(Game::new(*panda_type, self.assets, events)) });
+        event.apply(|GameOver(score)| { self.screen = Screen::HiScoreScreen(Scores::new(*score, self.scores.clone())) });
+        event.apply(|ShowHighScores()| { self.screen = Screen::HiScoreScreen(Scores::new(0, self.scores.clone())) });
+        event.apply(|ShowTitleScreen()| { self.screen = Screen::TitleScreen(Title) });
         event.apply(|UpdateHiScores(scores)| { self.scores = scores.clone() });
 
         self.controller.on_event(event, events);

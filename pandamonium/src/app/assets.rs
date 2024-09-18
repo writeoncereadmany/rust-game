@@ -9,30 +9,30 @@ use tiled::TileId;
 #[derive(Hash, Eq, PartialEq, Debug)]
 pub struct TileRef {
     pub sheet: String,
-    pub tile_id: TileId
+    pub tile_id: TileId,
 }
 
 pub struct TileDef {
     pub x: u32,
     pub y: u32,
-    pub user_type: Option<String>
+    pub user_type: Option<String>,
 }
 
 pub struct MapDef {
-    pub layers : Vec<HashMap<(u32, u32), TileRef>>
+    pub layers: Vec<HashMap<(u32, u32), TileRef>>,
 }
 
 pub struct Assets<'a> {
     pub countdown: RgbImage,
     pub go: RgbImage,
-    pub sheets : HashMap<String, SpriteSheet<'a>>,
-    pub tiles : HashMap<TileRef, TileDef>,
-    pub levels: Vec<MapDef>
+    pub sheets: HashMap<String, SpriteSheet<'a>>,
+    pub tiles: HashMap<TileRef, TileDef>,
+    pub levels: Vec<MapDef>,
 }
 
-impl <'a> Assets<'a> {
-    pub fn new(texture_creator : &'a TextureCreator<WindowContext>) -> Result<Self, String> {
-        let assets = find_folder::Search::ParentsThenKids(3,3).for_folder("assets").unwrap();
+impl<'a> Assets<'a> {
+    pub fn new(texture_creator: &'a TextureCreator<WindowContext>) -> Result<Self, String> {
+        let assets = find_folder::Search::ParentsThenKids(3, 3).for_folder("assets").unwrap();
 
         let graphics = assets.join("graphics");
 
@@ -51,7 +51,6 @@ impl <'a> Assets<'a> {
         let mut map_loader = tiled::Loader::new();
         let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
         for tileset in tile_map.tilesets() {
-
             let sheet = tileset.name.to_string();
 
             let columns = tileset.columns;
@@ -82,7 +81,7 @@ impl <'a> Assets<'a> {
                         if let Some(tile) = tiles.get_tile(x as i32, y as i32) {
                             map_layer.insert(
                                 (x, (height - 1) - y),
-                                TileRef { sheet: tile.get_tileset().name.to_string(), tile_id: tile.id() }
+                                TileRef { sheet: tile.get_tileset().name.to_string(), tile_id: tile.id() },
                             );
                         }
                     }
@@ -96,7 +95,7 @@ impl <'a> Assets<'a> {
             go,
             sheets,
             tiles,
-            levels: vec![MapDef { layers }]
+            levels: vec![MapDef { layers }],
         })
     }
 }

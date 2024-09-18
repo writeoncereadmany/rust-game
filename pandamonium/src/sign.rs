@@ -2,7 +2,7 @@
 pub enum Sign {
     POSITIVE,
     ZERO,
-    NEGATIVE
+    NEGATIVE,
 }
 
 impl Sign {

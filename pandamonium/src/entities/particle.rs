@@ -23,7 +23,7 @@ pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Event
 pub fn spawn_text(x: f64, y: f64, text: &str, entities: &mut Entities, events: &mut Events) {
     let text_id = entities.spawn(entity()
         .with(Position(x, y))
-        .with(Text { text: text.to_string(), justification: align::CENTER | align::MIDDLE})
+        .with(Text { text: text.to_string(), justification: align::CENTER | align::MIDDLE })
         .with(Velocity(0.0, 2.0))
     );
     events.schedule(Duration::from_millis(600), Destroy(text_id));
@@ -35,7 +35,7 @@ pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) 
         .with(Sprite::new(4, 5, 2.0, "Sprites"))
         .with(Period(0.6))
         .with(Phase(0.0))
-//        .with(Flicker((x as u32 ^ y as u32) & 1 == 1))
+        //        .with(Flicker((x as u32 ^ y as u32) & 1 == 1))
         .with(AnimationCycle(vec![
             (0.10, Sprite::new(4, 5, 2.0, "Sprites")),
             (0.20, Sprite::new(5, 5, 2.0, "Sprites")),
@@ -57,7 +57,7 @@ pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Eve
         .with(Sprite::new(4, 5, 2.0, "Sprites"))
         .with(Period(0.3))
         .with(Phase(0.0))
-//        .with(Flicker(true))
+        //        .with(Flicker(true))
         .with(AnimationCycle(vec![
             (0.15, Sprite::new(4, 5, 2.0, "Sprites")),
             (0.3, Sprite::new(5, 5, 2.0, "Sprites")),

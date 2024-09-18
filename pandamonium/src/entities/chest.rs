@@ -14,7 +14,9 @@ use entity::Id;
 pub struct Chest;
 
 #[derive(Event)]
-pub struct OpenChest { id: u64 }
+pub struct OpenChest {
+    id: u64,
+}
 
 pub fn spawn_chest(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
@@ -55,7 +57,7 @@ pub fn open_chests(_key: &KeyCollected, entities: &mut Entities, events: &mut Ev
     });
 }
 
-pub fn open_chest(OpenChest { id } : &OpenChest, entities: &mut Entities, events: &mut Events) {
+pub fn open_chest(OpenChest { id }: &OpenChest, entities: &mut Entities, events: &mut Events) {
     if let Some(Position(x, y)) = entities.delete(id) {
         spawn_open_chest(x, y, entities, events);
         spawn_ruby(x, y, entities);

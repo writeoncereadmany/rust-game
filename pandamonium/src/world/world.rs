@@ -36,14 +36,16 @@ use TileType::{DECORATION, STONE};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
-    STONE, LEDGE, DECORATION
+    STONE,
+    LEDGE,
+    DECORATION,
 }
 
 #[derive(Clone)]
 pub struct Tile {
     sprite: Sprite,
     shape: Shape,
-    tile: TileType
+    tile: TileType,
 }
 
 pub struct World {
@@ -52,10 +54,8 @@ pub struct World {
 }
 
 impl World {
-
     pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
-
-        let mut map : Map<Tile> = Map::new(30, 20);
+        let mut map: Map<Tile> = Map::new(30, 20);
         let mut entities = Entities::new();
 
         for layer in &assets.levels[level].layers {
@@ -67,14 +67,14 @@ impl World {
                                 map.put(*x as i32, *y as i32, Tile {
                                     sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
-                                    tile: STONE
+                                    tile: STONE,
                                 });
                             }
                             "Ledge" => {
                                 map.put(*x as i32, *y as i32, Tile {
                                     sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
-                                    tile: LEDGE
+                                    tile: LEDGE,
                                 });
                             }
                             "Hero" => {
@@ -96,7 +96,7 @@ impl World {
                         map.put(*x as i32, *y as i32, Tile {
                             sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                             shape: BLOCK.translate(&(*x as f64, *y as f64)),
-                            tile: DECORATION
+                            tile: DECORATION,
                         });
                     }
                 }
@@ -104,10 +104,10 @@ impl World {
         }
 
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64))}
-        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64))}
- 
-        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64))}
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64)) }
+        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64)) }
+
+        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64)) }
 
         events.schedule(Duration::from_millis(2400), SpawnTimer(15.0, 19.5));
 
@@ -124,7 +124,7 @@ impl World {
 
 fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {
     let mut pixels = HashSet::new();
-    
+
     let height = image.height() as i32;
 
     for x in 0..image.width() {
@@ -137,9 +137,8 @@ fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {
     pixels
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>> for World {
-    
-    fn render(&self, renderer: &mut Renderer<'a>) -> Result <(), String> {
+impl<'a> GameLoop<'a, Renderer<'a>> for World {
+    fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.map.tiles().for_each(|(position, tile)|
             renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
         );
@@ -166,7 +165,6 @@ impl <'a> GameLoop<'a, Renderer<'a>> for World {
 }
 
 
-
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
@@ -190,7 +188,7 @@ fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
     entities.apply(|(Position(x, y), LastPush(px, py))| {
         Position(x + px, y + py)
     });
-    entities.apply(|(Velocity(dx, dy), LastPush(px, py))| 
+    entities.apply(|(Velocity(dx, dy), LastPush(px, py))|
         Velocity(
             if px.abs() > 1e-6 { 0.0 } else { dx },
             if py.abs() > 1e-6 { 0.0 } else { dy },
@@ -204,10 +202,10 @@ fn next_collision(map: &Map<Tile>, obstacles: &Vec<Shape>, moving: &Shape, dv: &
         .map(|(_, tile)| tile)
         .map(|tile| {
             if tile.tile == DECORATION {
-                return None
+                return None;
             }
             let maybe_collision = moving.collides(&tile.shape, dv);
-            if let Some(Collision { push, ..}) = maybe_collision {
+            if let Some(Collision { push, .. }) = maybe_collision {
                 if tile.tile == LEDGE && (push.dot(&UNIT_X).abs() > 1e-6 || push.dot(&UNIT_Y) < 0.0)
                 {
                     return None;
@@ -237,10 +235,10 @@ fn item_collisions(entities: &Entities, events: &mut Events) {
 
     entities.for_each_pair(|(Hero, Id(hero_id), TranslatedMesh(hero_mesh), Translation(tx, ty)), (interaction_type, Id(other_id), TranslatedMesh(other_mesh))| {
         if hero_mesh.intersects_moving(&other_mesh, &(*tx, *ty)) {
-            events.fire(Interaction { 
-                hero_id: *hero_id, 
-                other_id: *other_id, 
-                interaction_type: *interaction_type 
+            events.fire(Interaction {
+                hero_id: *hero_id,
+                other_id: *other_id,
+                interaction_type: *interaction_type,
             });
         }
     });

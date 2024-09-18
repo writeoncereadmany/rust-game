@@ -9,7 +9,7 @@ use entity::{entity, Entities};
 
 use super::components::*;
 
-const TOTAL_SPRING_TIME : f64 = 0.7;
+const TOTAL_SPRING_TIME: f64 = 0.7;
 
 #[derive(Clone, Variable)]
 struct SinceLastTrigger(f64);
@@ -31,8 +31,8 @@ pub fn spring_events(event: &Event, entities: &mut Entities, _events: &mut Event
     event.apply(|&Interaction { interaction_type, other_id, .. }| {
         if interaction_type == Interacts::Spring {
             entities.apply_to(&other_id, |last_trigger| {
-                if let Some(existing@SinceLastTrigger(_)) = last_trigger {
-                    existing                    
+                if let Some(existing @ SinceLastTrigger(_)) = last_trigger {
+                    existing
                 } else {
                     SinceLastTrigger(0.0)
                 }
@@ -41,8 +41,9 @@ pub fn spring_events(event: &Event, entities: &mut Entities, _events: &mut Event
     });
 
     event.apply(|dt: &Duration| {
-        entities.apply(|SinceLastTrigger(t)| { let new_t = t + dt.as_secs_f64();
-            if new_t <= TOTAL_SPRING_TIME { Some(SinceLastTrigger(new_t)) } else { None } 
+        entities.apply(|SinceLastTrigger(t)| {
+            let new_t = t + dt.as_secs_f64();
+            if new_t <= TOTAL_SPRING_TIME { Some(SinceLastTrigger(new_t)) } else { None }
         });
         entities.apply(|(Spring, last_trigger)| animate_spring(last_trigger));
     });

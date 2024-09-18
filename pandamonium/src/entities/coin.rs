@@ -1,5 +1,5 @@
 use engine::graphics::sprite::Sprite;
-use entity::{entity, Entities, };
+use entity::{entity, Entities};
 
 use super::components::*;
 use super::pickup::*;

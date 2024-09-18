@@ -32,7 +32,7 @@ pub fn run() -> Result<(), String> {
 
     video_subsystem.text_input().start();
 
-    let canvas : Canvas<Window> = window
+    let canvas: Canvas<Window> = window
         .into_canvas()
         .present_vsync()
         .build()
@@ -49,14 +49,14 @@ pub fn run() -> Result<(), String> {
         COLUMNS as u32,
         ROWS as u32,
         12,
-        12
-    ).unwrap(); 
+        12,
+    ).unwrap();
 
     let events = Events::new();
 
     let app = App {
         video_subsystem,
-        game_controller_subsystem, 
+        game_controller_subsystem,
         // audio_device,
         active_controller: None,
         controller: Controller::new(Keycode::Z, Keycode::X, Keycode::RShift),

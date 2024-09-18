@@ -10,7 +10,7 @@ use engine::shapes::shape::shape::Shape;
 
 pub fn spawn_flagpole(x: f64, y: f64, entities: &mut Entities) {
     entities.spawn(entity()
-        .with(Position(x,y))
+        .with(Position(x, y))
         .with(Sprite::new(5, 7, 0.3, "Sprites")));
 
     let animation_cycle = AnimationCycle(vec!(

@@ -17,7 +17,9 @@ pub struct ShowHighScores();
 pub struct ShowTitleScreen();
 
 #[derive(Event)]
-pub struct FlagpoleCollected { pub id: u64 }
+pub struct FlagpoleCollected {
+    pub id: u64,
+}
 
 #[derive(Event)]
 pub struct KeyCollected;
@@ -62,11 +64,11 @@ pub struct GameOver(pub u32);
 pub struct Interaction {
     pub hero_id: u64,
     pub other_id: u64,
-    pub interaction_type: Interacts
+    pub interaction_type: Interacts,
 }
 
 #[derive(Clone, Event)]
 pub enum Score {
     Points(u32),
-    Double
+    Double,
 }

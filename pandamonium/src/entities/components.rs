@@ -17,14 +17,14 @@ pub struct Phase(pub f64);
 
 pub fn phase(entities: &mut Entities, dt: &Duration) {
     entities.apply(|(Period(period), Phase(phase))| Phase((phase + (dt.as_secs_f64() / period)) % 1.0));
-} 
+}
 
 // note: flicker only works as long as there's another controller setting the sprite! eg an animation cycle
 #[derive(Clone, Variable)]
 pub struct Flicker(pub bool);
 
 pub fn flicker(entities: &mut Entities) {
-    entities.apply(|(Flicker(flicker), sprite) : (Flicker, Sprite)| if flicker { Some(sprite) } else { None });
+    entities.apply(|(Flicker(flicker), sprite): (Flicker, Sprite)| if flicker { Some(sprite) } else { None });
     entities.apply(|Flicker(flicker)| Flicker(!flicker));
 }
 
@@ -56,7 +56,7 @@ pub fn next_frame(phase: f64, AnimationCycle(frames): &AnimationCycle) -> Sprite
     let phase = phase % 1.0;
     for (frame_limit, sprite) in frames {
         if &phase < frame_limit {
-            return sprite.clone()
+            return sprite.clone();
         }
     }
     Sprite::new(0, 0, 0.0, "Sprites")

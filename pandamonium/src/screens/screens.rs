@@ -10,10 +10,10 @@ use super::title::Title;
 pub enum Screen<'a> {
     GameScreen(Game<'a>),
     TitleScreen(Title),
-    HiScoreScreen(Scores)
+    HiScoreScreen(Scores),
 }
 
-impl <'a> GameLoop<'a, Renderer<'a>> for Screen<'a> {
+impl<'a> GameLoop<'a, Renderer<'a>> for Screen<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         match self {
             Screen::GameScreen(game) => game.render(renderer),
@@ -21,7 +21,7 @@ impl <'a> GameLoop<'a, Renderer<'a>> for Screen<'a> {
             Screen::HiScoreScreen(scores) => scores.render(renderer)
         }
     }
- 
+
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         match self {
             Screen::GameScreen(game) => game.event(event, events),

@@ -32,9 +32,9 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
     lockbox_events(event, entities, events);
     spawn_events(event, entities, events);
     spring_events(event, entities, events);
-    
+
     event.apply(|Destroy(id)| entities.delete::<()>(id));
-    event.apply(|pickup| { collect_pickup(pickup, entities, events)});
+    event.apply(|pickup| { collect_pickup(pickup, entities, events) });
 }
 
 pub fn spawn_events(event: &Event, entities: &mut Entities, events: &mut Events) {
