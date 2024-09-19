@@ -4,6 +4,7 @@ use sdl2::image::LoadTexture;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tiled::{Map, TileId};
 
 #[derive(Hash, Eq, PartialEq, Debug)]
@@ -59,8 +60,19 @@ impl<'a> Assets<'a> {
 
         let mut map_loader = tiled::Loader::new();
 
-        let tile_map = map_loader.load_tmx_map(assets.join("maps").join("001.tmx")).map_err(|err| format!("{err:?}"))?;
-        load_level(tile_map, texture_creator, &mut sheets, &mut tiles, &mut levels)?;
+        let mut map_files: Vec<PathBuf> = assets.join("maps").read_dir()
+            .map_err(|_e| "Failed")?
+            .flatten()
+            .map(|dir_entry| dir_entry.path())
+            .filter(|path| path.extension().map_or(false, |ext| ext == "tmx"))
+            .collect();
+
+        map_files.sort();
+
+        for map_file in map_files {
+            let tile_map = map_loader.load_tmx_map(map_file).map_err(|err| format!("{err:?}"))?;
+            load_level(tile_map, texture_creator, &mut sheets, &mut tiles, &mut levels)?;
+        }
 
         Ok(Assets {
             countdown,
