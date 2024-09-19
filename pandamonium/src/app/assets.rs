@@ -61,7 +61,7 @@ impl<'a> Assets<'a> {
         let mut map_loader = tiled::Loader::new();
 
         let mut map_files: Vec<PathBuf> = assets.join("maps").read_dir()
-            .map_err(|_e| "Failed")?
+            .map_err(|err| format!("{err:?}"))?
             .flatten()
             .map(|dir_entry| dir_entry.path())
             .filter(|path| path.extension().map_or(false, |ext| ext == "tmx"))
