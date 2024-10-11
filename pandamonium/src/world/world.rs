@@ -143,8 +143,6 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
             renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
         );
 
-        renderer.draw_sprite(&Sprite::multi(2, 0, 0.0, 2, 1, "Sprites"), 14.0, 19.0);
-
         self.entities.for_each(|(Position(x, y), sprite)| {
             renderer.draw_sprite(&sprite, x, y);
         });
