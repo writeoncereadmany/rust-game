@@ -49,16 +49,17 @@ pub struct Tile {
 }
 
 pub struct World {
-    pub map: Map<Tile>,
+    pub maps: Vec<Map<Tile>>,
     pub entities: Entities,
 }
 
 impl World {
     pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
-        let mut map: Map<Tile> = Map::new(30, 20);
+        let mut maps: Vec<Map<Tile>> = Vec::new();
         let mut entities = Entities::new();
 
         for layer in &assets.levels[level].layers {
+            let mut map = Map::new(30, 20);
             for ((x, y), tile_ref) in layer.iter() {
                 if let Some(tile) = assets.tiles.get(&tile_ref) {
                     if let Some(tile_type) = &tile.user_type {
@@ -101,6 +102,7 @@ impl World {
                     }
                 }
             }
+            maps.push(map);
         }
 
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
@@ -116,7 +118,7 @@ impl World {
         countdown(events);
 
         World {
-            map,
+            maps,
             entities,
         }
     }
@@ -139,9 +141,11 @@ fn pixels(image: &RgbImage, color: &Rgb<u8>) -> HashSet<(i32, i32)> {
 
 impl<'a> GameLoop<'a, Renderer<'a>> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
-        self.map.tiles().for_each(|(position, tile)|
-            renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
-        );
+        for map in &self.maps {
+            map.tiles().for_each(|(position, tile)|
+                renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
+            );
+        }
 
         self.entities.for_each(|(Position(x, y), sprite)| {
             renderer.draw_sprite(&sprite, x, y);
@@ -167,16 +171,16 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
     flicker(&mut world.entities);
-    map_collisions(&mut world.entities, &world.map);
+    map_collisions(&mut world.entities, &world.maps);
     item_collisions(&world.entities, events);
 }
 
-fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
+fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>) {
     let obstacles: Vec<Shape> = entities.collect().iter().map(|(Obstacle, TranslatedMesh(shape))| shape.clone()).collect();
     entities.apply(|(Collidable, TranslatedMesh(shape), Translation(tx, ty))| {
         let (mut new_tx, mut new_ty) = (tx, ty);
         let (mut tot_px, mut tot_py) = (0.0, 0.0);
-        while let Some(Collision { push: (px, py), .. }) = next_collision(map, &obstacles, &shape, &(new_tx, new_ty)) {
+        while let Some(Collision { push: (px, py), .. }) = next_collision(maps, &obstacles, &shape, &(new_tx, new_ty)) {
             (new_tx, new_ty) = (new_tx + px, new_ty + py);
             (tot_px, tot_py) = (tot_px + px, tot_py + py);
         }
@@ -195,24 +199,26 @@ fn map_collisions(entities: &mut Entities, map: &Map<Tile>) {
     entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))));
 }
 
-fn next_collision(map: &Map<Tile>, obstacles: &Vec<Shape>, moving: &Shape, dv: &(f64, f64)) -> Option<Collision> {
-    let mut map_collisions: Vec<Collision> = map.overlapping(moving, dv)
-        .map(|(_, tile)| tile)
-        .map(|tile| {
-            if tile.tile == DECORATION {
-                return None;
-            }
-            let maybe_collision = moving.collides(&tile.shape, dv);
-            if let Some(Collision { push, .. }) = maybe_collision {
-                if tile.tile == LEDGE && (push.dot(&UNIT_X).abs() > 1e-6 || push.dot(&UNIT_Y) < 0.0)
-                {
+fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<Shape>, moving: &Shape, dv: &(f64, f64)) -> Option<Collision> {
+    let mut map_collisions: Vec<Collision> = maps.iter().map(
+        |map| map.overlapping(moving, dv)
+            .map(|(_, tile)| tile)
+            .map(|tile| {
+                if tile.tile == DECORATION {
                     return None;
                 }
-            }
-            maybe_collision
-        })
-        .flatten()
-        .collect();
+                let maybe_collision = moving.collides(&tile.shape, dv);
+                if let Some(Collision { push, .. }) = maybe_collision {
+                    if tile.tile == LEDGE && (push.dot(&UNIT_X).abs() > 1e-6 || push.dot(&UNIT_Y) < 0.0)
+                    {
+                        return None;
+                    }
+                }
+                maybe_collision
+            })
+            .flatten())
+            .flatten()
+            .collect();
 
     obstacles.iter()
         .map(|obstacle| moving.collides(obstacle, dv))

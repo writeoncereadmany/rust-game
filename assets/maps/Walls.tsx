@@ -48,6 +48,14 @@
  <tile id="53" type="Wall"/>
  <tile id="54" type="Wall"/>
  <tile id="55" type="Wall"/>
+ <tile id="56" type="Ledge"/>
+ <tile id="57" type="Ledge"/>
+ <tile id="58" type="Ledge"/>
+ <tile id="59" type="Ledge"/>
+ <tile id="60" type="Ledge"/>
+ <tile id="61" type="Ledge"/>
+ <tile id="62" type="Ledge"/>
+ <tile id="63" type="Ledge"/>
  <tile id="65" type="Wall"/>
  <tile id="67" type="Wall"/>
  <tile id="77" type="Wall"/>
@@ -57,11 +65,12 @@
  <tile id="81" type="Wall"/>
  <tile id="82" type="Wall"/>
  <wangsets>
-  <wangset name="Walls" type="edge" tile="9">
+  <wangset name="Walls" type="edge" tile="47">
    <wangcolor name="Wall" color="#ff0000" tile="13" probability="1"/>
    <wangcolor name="Ledge" color="#00ff00" tile="49" probability="1"/>
    <wangcolor name="Grass" color="#0000ff" tile="17" probability="1"/>
    <wangcolor name="Rock" color="#ff7700" tile="9" probability="1"/>
+   <wangcolor name="Cloud" color="#00e9ff" tile="63" probability="1"/>
    <wangtile tileid="0" wangid="0,0,1,0,1,0,0,0"/>
    <wangtile tileid="1" wangid="0,0,1,0,1,0,1,0"/>
    <wangtile tileid="2" wangid="0,0,0,0,1,0,1,0"/>
@@ -110,6 +119,9 @@
    <wangtile tileid="48" wangid="0,0,2,0,0,0,0,0"/>
    <wangtile tileid="49" wangid="0,0,2,0,0,0,2,0"/>
    <wangtile tileid="50" wangid="0,0,0,0,0,0,2,0"/>
+   <wangtile tileid="60" wangid="0,0,5,0,0,0,0,0"/>
+   <wangtile tileid="61" wangid="0,0,5,0,0,0,5,0"/>
+   <wangtile tileid="62" wangid="0,0,0,0,0,0,5,0"/>
   </wangset>
   <wangset name="Border" type="edge" tile="54">
    <wangcolor name="Border" color="#ff0000" tile="54" probability="1"/>
