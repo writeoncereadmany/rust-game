@@ -14,8 +14,8 @@ pub mod lockbox;
 use entity::Entities;
 
 use engine::events::{Event, Events};
-
 use crate::app::events::*;
+use crate::controllers::physics::*;
 
 use self::chest::chest_events;
 use self::hero::hero_events;
@@ -27,6 +27,9 @@ use self::timer::spawn_timer;
 
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
 {
+    event.apply(|dt| gravity(entities, dt));
+    event.apply(|dt| integrate(entities, dt));
+    event.apply(|dt| translate(entities, dt));
     hero_events(entities, event, events);
     chest_events(event, entities, events);
     lockbox_events(event, entities, events);

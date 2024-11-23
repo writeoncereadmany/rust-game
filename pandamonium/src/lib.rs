@@ -8,3 +8,4 @@ mod game;
 mod music;
 mod screens;
 mod world;
+mod controllers;

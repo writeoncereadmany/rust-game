@@ -22,7 +22,6 @@ const WALL_STICK: f64 = 0.1;
 const MAX_WALL_FALL_SPEED: f64 = -8.0;
 const JUMP_SPEED: f64 = 15.0;
 const SPRING_BOUNCE_SPEED: f64 = 45.0;
-const GRAVITY: f64 = 100.0;
 const EXTRA_JUMP: f64 = 90.0;
 const EXTRA_JUMP_DURATION: f64 = 0.2;
 const COYOTE_TIME: f64 = 0.1;
@@ -116,11 +115,8 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     update_coyote_time(entities, dt);
     check_prejump(entities, dt, events);
     wall_stick(entities, dt);
-    gravity(entities, dt);
     uplift(entities, dt);
     clamp(entities, dt);
-    integrate(entities, dt);
-    translate(entities, dt);
     facing(entities, dt);
     animate(entities, dt);
 }
@@ -204,18 +200,6 @@ fn update_coyote_time(entities: &mut Entities, dt: &Duration) {
             CoyoteTime(JumpDirection::NONE, 0.0)
         }
     })
-}
-
-fn gravity(entities: &mut Entities, dt: &Duration) {
-    entities.apply(|(Gravity, Velocity(dx, dy))| Velocity(dx, dy - GRAVITY * dt.as_secs_f64()))
-}
-
-fn integrate(entities: &mut Entities, dt: &Duration) {
-    entities.apply(|Velocity(dx, dy)| Translation(dx * dt.as_secs_f64(), dy * dt.as_secs_f64()));
-}
-
-fn translate(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Translation(tx, ty), Position(x, y))| Position(x + tx, y + ty));
 }
 
 fn wall_stick(entities: &mut Entities, _dt: &Duration) {
