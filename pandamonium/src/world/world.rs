@@ -147,6 +147,17 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
             );
         }
 
+        let off_lamp = Sprite::new(6, 4, 0.0, "Walls");
+        for x in 0..30 {
+            renderer.draw_sprite(&off_lamp, x as f64, 0.0);
+            renderer.draw_sprite(&off_lamp, x as f64, 19.0);
+        }
+
+        for y in 1..19 {
+            renderer.draw_sprite(&off_lamp, 0.0, y as f64);
+            renderer.draw_sprite(&off_lamp, 29.0, y as f64);
+        }
+
         self.entities.for_each(|(Position(x, y), sprite)| {
             renderer.draw_sprite(&sprite, x + 1.0, y + 1.0);
         });

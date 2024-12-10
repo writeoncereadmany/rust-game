@@ -19,7 +19,7 @@
         },
         "0001.tmx": {
             "scale": 2.448511904761905,
-            "selectedLayer": 0,
+            "selectedLayer": -1,
             "viewCenter": {
                 "x": 167.85705603500668,
                 "y": 108.02479640209069
@@ -27,7 +27,7 @@
         },
         "0002.tmx": {
             "scale": 2.448511904761905,
-            "selectedLayer": 0,
+            "selectedLayer": -1,
             "viewCenter": {
                 "x": 167.85705603500668,
                 "y": 108.02479640209069
