@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Walls.tsx",
+    "activeFile": "001.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -17,28 +17,44 @@
                 "y": 119.9872981310107
             }
         },
+        "0001.tmx": {
+            "scale": 2.448511904761905,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 167.85705603500668,
+                "y": 108.02479640209069
+            }
+        },
+        "0002.tmx": {
+            "scale": 2.448511904761905,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 167.85705603500668,
+                "y": 108.02479640209069
+            }
+        },
         "001.tmx": {
             "scale": 2.15,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 187.44186046511626,
-                "y": 176.97674418604652
+                "x": 198.13953488372093,
+                "y": 140.69767441860466
             }
         },
         "002.tmx": {
-            "scale": 2.6876,
-            "selectedLayer": 2,
+            "scale": 1.1142,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 166.69147194522992,
-                "y": 138.97157315076646
+                "x": 258.48142164781905,
+                "y": 282.26530245916354
             }
         },
         "003.tmx": {
             "scale": 2.15,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 231.16279069767444,
-                "y": 109.06976744186048
+                "x": 184.1860465116279,
+                "y": 129.53488372093022
             }
         },
         "More.tsx": {
@@ -55,10 +71,12 @@
         }
     },
     "last.imagePath": "/Users/tomj/Projects/rust/sdl2-experiments/assets/graphics",
+    "map.height": 18,
     "map.lastUsedFormat": "tmx",
     "map.renderOrder": "1",
     "map.tileHeight": 12,
     "map.tileWidth": 12,
+    "map.width": 28,
     "openFiles": [
         "Walls.tsx",
         "Objects.tsx",
@@ -70,13 +88,13 @@
     ],
     "project": "Maps.tiled-project",
     "recentFiles": [
-        "001.tmx",
-        "/Users/tomj/Projects/rust/sdl2-experiments/assets/template.tmx",
-        "More.tsx",
         "002.tmx",
         "003.tmx",
+        "001.tmx",
+        "Walls.tsx",
         "Objects.tsx",
-        "Walls.tsx"
+        "More.tsx",
+        "/Users/tomj/Projects/rust/sdl2-experiments/assets/template.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

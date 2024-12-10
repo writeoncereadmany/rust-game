@@ -59,7 +59,7 @@ impl World {
         let mut entities = Entities::new();
 
         for layer in &assets.levels[level].layers {
-            let mut map = Map::new(30, 20);
+            let mut map = Map::new(28, 18);
             for ((x, y), tile_ref) in layer.iter() {
                 if let Some(tile) = assets.tiles.get(&tile_ref) {
                     if let Some(tile_type) = &tile.user_type {
@@ -143,12 +143,12 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         for map in &self.maps {
             map.tiles().for_each(|(position, tile)|
-                renderer.draw_sprite(&tile.sprite, position.x as f64, position.y as f64)
+                renderer.draw_sprite(&tile.sprite, (position.x + 1) as f64, (position.y + 1) as f64)
             );
         }
 
         self.entities.for_each(|(Position(x, y), sprite)| {
-            renderer.draw_sprite(&sprite, x, y);
+            renderer.draw_sprite(&sprite, x + 1.0, y + 1.0);
         });
 
         self.entities.for_each(|(Position(x, y), text)| {

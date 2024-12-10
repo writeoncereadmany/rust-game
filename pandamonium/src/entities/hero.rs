@@ -104,6 +104,14 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|&Interaction { hero_id, interaction_type, .. }| { handle_interaction(hero_id, interaction_type, entities) });
 }
 
+pub fn clamp_hero(entities: &mut Entities, event: &Event, events: &mut Events) {
+    event.apply(|dt| clamp_to_screen(dt, entities));
+}
+
+pub fn clamp_to_screen(dt: &Duration, entities: &mut Entities) {
+    entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy.clamp(0.0, 17.0)));
+}
+
 fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut Entities) {
     if interaction_type == Interacts::Spring {
         entities.apply_to(&hero_id, |(Hero, Velocity(dx, _dy))| { Velocity(dx, SPRING_BOUNCE_SPEED) });
