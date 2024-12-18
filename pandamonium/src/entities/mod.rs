@@ -10,12 +10,14 @@ pub mod pickup;
 pub mod spring;
 pub mod timer;
 pub mod lockbox;
+pub mod flashlamp;
 
 use entity::Entities;
 
 use engine::events::{Event, Events};
 use crate::app::events::*;
 use crate::controllers::physics::*;
+use crate::entities::flashlamp::flashbulb_events;
 use crate::entities::hero::clamp_hero;
 use self::chest::chest_events;
 use self::hero::hero_events;
@@ -28,6 +30,7 @@ use self::timer::spawn_timer;
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
 {
     hero_events(entities, event, events);
+    flashbulb_events(entities, event, events);
     chest_events(event, entities, events);
     lockbox_events(event, entities, events);
     spawn_events(event, entities, events);

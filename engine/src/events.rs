@@ -3,7 +3,7 @@ use core::any::*;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, VecDeque};
 use std::time::{Duration, Instant};
-
+use component_derive::Event;
 use sdl2::event::Event as SdlEvent;
 
 pub trait EventTrait: Any {}
@@ -73,6 +73,10 @@ impl Events {
 
     pub fn schedule<E: EventTrait>(&mut self, dt: Duration, event: E) {
         self.scheduled_events.push(TimerEvent { fires_at: self.current_time + dt, event: Event::new(event)})
+    }
+
+    pub fn clear_schedule(&mut self) {
+        self.scheduled_events.clear();
     }
 
     pub fn elapse(&mut self, dt: Duration) {

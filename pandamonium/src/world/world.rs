@@ -33,6 +33,7 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
+use crate::entities::flashlamp::{spawn_flashlamp, LightFlashbulb};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -55,6 +56,7 @@ pub struct World {
 
 impl World {
     pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
+        events.clear_schedule();
         let mut maps: Vec<Map<Tile>> = Vec::new();
         let mut entities = Entities::new();
 
@@ -105,6 +107,21 @@ impl World {
             maps.push(map);
         }
 
+        let mut flashlamps : Vec<(i32, i32)> = Vec::new();
+        for x in 15..30 { flashlamps.push((x, 19))};
+        for y in 1..19 { flashlamps.push((29, 19 - y))};
+        for x in 0..30 { flashlamps.push((29 - x, 0))};
+        for y in 1..19 { flashlamps.push((0, y))};
+        for x in 0..15 { flashlamps.push((x, 19))};
+
+        for (i, (x, y)) in flashlamps.iter().enumerate()
+        {
+            let fraction_of_fulltime = i as f64 / flashlamps.len() as f64;
+            let entity_id = spawn_flashlamp((x - 1) as f64, (y - 1) as f64, &mut entities);
+            let flashbulb_fire = 2400 + (10000 as f64 * fraction_of_fulltime) as u64;
+            events.schedule(Duration::from_millis(flashbulb_fire), LightFlashbulb(entity_id));
+        }
+
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64)) }
         for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64)) }
@@ -145,17 +162,6 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
             map.tiles().for_each(|(position, tile)|
                 renderer.draw_sprite(&tile.sprite, (position.x + 1) as f64, (position.y + 1) as f64)
             );
-        }
-
-        let off_lamp = Sprite::new(6, 4, 0.0, "Walls");
-        for x in 0..30 {
-            renderer.draw_sprite(&off_lamp, x as f64, 0.0);
-            renderer.draw_sprite(&off_lamp, x as f64, 19.0);
-        }
-
-        for y in 1..19 {
-            renderer.draw_sprite(&off_lamp, 0.0, y as f64);
-            renderer.draw_sprite(&off_lamp, 29.0, y as f64);
         }
 
         self.entities.for_each(|(Position(x, y), sprite)| {
