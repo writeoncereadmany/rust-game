@@ -50,16 +50,15 @@ pub fn derive_event(input: TokenStream) -> TokenStream {
 pub fn derive_event2(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, .. } = parse_macro_input!(input);
     let output = quote! {
-        impl EventTrait2 for #ident {
-            fn apply<Event: 'static, O>(&self, f: impl FnMut(&Event) -> O) -> Option<O> {
-                (self as &dyn Any).downcast_ref().map(f)
+        impl EventTrait for #ident {
+            fn as_any(&self) -> &dyn Any {
+                self
             }
 
-            fn dispatch<W: 'static>(&self, dispatcher: &Dispatcher<W>, world: &mut W, events: &mut Events) {
+            fn dispatch(&self, dispatcher: &Dispatcher, world: &mut Entities, events: &mut Events) {
                 dispatcher.dispatch(self, world, events);
             }
         }
     };
     output.into()
-
 }
