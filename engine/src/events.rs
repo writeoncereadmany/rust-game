@@ -1,15 +1,55 @@
 use core::any::*;
 
-use std::cmp::Ordering;
-use std::collections::{BinaryHeap, VecDeque};
-use std::time::{Duration, Instant};
-use component_derive::Event;
 use sdl2::event::Event as SdlEvent;
+use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap, VecDeque};
+use std::marker::PhantomData;
+use std::time::{Duration, Instant};
 
 pub trait EventTrait: Any {}
 
 impl EventTrait for SdlEvent {}
 impl EventTrait for Duration {}
+
+pub trait EventTrait2 {
+    fn apply<Event: 'static, O>(&self, f: impl FnMut(&Event) -> O) -> Option<O>;
+
+    fn dispatch<W: 'static>(&self, dispatcher: &Dispatcher<W>, world: &mut W, events: &mut Events);
+}
+
+pub struct Dispatcher<W> {
+    functions: HashMap<TypeId, Box<dyn Any>>,
+    type_marker: PhantomData<W>
+}
+
+impl <W: 'static> Dispatcher<W> {
+    fn register<Event: EventTrait2 + 'static>(&mut self, f: fn(&Event, &mut W, &mut Events)) {
+            self.functions.entry(TypeId::of::<Event>())
+                .or_insert(Box::new(Vec::<fn(&Event, &mut W, &mut Events)>::new()))
+                .downcast_mut::<Vec<fn(&Event, &mut W, &mut Events)>>()
+                .map(|fs| fs.push(f));
+    }
+
+    fn dispatch<Event: EventTrait2 + 'static>(&self, event: &Event, world: &mut W, events: &mut Events) {
+        if let Some(functions) = self.functions.get(&TypeId::of::<Event>())
+            .map(|fs| fs.downcast_ref::<Vec<fn(&Event, &mut W, &mut Events)>>())
+            .flatten() {
+            for function in functions {
+                function(event, world, events);
+            }
+        }
+    }
+}
+
+impl EventTrait2 for SdlEvent {
+    fn apply<Event: 'static, O>(&self, f: impl FnMut(&Event) -> O) -> Option<O> {
+        (self as &dyn Any).downcast_ref().map(f)
+    }
+
+    fn dispatch<W: 'static>(&self, dispatcher: &Dispatcher<W>, world: &mut W, events: &mut Events) {
+        dispatcher.dispatch(self, world, events);
+    }
+}
 
 #[derive(Debug)]
 pub struct Event(Box<dyn Any>);
@@ -92,7 +132,7 @@ impl Events {
 
     fn has_pending_events(&self) -> bool {
         if let Some(next) = self.scheduled_events.peek() {
-            return next.fires_at < self.current_time;
+            next.fires_at < self.current_time
         }
         else {
             false

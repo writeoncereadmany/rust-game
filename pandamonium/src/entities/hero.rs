@@ -104,11 +104,11 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|&Interaction { hero_id, interaction_type, .. }| { handle_interaction(hero_id, interaction_type, entities) });
 }
 
-pub fn clamp_hero(entities: &mut Entities, event: &Event, events: &mut Events) {
+pub fn clamp_hero(entities: &mut Entities, event: &Event, _events: &mut Events) {
     event.apply(|dt| clamp_to_screen(dt, entities));
 }
 
-pub fn clamp_to_screen(dt: &Duration, entities: &mut Entities) {
+pub fn clamp_to_screen(_dt: &Duration, entities: &mut Entities) {
     entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy.clamp(0.0, 17.0)));
 }
 

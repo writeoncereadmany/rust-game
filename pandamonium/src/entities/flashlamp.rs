@@ -15,6 +15,6 @@ pub fn spawn_flashlamp(x: f64, y: f64, entities: &mut Entities) -> u64 {
     )
 }
 
-pub fn flashbulb_events(entities: &mut Entities, event: &Event, events: &mut Events) {
-    event.apply(|LightFlashbulb(entityId)| entities.apply_to(entityId, |()| Sprite::new(7, 4, 0.0, "Walls")));
+pub fn flashbulb_events(entities: &mut Entities, event: &Event, _events: &mut Events) {
+    event.apply(|LightFlashbulb(entity_id)| entities.apply_to(entity_id, |()| Sprite::new(7, 4, 0.0, "Walls")));
 }

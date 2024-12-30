@@ -45,3 +45,21 @@ pub fn derive_event(input: TokenStream) -> TokenStream {
     output.into()
 
 }
+
+#[proc_macro_derive(Event2)]
+pub fn derive_event2(input: TokenStream) -> TokenStream {
+    let DeriveInput { ident, .. } = parse_macro_input!(input);
+    let output = quote! {
+        impl EventTrait2 for #ident {
+            fn apply<Event: 'static, O>(&self, f: impl FnMut(&Event) -> O) -> Option<O> {
+                (self as &dyn Any).downcast_ref().map(f)
+            }
+
+            fn dispatch<W: 'static>(&self, dispatcher: &Dispatcher<W>, world: &mut W, events: &mut Events) {
+                dispatcher.dispatch(self, world, events);
+            }
+        }
+    };
+    output.into()
+
+}
