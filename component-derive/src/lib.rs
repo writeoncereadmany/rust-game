@@ -40,22 +40,12 @@ pub fn derive_variable(input: TokenStream) -> TokenStream {
 pub fn derive_event(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, .. } = parse_macro_input!(input);
     let output = quote! {
-        impl EventTrait for #ident {}
-    };
-    output.into()
-
-}
-
-#[proc_macro_derive(Event2)]
-pub fn derive_event2(input: TokenStream) -> TokenStream {
-    let DeriveInput { ident, .. } = parse_macro_input!(input);
-    let output = quote! {
         impl EventTrait for #ident {
             fn as_any(&self) -> &dyn std::any::Any {
                 self
             }
 
-            fn dispatch(&self, dispatcher: &engine::events_2::Dispatcher, world: &mut entities::Entities, events: &mut engine::events-2::Events) {
+            fn dispatch(&self, dispatcher: &engine::events::Dispatcher, world: &mut entity::Entities, events: &mut engine::events::Events) {
                 dispatcher.dispatch(self, world, events);
             }
         }

@@ -9,6 +9,7 @@ use rand::SeedableRng;
 use derivative::Derivative;
 
 use crate::events::EventTrait;
+use crate as engine;
 use component_derive::Event;
 use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 
