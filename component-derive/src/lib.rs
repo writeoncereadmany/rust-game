@@ -51,11 +51,11 @@ pub fn derive_event2(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, .. } = parse_macro_input!(input);
     let output = quote! {
         impl EventTrait for #ident {
-            fn as_any(&self) -> &dyn Any {
+            fn as_any(&self) -> &dyn std::any::Any {
                 self
             }
 
-            fn dispatch(&self, dispatcher: &Dispatcher, world: &mut Entities, events: &mut Events) {
+            fn dispatch(&self, dispatcher: &engine::events_2::Dispatcher, world: &mut entities::Entities, events: &mut engine::events-2::Events) {
                 dispatcher.dispatch(self, world, events);
             }
         }

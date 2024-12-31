@@ -34,7 +34,8 @@ impl Event {
 }
 
 pub struct Dispatcher {
-    functions: HashMap<TypeId, Box<dyn Any>>}
+    functions: HashMap<TypeId, Box<dyn Any>>
+}
 
 impl Dispatcher {
     fn new() -> Self {
@@ -164,6 +165,7 @@ impl Events {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     pub use component_derive::{Event2, Variable};
     use entity::entity;
 
@@ -176,11 +178,39 @@ mod tests {
     #[derive(Event2)]
     struct Points(u32);
 
-    #[derive(Event2)]
+    impl EventTrait for Points {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn dispatch(&self, dispatcher: &Dispatcher, world: &mut Entities, events: &mut Events) {
+            dispatcher.dispatch(self, world, events);
+        }
+    }
+
     struct DoublePoints(u32);
 
-    #[derive(Event2)]
+    impl EventTrait for DoublePoints {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn dispatch(&self, dispatcher: &Dispatcher, world: &mut Entities, events: &mut Events) {
+            dispatcher.dispatch(self, world, events);
+        }
+    }
+
     struct NoHandler;
+
+    impl EventTrait for NoHandler {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn dispatch(&self, dispatcher: &Dispatcher, world: &mut Entities, events: &mut Events) {
+            dispatcher.dispatch(self, world, events);
+        }
+    }
 
     #[test]
     fn handle_events_via_dispatcher() {
