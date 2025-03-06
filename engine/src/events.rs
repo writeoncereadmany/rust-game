@@ -106,21 +106,15 @@ impl PartialOrd for TimerEvent {
     }
 }
 
-
-pub struct Events {
-    events: VecDeque<Event>,
+pub struct Timer {
     current_time: Instant,
     scheduled_events: BinaryHeap<TimerEvent>
 }
 
-impl Events {
+impl Timer {
 
     pub fn new() -> Self {
-        Events { events: VecDeque::new(), scheduled_events: BinaryHeap::new(), current_time: Instant::now() }
-    }
-
-    pub fn fire<E: EventTrait + 'static>(&mut self, event: E) {
-        self.events.push_back(Event::new(event));
+        Timer { current_time: Instant::now(), scheduled_events: BinaryHeap::new() }
     }
 
     pub fn schedule<E: EventTrait + 'static>(&mut self, dt: Duration, event: E) {
@@ -131,11 +125,11 @@ impl Events {
         self.scheduled_events.clear();
     }
 
-    pub fn elapse(&mut self, dt: Duration) {
+    pub fn elapse(&mut self, dt: Duration, events: &mut VecDeque<Event>) {
         self.current_time += dt;
         while self.has_pending_events() {
             if let Some(TimerEvent { event, .. }) = self.scheduled_events.pop() {
-                self.events.push_back(event);
+                events.push_back(event);
             } else {
                 break;
             }
@@ -150,10 +144,38 @@ impl Events {
             false
         }
     }
+}
+
+pub struct Events {
+    events: VecDeque<Event>,
+    timer: Timer
+}
+
+impl Events {
+
+    pub fn new() -> Self {
+        Events { events: VecDeque::new(), timer: Timer::new() }
+    }
+
+    pub fn fire<E: EventTrait + 'static>(&mut self, event: E) {
+        self.events.push_back(Event::new(event));
+    }
+
+    pub fn schedule<E: EventTrait + 'static>(&mut self, dt: Duration, event: E) {
+        self.timer.schedule(dt, event);
+    }
+
+    pub fn clear_schedule(&mut self) {
+        self.timer.clear_schedule();
+    }
+
+    pub fn elapse(&mut self, dt: Duration) {
+        self.timer.elapse(dt, &mut self.events)
+    }
 
     pub fn dispatch(&mut self, dispatcher: &Dispatcher, entities: &mut Entities) {
         while !self.events.is_empty() {
-            self.events.pop_front().map(|event| event.dispatch(dispatcher, entities, self));
+            self.pop().map(|event| event.dispatch(dispatcher, entities, self));
         }
     }
 
