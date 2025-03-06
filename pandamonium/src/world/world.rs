@@ -15,6 +15,7 @@ use crate::entities::coin::*;
 use crate::entities::components::*;
 use crate::entities::entity_events;
 use crate::entities::flagpole::*;
+use crate::entities::flashlamp::{spawn_flashlamp, TurnFlashbulbsRed, TurnFlashbulbsYellow};
 use crate::entities::hero::*;
 use crate::entities::key::*;
 use crate::entities::lockbox::*;
@@ -32,7 +33,6 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
-use crate::entities::flashlamp::spawn_flashlamp;
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -126,6 +126,8 @@ impl World {
 
         for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64)) }
 
+        events.schedule(Duration::from_millis(7400), TurnFlashbulbsYellow);
+        events.schedule(Duration::from_millis(10400), TurnFlashbulbsRed);
         events.schedule(Duration::from_millis(12400), TimeLimitExpired);
 
         events.fire(ClearAudio());
