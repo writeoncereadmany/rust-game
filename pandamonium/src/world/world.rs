@@ -117,9 +117,8 @@ impl World {
         for (i, (x, y)) in flashlamps.iter().enumerate()
         {
             let fraction_of_fulltime = i as f64 / flashlamps.len() as f64;
-            let entity_id = spawn_flashlamp((x - 1) as f64, (y - 1) as f64, &mut entities);
-            let flashbulb_fire = 2400 + (10000 as f64 * fraction_of_fulltime) as u64;
-            events.schedule(Duration::from_millis(flashbulb_fire), LightFlashbulb(entity_id));
+            let flashbulb_fire = 2400 + (10000 as f64 * fraction_of_fulltime) as i128;
+            spawn_flashlamp((x - 1) as f64, (y - 1) as f64, flashbulb_fire, &mut entities);
         }
 
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
