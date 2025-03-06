@@ -4,7 +4,7 @@ use component_derive::Event;
 use engine::events::*;
 use engine::game_loop::*;
 use engine::graphics::renderer::{align, Renderer, Text};
-
+use engine::graphics::sprite::Sprite;
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
@@ -15,7 +15,6 @@ pub struct Game<'a> {
     pub world: World,
     pub level: usize,
     pub score: u32,
-    pub score_this_level: u32,
     pub panda_type: PandaType,
     pub pause: f64,
 }
@@ -39,7 +38,6 @@ impl<'a> Game<'a> {
             level: 0,
             score: 0,
             panda_type,
-            score_this_level: 0,
             pause: 0.0,
         }
     }
@@ -48,13 +46,14 @@ impl<'a> Game<'a> {
 impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
+        renderer.draw_sprite(&Sprite::new(8, 6, 0.0, "Walls"), 13.0, 19.0);
+        renderer.draw_sprite(&Sprite::new(9, 6, 0.0, "Walls"), 14.0, 19.0);
+        renderer.draw_sprite(&Sprite::new(9, 6, 0.0, "Walls"), 15.0, 19.0);
+        renderer.draw_sprite(&Sprite::new(10, 6, 0.0, "Walls"), 16.0, 19.0);
+
         renderer.draw_text(
             &Text { text: self.score.to_string(), justification: align::RIGHT | align::MIDDLE },
-            29.0,
-            19.5);
-        renderer.draw_text(
-            &Text { text: self.score_this_level.to_string(), justification: align::RIGHT | align::MIDDLE },
-            3.0,
+            16.75,
             19.5);
         Ok(())
     }
@@ -62,8 +61,8 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         event.apply(|score| {
             match score {
-                Score::Points(p) => self.score_this_level += *p,
-                Score::Double => self.score_this_level *= 2
+                Score::Points(p) => self.score += *p,
+                Score::Double => self.score *= 2
             }
         });
 
@@ -73,10 +72,6 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|ReachedDoor| {
-            self.score += self.score_this_level;
-            self.score_this_level = 0;
-
-
             self.level = self.level + 1;
             if self.level < self.assets.levels.len() {
                 events.fire(Pause(0.5));

@@ -107,11 +107,11 @@ impl World {
         }
 
         let mut flashlamps : Vec<(i32, i32)> = Vec::new();
-        for x in 16..30 { flashlamps.push((x, 19))};
+        for x in 17..30 { flashlamps.push((x, 19))};
         for y in 1..19 { flashlamps.push((29, 19 - y))};
         for x in 0..30 { flashlamps.push((29 - x, 0))};
         for y in 1..19 { flashlamps.push((0, y))};
-        for x in 0..14 { flashlamps.push((x, 19))};
+        for x in 0..13 { flashlamps.push((x, 19))};
 
         for (i, (x, y)) in flashlamps.iter().enumerate()
         {
