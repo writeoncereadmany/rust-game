@@ -8,7 +8,6 @@ pub mod hero;
 pub mod particle;
 pub mod pickup;
 pub mod spring;
-pub mod timer;
 pub mod lockbox;
 pub mod flashlamp;
 
@@ -25,7 +24,6 @@ use self::lockbox::lockbox_events;
 use self::particle::*;
 use self::pickup::collect_pickup;
 use self::spring::spring_events;
-use self::timer::spawn_timer;
 
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
 {
@@ -45,7 +43,6 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
 }
 
 pub fn spawn_events(event: &Event, entities: &mut Entities, events: &mut Events) {
-    event.apply(|&SpawnTimer(x, y)| spawn_timer(x, y, entities));
     event.apply(|&SpawnParticle(x, y)| spawn_spangle(x, y, entities, events));
     event.apply(|&SpawnText(x, y, ref text)| spawn_text(x, y, text, entities, events));
     event.apply(|&SpawnBulb(x, y)| spawn_bulb(x, y, entities, events));

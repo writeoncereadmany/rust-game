@@ -21,7 +21,6 @@ use crate::entities::lockbox::*;
 use crate::entities::particle::*;
 use crate::entities::pickup::*;
 use crate::entities::spring::spawn_spring;
-use crate::entities::timer::*;
 use crate::music::countdown::countdown;
 use crate::world::world::TileType::LEDGE;
 use engine::events::*;
@@ -33,7 +32,7 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
-use crate::entities::flashlamp::{spawn_flashlamp, LightFlashbulb};
+use crate::entities::flashlamp::spawn_flashlamp;
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -108,16 +107,16 @@ impl World {
         }
 
         let mut flashlamps : Vec<(i32, i32)> = Vec::new();
-        for x in 15..30 { flashlamps.push((x, 19))};
+        for x in 16..30 { flashlamps.push((x, 19))};
         for y in 1..19 { flashlamps.push((29, 19 - y))};
         for x in 0..30 { flashlamps.push((29 - x, 0))};
         for y in 1..19 { flashlamps.push((0, y))};
-        for x in 0..15 { flashlamps.push((x, 19))};
+        for x in 0..14 { flashlamps.push((x, 19))};
 
         for (i, (x, y)) in flashlamps.iter().enumerate()
         {
             let fraction_of_fulltime = i as f64 / flashlamps.len() as f64;
-            let flashbulb_fire = 2400 + (10000 as f64 * fraction_of_fulltime) as i128;
+            let flashbulb_fire = 2.4 + (10.0 * fraction_of_fulltime);
             spawn_flashlamp((x - 1) as f64, (y - 1) as f64, flashbulb_fire, &mut entities);
         }
 
@@ -127,7 +126,7 @@ impl World {
 
         for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64)) }
 
-        events.schedule(Duration::from_millis(2400), SpawnTimer(15.0, 19.5));
+        events.schedule(Duration::from_millis(12400), TimeLimitExpired);
 
         events.fire(ClearAudio());
 
@@ -176,7 +175,6 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
 
     fn event(&mut self, event: &Event, events: &mut Events) -> Result<(), String> {
         entity_events(event, &mut self.entities, events);
-        event.apply(|dt| update_timer(&mut self.entities, dt, events));
         event.apply(|dt| update(self, dt, events));
         Ok(())
     }

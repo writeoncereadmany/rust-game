@@ -52,9 +52,6 @@ pub struct SpawnFlashBulb(pub f64, pub f64);
 pub struct SpawnHero(pub f64, pub f64, pub PandaType);
 
 #[derive(Event)]
-pub struct SpawnTimer(pub f64, pub f64);
-
-#[derive(Event)]
 pub struct ClearAudio();
 
 #[derive(Event)]
