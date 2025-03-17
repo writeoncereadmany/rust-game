@@ -89,7 +89,8 @@ impl World {
                             "Chest" => spawn_chest(*x as f64, *y as f64, &mut entities),
                             "Key" => spawn_key(*x as f64, *y as f64, &mut entities),
                             "Spring" => spawn_spring(*x as f64, *y as f64, &mut entities),
-                            "Flag" => spawn_flagpole(*x as f64, *y as f64, &mut entities),
+                            "Flag" => spawn_flagpole(*x as f64, *y as f64, false, &mut entities),
+                            "BonusFlag" => spawn_flagpole(*x as f64, *y as f64, true, &mut entities),
                             "Ruby" => spawn_ruby(*x as f64, *y as f64, &mut entities),
 
                             _otherwise => {}

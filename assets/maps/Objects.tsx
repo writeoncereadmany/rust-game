@@ -10,4 +10,5 @@
  <tile id="6" type="Spring"/>
  <tile id="7" type="Flag"/>
  <tile id="8" type="Ruby"/>
+ <tile id="11" type="BonusFlag"/>
 </tileset>
