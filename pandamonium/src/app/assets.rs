@@ -5,7 +5,7 @@ use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use tiled::{Map, TileId};
+use tiled::{Map, PropertyValue, TileId};
 
 #[derive(Hash, Eq, PartialEq, Debug)]
 pub struct TileRef {
@@ -29,6 +29,8 @@ impl TileSet {
 }
 
 pub struct Level {
+    pub next_level: Option<String>,
+    pub next_bonus: Option<String>,
     pub layers: Vec<HashMap<(u32, u32), TileRef>>,
 }
 
@@ -37,7 +39,7 @@ pub struct Assets<'a> {
     pub go: RgbImage,
     pub sheets: HashMap<String, SpriteSheet<'a>>,
     pub tiles: TileSet,
-    pub levels: Vec<Level>,
+    pub levels: HashMap<String, Level>,
 }
 
 impl<'a> Assets<'a> {
@@ -56,7 +58,7 @@ impl<'a> Assets<'a> {
         sheets.insert("Sprites".to_string(), SpriteSheet::new(spritesheet, 12, 12));
         sheets.insert("Text".to_string(), SpriteSheet::new(spritefont, 8, 8));
         let mut tiles = HashMap::new();
-        let mut levels = Vec::new();
+        let mut levels = HashMap::new();
 
         let mut map_loader = tiled::Loader::new();
 
@@ -70,8 +72,9 @@ impl<'a> Assets<'a> {
         map_files.sort();
 
         for map_file in map_files {
+            let map_name : String = map_file.file_stem().map(|fs| fs.to_str()).unwrap().unwrap().to_string();
             let tile_map = map_loader.load_tmx_map(map_file).map_err(|err| format!("{err:?}"))?;
-            load_level(tile_map, texture_creator, &mut sheets, &mut tiles, &mut levels)?;
+            load_level(map_name, tile_map, texture_creator, &mut sheets, &mut tiles, &mut levels)?;
         }
 
         Ok(Assets {
@@ -85,12 +88,15 @@ impl<'a> Assets<'a> {
 }
 
 fn load_level<'a>(
+    map_name: String,
     tile_map: Map,
     texture_creator: &'a TextureCreator<WindowContext>,
     sheets: &mut HashMap<String, SpriteSheet<'a>>,
     tiles: &mut HashMap<TileRef, TileDef>,
-    levels: &mut Vec<Level>
+    levels: &mut HashMap<String, Level>
 ) -> Result<(), String> {
+    let next_level: Option<String> = get_string_property(&tile_map, "next_level");
+    let next_bonus: Option<String> = get_string_property(&tile_map, "next_bonus");
     for tileset in tile_map.tilesets() {
         let sheet = tileset.name.to_string();
 
@@ -137,6 +143,13 @@ fn load_level<'a>(
         }
     }
 
-    levels.push(Level { layers });
+    levels.insert(map_name, Level { next_level, next_bonus, layers });
     Ok(())
+}
+
+fn get_string_property(tile_map: &Map, property: &str) -> Option<String> {
+    tile_map.properties.get(property).map(|pv| match (pv) {
+        PropertyValue::StringValue(val) => val.clone(),
+        _ => panic!("Non-string value for {}", property)
+    })
 }

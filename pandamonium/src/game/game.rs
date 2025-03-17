@@ -13,7 +13,6 @@ use crate::world::world::World;
 pub struct Game<'a> {
     pub assets: &'a Assets<'a>,
     pub world: World,
-    pub level: usize,
     pub score: u32,
     pub panda_type: PandaType,
     pub pause: f64,
@@ -22,20 +21,19 @@ pub struct Game<'a> {
 struct Pause(f64);
 
 #[derive(Event)]
-struct NewLevel;
+struct NewLevel(String);
 
 impl<'a> Game<'a> {
     pub fn new(panda_type: PandaType, assets: &'a Assets<'a>, events: &mut Events) -> Game<'a> {
         let world: World = World::new(
             &assets,
-            0,
+            &"0001".to_string(),
             panda_type,
             events);
 
         Game {
             assets: &assets,
             world,
-            level: 0,
             score: 0,
             panda_type,
             pause: 0.0,
@@ -71,21 +69,20 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
         });
 
-        event.apply(|ReachedDoor| {
-            self.level = self.level + 1;
-            if self.level < self.assets.levels.len() {
+        event.apply(|ReachedDoor(next_level)| {
+            if self.assets.levels.contains_key(next_level) {
                 events.fire(Pause(0.5));
-                events.schedule(Duration::from_secs_f64(0.5), NewLevel);
+                events.schedule(Duration::from_secs_f64(0.5), NewLevel(next_level.clone()));
             } else {
                 events.fire(Pause(2.0));
                 events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
             }
         });
 
-        event.apply(|NewLevel| {
+        event.apply(|NewLevel(level)| {
             self.world = World::new(
                 &self.assets,
-                self.level,
+                level,
                 self.panda_type,
                 &mut events);
         });

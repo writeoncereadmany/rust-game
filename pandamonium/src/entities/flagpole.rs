@@ -8,12 +8,12 @@ use engine::audio::notes::*;
 use engine::audio::tempo::Tempo;
 use engine::shapes::shape::shape::Shape;
 
-pub fn spawn_flagpole(x: f64, y: f64, bonus_exit: bool,  entities: &mut Entities) {
+pub fn spawn_flagpole(x: f64, y: f64, bonus_exit: bool, exit_to: String, entities: &mut Entities) {
+    let sprite_row = if bonus_exit { 8 } else { 7 };
+
     entities.spawn(entity()
         .with(Position(x, y))
-        .with(Sprite::new(5, 7, 0.3, "Sprites")));
-
-    let sprite_row = if bonus_exit { 8 } else { 7 };
+        .with(Sprite::new(5, sprite_row, 0.3, "Sprites")));
 
     let animation_cycle = AnimationCycle(vec!(
         (0.5, Sprite::new(6, sprite_row, 0.5, "Sprites")),
@@ -28,7 +28,7 @@ pub fn spawn_flagpole(x: f64, y: f64, bonus_exit: bool,  entities: &mut Entities
         .with(Phase(0.0))
         .with(OnPickupTune(Tempo::new(4, 250).using(&FLUTE, 3)
             .play(1.0, 0.25, A3).play(1.25, 0.25, C4).play(1.5, 0.25, E4).play(1.75, 1.25, A4).build()))
-        .with(OnPickupDo::CompleteLevel)
+        .with(OnPickupDo::CompleteLevel(exit_to))
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
     );
 }

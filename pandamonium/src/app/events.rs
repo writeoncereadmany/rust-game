@@ -31,7 +31,7 @@ pub struct TimeLimitExpired;
 pub struct UpdateHiScores(pub Vec<HiScore>);
 
 #[derive(Event)]
-pub struct ReachedDoor;
+pub struct ReachedDoor(pub String);
 
 #[derive(Event)]
 pub struct Destroy(pub u64);

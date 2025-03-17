@@ -54,12 +54,15 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(assets: &Assets, level: usize, panda_type: PandaType, events: &mut Events) -> Self {
+    pub fn new(assets: &Assets, level: &String, panda_type: PandaType, events: &mut Events) -> Self {
         events.clear_schedule();
         let mut maps: Vec<Map<Tile>> = Vec::new();
         let mut entities = Entities::new();
 
-        for layer in &assets.levels[level].layers {
+        let level = assets.levels.get(level).unwrap();
+        let next_level = level.next_level.clone();
+        let next_bonus = level.next_bonus.clone();
+        for layer in &level.layers {
             let mut map = Map::new(28, 18);
             for ((x, y), tile_ref) in layer.iter() {
                 if let Some(tile) = assets.tiles.get(&tile_ref) {
@@ -89,8 +92,8 @@ impl World {
                             "Chest" => spawn_chest(*x as f64, *y as f64, &mut entities),
                             "Key" => spawn_key(*x as f64, *y as f64, &mut entities),
                             "Spring" => spawn_spring(*x as f64, *y as f64, &mut entities),
-                            "Flag" => spawn_flagpole(*x as f64, *y as f64, false, &mut entities),
-                            "BonusFlag" => spawn_flagpole(*x as f64, *y as f64, true, &mut entities),
+                            "Flag" => spawn_flagpole(*x as f64, *y as f64, false, next_level.clone().unwrap_or("none".to_string()), &mut entities),
+                            "BonusFlag" => spawn_flagpole(*x as f64, *y as f64, true, next_bonus.clone().unwrap_or("none".to_string()), &mut entities),
                             "Ruby" => spawn_ruby(*x as f64, *y as f64, &mut entities),
 
                             _otherwise => {}

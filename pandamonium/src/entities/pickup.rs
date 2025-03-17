@@ -30,7 +30,7 @@ pub enum OnPickupDo {
     Score(u32),
     DoubleScore,
     OpenChests,
-    CompleteLevel,
+    CompleteLevel(String),
 }
 
 pub fn collect_pickup(PickupCollected(id): &PickupCollected, entities: &mut Entities, events: &mut Events)
@@ -44,7 +44,7 @@ pub fn collect_pickup(PickupCollected(id): &PickupCollected, entities: &mut Enti
             Some(OnPickupDo::Score(score)) => events.fire(Score::Points(score)),
             Some(OnPickupDo::DoubleScore) => events.fire(Score::Double),
             Some(OnPickupDo::OpenChests) => events.fire(KeyCollected),
-            Some(OnPickupDo::CompleteLevel) => events.fire(ReachedDoor),
+            Some(OnPickupDo::CompleteLevel(next_level)) => events.fire(ReachedDoor(next_level)),
             _ => {}
         }
     }
