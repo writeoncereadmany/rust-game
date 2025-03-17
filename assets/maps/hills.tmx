@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-up" width="28" height="18" tilewidth="12" tileheight="12" infinite="0" nextlayerid="8" nextobjectid="1">
  <properties>
-  <property name="next_level" value="0001"/>
+  <property name="next_level" value="start"/>
  </properties>
  <tileset firstgid="1" source="Walls.tsx"/>
  <tileset firstgid="121" source="Objects.tsx"/>
@@ -52,7 +52,7 @@
  <layer id="7" name="Objects" width="28" height="18">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,132,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,122,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,122,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,129,0,0,0,0,0,0,0,0,0,0,0,0,122,0,0,0,0,0,0,0,129,0,0,0,

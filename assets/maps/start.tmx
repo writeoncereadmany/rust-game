@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-up" width="28" height="18" tilewidth="12" tileheight="12" infinite="0" nextlayerid="8" nextobjectid="1">
  <properties>
-  <property name="next_level" value="0002"/>
+  <property name="next_level" value="hills"/>
  </properties>
  <tileset firstgid="1" source="Walls.tsx"/>
  <tileset firstgid="121" source="Objects.tsx"/>

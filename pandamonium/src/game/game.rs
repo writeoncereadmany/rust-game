@@ -27,7 +27,7 @@ impl<'a> Game<'a> {
     pub fn new(panda_type: PandaType, assets: &'a Assets<'a>, events: &mut Events) -> Game<'a> {
         let world: World = World::new(
             &assets,
-            &"0001".to_string(),
+            &"start".to_string(),
             panda_type,
             events);
 
