@@ -10,5 +10,10 @@
  <tile id="6" type="Spring"/>
  <tile id="7" type="Flag"/>
  <tile id="8" type="Ruby"/>
+ <tile id="9" type="Cherry"/>
+ <tile id="10" type="Banana"/>
  <tile id="11" type="BonusFlag"/>
+ <tile id="12" type="Apple"/>
+ <tile id="13" type="Watermelon"/>
+ <tile id="14" type="Grapes"/>
 </tileset>

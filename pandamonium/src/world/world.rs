@@ -33,6 +33,7 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
+use crate::entities::fruit::{spawn_fruit, Fruit};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -95,6 +96,12 @@ impl World {
                             "Flag" => spawn_flagpole(*x as f64, *y as f64, false, next_level.clone().unwrap_or("none".to_string()), &mut entities),
                             "BonusFlag" => spawn_flagpole(*x as f64, *y as f64, true, next_bonus.clone().unwrap_or("none".to_string()), &mut entities),
                             "Ruby" => spawn_ruby(*x as f64, *y as f64, &mut entities),
+                            "Apple" => spawn_fruit(*x as f64, *y as f64, &Fruit::APPLE, &mut entities),
+                            "Banana" => spawn_fruit(*x as f64, *y as f64, &Fruit::BANANA, &mut entities),
+                            "Cherry" => spawn_fruit(*x as f64, *y as f64, &Fruit::CHERRY, &mut entities),
+                            "Grapes" => spawn_fruit(*x as f64, *y as f64, &Fruit::GRAPES, &mut entities),
+                            "Watermelon" => spawn_fruit(*x as f64, *y as f64, &Fruit::WATERMELON, &mut entities),
+
 
                             _otherwise => {}
                         }

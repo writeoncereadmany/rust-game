@@ -1,15 +1,16 @@
 pub mod bell;
 pub mod chest;
 pub mod coin;
-pub mod key;
 pub mod components;
 pub mod flagpole;
+pub mod flashlamp;
+pub mod fruit;
 pub mod hero;
+pub mod key;
+pub mod lockbox;
 pub mod particle;
 pub mod pickup;
 pub mod spring;
-pub mod lockbox;
-pub mod flashlamp;
 
 use entity::Entities;
 
