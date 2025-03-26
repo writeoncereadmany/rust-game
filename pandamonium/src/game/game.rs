@@ -8,6 +8,7 @@ use engine::graphics::sprite::Sprite;
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::entities::hero::PandaType;
+use crate::entities::particle::spawn_text;
 use crate::world::world::World;
 
 pub struct Game<'a> {
@@ -15,6 +16,7 @@ pub struct Game<'a> {
     pub world: World,
     pub score: u32,
     pub multiplier: u32,
+    pub fruit_collected: u32,
     pub current_level: String,
     pub panda_type: PandaType,
     pub pause: f64,
@@ -41,6 +43,7 @@ impl<'a> Game<'a> {
             world,
             score: 0,
             multiplier: 1,
+            fruit_collected: 0,
             panda_type,
             current_level: "start".to_string(),
             pause: 0.0,
@@ -79,6 +82,15 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         event.apply(|score| {
             match score {
                 Score::Points(p) => self.score += (*p * self.multiplier),
+                Score::Fruit(p) => {
+                    self.score += (*p * self.multiplier);
+                    self.fruit_collected += 1;
+                    if (self.fruit_collected == 5)
+                    {
+                        events.fire(IncreaseMultiplier);
+                        events.fire(SpawnText(15.0, 10.0, "Fruit Salad!".to_string()))
+                    }
+                },
                 Score::Double => self.score *= 2
             }
         });
@@ -119,6 +131,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
                 self.panda_type,
                 &mut events);
             self.current_level = level.clone();
+            self.fruit_collected = 0;
         });
 
         event.apply(|Pause(pause)| {

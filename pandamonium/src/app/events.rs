@@ -67,5 +67,6 @@ pub struct Interaction {
 #[derive(Clone, Event)]
 pub enum Score {
     Points(u32),
+    Fruit(u32),
     Double,
 }

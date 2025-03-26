@@ -23,7 +23,7 @@ pub fn spawn_fruit(x: f64, y: f64, fruit: &Fruit, entities: &mut Entities) {
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
         .with(sprite(fruit))
         .with(OnPickupEffect::Sparkles)
-        .with(OnPickupDo::Score(20))
+        .with(OnPickupDo::CollectFruit(20))
     );
 }
 
