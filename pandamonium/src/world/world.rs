@@ -122,7 +122,7 @@ impl World {
         for y in 1..19 { flashlamps.push((29, 19 - y))};
         for x in 0..30 { flashlamps.push((29 - x, 0))};
         for y in 1..19 { flashlamps.push((0, y))};
-        for x in 0..13 { flashlamps.push((x, 19))};
+        for x in 0..12 { flashlamps.push((x, 19))};
 
         for (i, (x, y)) in flashlamps.iter().enumerate()
         {

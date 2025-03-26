@@ -14,11 +14,16 @@ pub struct Game<'a> {
     pub assets: &'a Assets<'a>,
     pub world: World,
     pub score: u32,
+    pub multiplier: u32,
+    pub current_level: String,
     pub panda_type: PandaType,
     pub pause: f64,
 }
 #[derive(Event)]
 struct Pause(f64);
+
+#[derive(Event)]
+struct IncreaseMultiplier;
 
 #[derive(Event)]
 struct NewLevel(String);
@@ -35,15 +40,29 @@ impl<'a> Game<'a> {
             assets: &assets,
             world,
             score: 0,
+            multiplier: 1,
             panda_type,
+            current_level: "start".to_string(),
             pause: 0.0,
         }
+    }
+}
+
+fn multiplier_sprite(multiplier: u32) -> Sprite {
+    match (multiplier) {
+        1 => Sprite::new(5, 4, 0.0, "Walls"),
+        2 => Sprite::new(5, 5, 0.0, "Walls"),
+        3 => Sprite::new(5, 6, 0.0, "Walls"),
+        4 => Sprite::new(6, 5, 0.0, "Walls"),
+        5 => Sprite::new(6, 6, 0.0, "Walls"),
+        _ => Sprite::new(0, 0, 0.0, "Walls")
     }
 }
 
 impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn render(&self, renderer: &mut Renderer<'a>) -> Result<(), String> {
         self.world.render(renderer)?;
+        renderer.draw_sprite(&multiplier_sprite(self.multiplier), 12.0, 19.0);
         renderer.draw_sprite(&Sprite::new(8, 6, 0.0, "Walls"), 13.0, 19.0);
         renderer.draw_sprite(&Sprite::new(9, 6, 0.0, "Walls"), 14.0, 19.0);
         renderer.draw_sprite(&Sprite::new(9, 6, 0.0, "Walls"), 15.0, 19.0);
@@ -59,18 +78,27 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         event.apply(|score| {
             match score {
-                Score::Points(p) => self.score += *p,
+                Score::Points(p) => self.score += (*p * self.multiplier),
                 Score::Double => self.score *= 2
             }
         });
 
         event.apply(|TimeLimitExpired| {
-            events.fire(Pause(2.0));
-            events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
+            if (self.multiplier > 1) {
+                self.multiplier = 1;
+                events.fire(Pause(0.5));
+                events.schedule(Duration::from_secs_f64(0.5), NewLevel(self.current_level.clone()));
+
+            }
+            else {
+                events.fire(Pause(2.0));
+                events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
+            }
         });
 
         event.apply(|ReachedDoor(next_level)| {
             if self.assets.levels.contains_key(next_level) {
+                events.fire(IncreaseMultiplier);
                 events.fire(Pause(0.5));
                 events.schedule(Duration::from_secs_f64(0.5), NewLevel(next_level.clone()));
             } else {
@@ -79,12 +107,18 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             }
         });
 
+        event.apply(|IncreaseMultiplier| {
+            self.multiplier += 1;
+            self.multiplier = self.multiplier.clamp(1, 5);
+        });
+
         event.apply(|NewLevel(level)| {
             self.world = World::new(
                 &self.assets,
                 level,
                 self.panda_type,
                 &mut events);
+            self.current_level = level.clone();
         });
 
         event.apply(|Pause(pause)| {
