@@ -73,9 +73,9 @@ pub fn flashbulb_events(entities: &mut Entities, event: &Event, events: &mut Eve
 
 fn flashbulb_sprite(fb_color: FBColor) -> Sprite {
     match fb_color {
-        FBColor::GREEN => Sprite::new(7, 4, 0.0, "Walls"),
-        YELLOW => Sprite::new(7, 5, 0.0, "Walls"),
-        RED => Sprite::new(7, 6, 0.0, "Walls"),
-        OFF => Sprite::new(6, 4, 0.0, "Walls")
+        FBColor::GREEN => Sprite::new(7, 4, 3.0, "Walls"),
+        YELLOW => Sprite::new(7, 5, 3.0, "Walls"),
+        RED => Sprite::new(7, 6, 3.0, "Walls"),
+        OFF => Sprite::new(6, 4, 3.0, "Walls")
     }
 }

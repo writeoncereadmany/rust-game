@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use super::components::*;
-use crate::app::events::{Interaction, SpawnHero};
+use crate::app::events::{Fail, Interaction, SpawnHero};
 use crate::controller::{ButtonPress, ControllerState};
 use crate::sign::{Sign, Signed};
 use component_derive::{Constant, Event, Variable};
@@ -109,7 +109,11 @@ pub fn clamp_hero(entities: &mut Entities, event: &Event, _events: &mut Events) 
 }
 
 pub fn clamp_to_screen(_dt: &Duration, entities: &mut Entities) {
-    entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy.clamp(0.0, 17.0)));
+    entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy.clamp(-2.0, 17.0)));
+}
+
+pub fn check_fall(entities: &mut Entities, _dt: &Duration, events: &mut Events) {
+    entities.apply(|(Hero, Position(_, dy))| if dy < -1.5 { events.fire(Fail) });
 }
 
 fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut Entities) {
@@ -127,6 +131,7 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     clamp(entities, dt);
     facing(entities, dt);
     animate(entities, dt);
+    check_fall(entities, dt, events)
 }
 
 fn animate(entities: &mut Entities, _dt: &Duration) {

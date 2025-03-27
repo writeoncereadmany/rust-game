@@ -139,7 +139,7 @@ impl World {
 
         events.schedule(Duration::from_millis(7400), TurnFlashbulbsYellow);
         events.schedule(Duration::from_millis(10400), TurnFlashbulbsRed);
-        events.schedule(Duration::from_millis(12400), TimeLimitExpired);
+        events.schedule(Duration::from_millis(12400), Fail);
 
         events.fire(ClearAudio());
 

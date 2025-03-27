@@ -95,7 +95,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             }
         });
 
-        event.apply(|TimeLimitExpired| {
+        event.apply(|Fail| {
             if (self.multiplier > 1) {
                 self.multiplier = 1;
                 events.fire(Pause(0.5));

@@ -25,7 +25,7 @@ pub struct FlagpoleCollected {
 pub struct KeyCollected;
 
 #[derive(Event)]
-pub struct TimeLimitExpired;
+pub struct Fail;
 
 #[derive(Event)]
 pub struct UpdateHiScores(pub Vec<HiScore>);
