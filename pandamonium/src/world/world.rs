@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::time::Duration;
+use std::f64::consts::PI;
 
 use image::Rgb;
 use image::RgbImage;
@@ -21,6 +22,7 @@ use crate::entities::key::*;
 use crate::entities::lockbox::*;
 use crate::entities::particle::*;
 use crate::entities::pickup::*;
+use crate::entities::radial::*;
 use crate::entities::spring::spawn_spring;
 use crate::music::countdown::countdown;
 use crate::world::world::TileType::LEDGE;
@@ -85,6 +87,12 @@ impl World {
                             }
                             "Hero" => {
                                 spawn_shadow(*x as f64, *y as f64, panda_type, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, 0.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, 2.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, 3.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, 4.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 3.0, 5.0 * PI/3.0, &mut entities, events);
                                 events.schedule(Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
                             }
                             "Coin" => spawn_coin(*x as f64, *y as f64, &mut entities),

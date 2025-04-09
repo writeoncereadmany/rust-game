@@ -11,6 +11,7 @@ pub mod lockbox;
 pub mod particle;
 pub mod pickup;
 pub mod spring;
+pub mod radial;
 
 use entity::Entities;
 
@@ -19,6 +20,7 @@ use crate::app::events::*;
 use crate::controllers::physics::*;
 use crate::entities::flashlamp::flashbulb_events;
 use crate::entities::hero::clamp_hero;
+use crate::entities::radial::{radial_events, rotate};
 use self::chest::chest_events;
 use self::hero::hero_events;
 use self::lockbox::lockbox_events;
@@ -32,6 +34,7 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
     flashbulb_events(entities, event, events);
     chest_events(event, entities, events);
     lockbox_events(event, entities, events);
+    radial_events(event, entities, events);
     spawn_events(event, entities, events);
     spring_events(event, entities, events);
     event.apply(|dt| gravity(entities, dt));
