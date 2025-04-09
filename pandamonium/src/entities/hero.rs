@@ -109,11 +109,11 @@ pub fn clamp_hero(entities: &mut Entities, event: &Event, _events: &mut Events) 
 }
 
 pub fn clamp_to_screen(_dt: &Duration, entities: &mut Entities) {
-    entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy.clamp(-2.0, 17.0)));
+    entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy));
 }
 
 pub fn check_fall(entities: &mut Entities, _dt: &Duration, events: &mut Events) {
-    entities.apply(|(Hero, Position(_, dy))| if dy < -1.5 { events.fire(Fail) });
+    entities.apply(|(Hero, Position(_, dy))| if dy < -2.0 { events.fire(Fail) });
 }
 
 fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut Entities) {
