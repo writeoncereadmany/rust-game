@@ -69,26 +69,3 @@ pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Eve
 
     events.schedule(Duration::from_millis(1150), Destroy(bulb_id));
 }
-
-pub fn spawn_shadow(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities, events: &mut Events) {
-    let offset = match panda_type {
-        PandaType::GiantPanda => 0,
-        PandaType::RedPanda => 4
-    };
-
-
-    let shadow_id = entities.spawn(entity()
-        .with(Position(x, y))
-        .with(Sprite::new(offset + 0, 6, 1.0, "Sprites"))
-        .with(Period(0.4))
-        .with(Phase(0.0))
-        .with(AnimationCycle(vec![
-            (0.25, Sprite::new(offset + 0, 6, 2.0, "Sprites")),
-            (0.50, Sprite::new(offset + 1, 6, 2.0, "Sprites")),
-            (0.75, Sprite::new(offset + 2, 6, 2.0, "Sprites")),
-            (1.00, Sprite::new(offset + 3, 6, 2.0, "Sprites")),
-        ]))
-    );
-
-    events.schedule(Duration::from_millis(2400), Destroy(shadow_id));
-}

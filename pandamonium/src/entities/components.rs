@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use component_derive::{Constant, Variable};
+use engine::events::Event;
 use engine::graphics::sprite::Sprite;
 use engine::shapes::shape::shape::Shape;
 use entity::*;
@@ -9,7 +10,7 @@ use entity::*;
 #[derive(Clone, Variable)]
 pub struct Gravity;
 
-#[derive(Clone, Constant)]
+#[derive(Clone, Variable)]
 pub struct Period(pub f64);
 
 #[derive(Clone, Variable)]
@@ -73,3 +74,10 @@ pub struct Acceleration(pub f64, pub f64);
 
 #[derive(Clone, Variable)]
 pub struct Translation(pub f64, pub f64);
+
+#[derive(Clone, Variable)]
+pub struct Age(pub f64);
+
+pub fn age(dt: &Duration, entities: &mut Entities) {
+    entities.apply(|Age(age)| Age(age + dt.as_secs_f64()));
+}

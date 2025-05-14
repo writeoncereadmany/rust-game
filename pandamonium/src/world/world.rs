@@ -86,13 +86,12 @@ impl World {
                                 });
                             }
                             "Hero" => {
-                                spawn_shadow(*x as f64, *y as f64, panda_type, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, 0.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, 2.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, 3.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, 4.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 3.0, 5.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 4, 0.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 5, PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 4, 2.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 5, 3.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 4, 4.0 * PI/3.0, &mut entities, events);
+                                spawn_radial(*x as f64, *y as f64, 5, 5.0 * PI/3.0, &mut entities, events);
                                 events.schedule(Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
                             }
                             "Coin" => spawn_coin(*x as f64, *y as f64, &mut entities),
@@ -205,6 +204,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
+    age(dt, &mut world.entities);
     flicker(&mut world.entities);
     map_collisions(&mut world.entities, &world.maps);
     item_collisions(&world.entities, events);
