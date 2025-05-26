@@ -19,7 +19,14 @@ struct Angle(f64);
 #[derive(Clone, Variable)]
 struct Center(f64, f64);
 
-pub fn spawn_radial(x: f64, y: f64, h_grid_pos: i32, theta: f64, entities: &mut Entities, events: &mut Events) {
+pub fn spawn_radials(x: f64, y: f64, h_grid_pos: Vec<i32>, elements: i32, entities: &mut Entities, events: &mut Events)
+{
+    for i in 0..elements {
+        spawn_radial(x, y, h_grid_pos[i as usize % h_grid_pos.len()], i as f64 * (2.0 * PI) / elements as f64, entities, events);
+    }
+}
+
+fn spawn_radial(x: f64, y: f64, h_grid_pos: i32, theta: f64, entities: &mut Entities, events: &mut Events) {
     let radial_id = entities.spawn(entity()
         .with(Center(x, y))
         .with(Sprite::new(h_grid_pos, 2, 5.0, "Sprites"))

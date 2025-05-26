@@ -86,12 +86,11 @@ impl World {
                                 });
                             }
                             "Hero" => {
-                                spawn_radial(*x as f64, *y as f64, 4, 0.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 5, PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 4, 2.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 5, 3.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 4, 4.0 * PI/3.0, &mut entities, events);
-                                spawn_radial(*x as f64, *y as f64, 5, 5.0 * PI/3.0, &mut entities, events);
+                                let radial_balls = match panda_type {
+                                    PandaType::GiantPanda => vec![4,5],
+                                    PandaType::RedPanda => vec![6, 5]
+                                };
+                                spawn_radials(*x as f64, *y as f64, radial_balls, 6, &mut entities, events);
                                 events.schedule(Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
                             }
                             "Coin" => spawn_coin(*x as f64, *y as f64, &mut entities),
