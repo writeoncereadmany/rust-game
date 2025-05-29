@@ -17,7 +17,7 @@ pub fn spawn_spangle(x: f64, y: f64, entities: &mut Entities, events: &mut Event
         .with(AnimationCycle(vec![(0.33, Sprite::new(0, 7, 0.5, "Sprites")), (0.66, Sprite::new(1, 7, 0.5, "Sprites")), (1.0, Sprite::new(0, 7, 0.5, "Sprites"))]))
     );
 
-    events.schedule("game", Duration::from_millis(450), Destroy(spangle_id));
+    events.schedule("world", Duration::from_millis(450), Destroy(spangle_id));
 }
 
 pub fn spawn_text(x: f64, y: f64, text: &str, entities: &mut Entities, events: &mut Events) {
@@ -47,7 +47,7 @@ pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) 
         ]))
     );
 
-    events.schedule("game", Duration::from_millis(600), Destroy(bulb_id));
+    events.schedule("world", Duration::from_millis(600), Destroy(bulb_id));
 }
 
 
@@ -67,5 +67,5 @@ pub fn spawn_flashbulb(x: f64, y: f64, entities: &mut Entities, events: &mut Eve
         ]))
     );
 
-    events.schedule("game", Duration::from_millis(1150), Destroy(bulb_id));
+    events.schedule("world", Duration::from_millis(1150), Destroy(bulb_id));
 }

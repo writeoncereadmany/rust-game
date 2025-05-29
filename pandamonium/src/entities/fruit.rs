@@ -36,8 +36,3 @@ fn sprite(fruit: &Fruit) -> Sprite {
         Fruit::WATERMELON => Sprite::new(7, 4, 0.0, "Sprites")
     }
 }
-
-fn phase_offset(x: f64, y: f64) -> f64 {
-    // magic numbers which don't mean anything, but feel good
-    x * 0.8 + y * 0.4
-}
