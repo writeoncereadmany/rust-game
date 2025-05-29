@@ -225,8 +225,8 @@ fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>) {
     });
     entities.apply(|(Velocity(dx, dy), LastPush(px, py))|
         Velocity(
-            if px.abs() > 1e-6 { 0.0 } else { dx },
-            if py.abs() > 1e-6 { 0.0 } else { dy },
+            if px.abs() > 0.1 { 0.0 } else { dx },
+            if py.abs() > 0.1 { 0.0 } else { dy },
         )
     );
     entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))));
