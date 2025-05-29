@@ -33,7 +33,7 @@ pub fn spawn_open_chest(x: f64, y: f64, entities: &mut Entities, events: &mut Ev
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
     );
 
-    events.schedule(Duration::from_secs(1), Destroy(chest_id));
+    events.schedule("game", Duration::from_secs(1), Destroy(chest_id));
 }
 
 pub fn spawn_ruby(x: f64, y: f64, entities: &mut Entities) {

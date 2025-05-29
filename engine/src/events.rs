@@ -125,8 +125,8 @@ impl Timer {
         self.scheduled_events.clear();
     }
 
-    pub fn elapse(&mut self, dt: Duration, events: &mut VecDeque<Event>) {
-        self.current_time += dt;
+    pub fn elapse(&mut self, dt: &Duration, events: &mut VecDeque<Event>) {
+        self.current_time += *dt;
         while self.has_pending_events() {
             if let Some(TimerEvent { event, .. }) = self.scheduled_events.pop() {
                 events.push_back(event);
@@ -148,29 +148,33 @@ impl Timer {
 
 pub struct Events {
     events: VecDeque<Event>,
-    timer: Timer
+    timers: HashMap<&'static str, Timer>
 }
 
 impl Events {
 
     pub fn new() -> Self {
-        Events { events: VecDeque::new(), timer: Timer::new() }
+        Events { events: VecDeque::new(), timers: HashMap::new() }
     }
 
     pub fn fire<E: EventTrait + 'static>(&mut self, event: E) {
         self.events.push_back(Event::new(event));
     }
 
-    pub fn schedule<E: EventTrait + 'static>(&mut self, dt: Duration, event: E) {
-        self.timer.schedule(dt, event);
+    pub fn schedule<E: EventTrait + 'static>(&mut self, timer: &'static str, dt: Duration, event: E) {
+        self.timers.entry(timer).or_insert_with(|| Timer::new()).schedule(dt, event);
     }
 
-    pub fn clear_schedule(&mut self) {
-        self.timer.clear_schedule();
+    pub fn clear_schedule(&mut self, timer: &'static str) {
+        if let Some(t) = self.timers.get_mut(timer) {
+            t.clear_schedule();
+        }
     }
 
-    pub fn elapse(&mut self, dt: Duration) {
-        self.timer.elapse(dt, &mut self.events)
+    pub fn elapse(&mut self, timer: &'static str, dt: &Duration) {
+        if let Some(t) = self.timers.get_mut(timer) {
+            t.elapse(dt, &mut self.events);
+        }
     }
 
     pub fn dispatch(&mut self, dispatcher: &Dispatcher, entities: &mut Entities) {

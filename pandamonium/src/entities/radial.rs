@@ -36,12 +36,12 @@ fn spawn_radial(x: f64, y: f64, h_grid_pos: i32, theta: f64, entities: &mut Enti
         .with(Age(0.0))
     );
 
-    events.schedule(Duration::from_millis(2600), Destroy(radial_id));
+    events.schedule("game", Duration::from_millis(2600), Destroy(radial_id));
 }
 
 pub fn radial_events(event: &Event, entities: &mut Entities, _events: &mut Events)
 {
-    event.apply(|dt: &Duration| rotate(entities));
+    event.apply(|_dt: &Duration| rotate(entities));
     entities.apply(update_radius);
     entities.apply(update_period);
 }

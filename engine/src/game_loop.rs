@@ -43,7 +43,7 @@ where G: GameLoop<'a, R>
 
         for _ in 0..updates_per_frame {
             let update_duration = this_frame.duration_since(last_frame).div_f64(updates_per_frame as f64);
-            events.elapse(update_duration);
+            events.elapse("game", &update_duration);
             events.fire(update_duration);
 
             while let Some(event) = events.pop() {

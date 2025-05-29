@@ -1,15 +1,14 @@
 use std::time::Duration;
 
+use crate::app::assets::Assets;
+use crate::app::events::*;
+use crate::entities::hero::PandaType;
+use crate::world::world::World;
 use component_derive::Event;
 use engine::events::*;
 use engine::game_loop::*;
 use engine::graphics::renderer::{align, Renderer, Text};
 use engine::graphics::sprite::Sprite;
-use crate::app::assets::Assets;
-use crate::app::events::*;
-use crate::entities::hero::PandaType;
-use crate::entities::particle::spawn_text;
-use crate::world::world::World;
 
 pub struct Game<'a> {
     pub assets: &'a Assets<'a>,
@@ -99,12 +98,12 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             if (self.multiplier > 1) {
                 self.multiplier = 1;
                 events.fire(Pause(0.5));
-                events.schedule(Duration::from_secs_f64(0.5), NewLevel(self.current_level.clone()));
+                events.schedule("game", Duration::from_secs_f64(0.5), NewLevel(self.current_level.clone()));
 
             }
             else {
                 events.fire(Pause(2.0));
-                events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
+                events.schedule("game", Duration::from_secs_f64(2.0), GameOver(self.score));
             }
         });
 
@@ -112,10 +111,10 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
             if self.assets.levels.contains_key(next_level) {
                 events.fire(IncreaseMultiplier);
                 events.fire(Pause(0.5));
-                events.schedule(Duration::from_secs_f64(0.5), NewLevel(next_level.clone()));
+                events.schedule("game", Duration::from_secs_f64(0.5), NewLevel(next_level.clone()));
             } else {
                 events.fire(Pause(2.0));
-                events.schedule(Duration::from_secs_f64(2.0), GameOver(self.score));
+                events.schedule("game", Duration::from_secs_f64(2.0), GameOver(self.score));
             }
         });
 

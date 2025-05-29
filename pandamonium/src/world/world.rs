@@ -58,7 +58,7 @@ pub struct World {
 
 impl World {
     pub fn new(assets: &Assets, level: &String, panda_type: PandaType, events: &mut Events) -> Self {
-        events.clear_schedule();
+        events.clear_schedule("game");
         let mut maps: Vec<Map<Tile>> = Vec::new();
         let mut entities = Entities::new();
 
@@ -91,7 +91,7 @@ impl World {
                                     PandaType::RedPanda => vec![6, 5]
                                 };
                                 spawn_radials(*x as f64, *y as f64, radial_balls, 6, &mut entities, events);
-                                events.schedule(Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
+                                events.schedule("game", Duration::from_millis(2400), SpawnHero(*x as f64, *y as f64, panda_type));
                             }
                             "Coin" => spawn_coin(*x as f64, *y as f64, &mut entities),
                             "Lockbox" => spawn_lockbox(*x as f64, *y as f64, &mut entities),
@@ -137,15 +137,15 @@ impl World {
             spawn_flashlamp((x - 1) as f64, (y - 1) as f64, flashbulb_fire, &mut entities);
         }
 
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule(Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
-        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule(Duration::from_millis(1200), SpawnBulb(x as f64, y as f64)) }
-        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule(Duration::from_millis(1800), SpawnBulb(x as f64, y as f64)) }
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule("game", Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
+        for (x, y) in pixels(&assets.countdown, &Rgb([255, 255, 0])) { events.schedule("game", Duration::from_millis(1200), SpawnBulb(x as f64, y as f64)) }
+        for (x, y) in pixels(&assets.countdown, &Rgb([0, 255, 0])) { events.schedule("game", Duration::from_millis(1800), SpawnBulb(x as f64, y as f64)) }
 
-        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule(Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64)) }
+        for (x, y) in pixels(&assets.go, &Rgb([255, 255, 255])) { events.schedule("game", Duration::from_millis(2400), SpawnFlashBulb(x as f64, y as f64)) }
 
-        events.schedule(Duration::from_millis(7400), TurnFlashbulbsYellow);
-        events.schedule(Duration::from_millis(10400), TurnFlashbulbsRed);
-        events.schedule(Duration::from_millis(12400), Fail);
+        events.schedule("game", Duration::from_millis(7400), TurnFlashbulbsYellow);
+        events.schedule("game", Duration::from_millis(10400), TurnFlashbulbsRed);
+        events.schedule("game", Duration::from_millis(12400), Fail);
 
         events.fire(ClearAudio());
 
@@ -201,6 +201,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for World {
 
 
 fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
+    events.elapse("world", dt);
     phase(&mut world.entities, dt);
     animation_cycle(&mut world.entities);
     age(dt, &mut world.entities);
