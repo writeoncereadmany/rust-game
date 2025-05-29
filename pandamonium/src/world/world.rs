@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::time::Duration;
-use std::f64::consts::PI;
 
 use image::Rgb;
 use image::RgbImage;
@@ -17,10 +16,10 @@ use crate::entities::components::*;
 use crate::entities::entity_events;
 use crate::entities::flagpole::*;
 use crate::entities::flashlamp::{spawn_flashlamp, TurnFlashbulbsRed, TurnFlashbulbsYellow};
+use crate::entities::fruit::{spawn_fruit, Fruit};
 use crate::entities::hero::*;
 use crate::entities::key::*;
 use crate::entities::lockbox::*;
-use crate::entities::particle::*;
 use crate::entities::pickup::*;
 use crate::entities::radial::*;
 use crate::entities::spring::spawn_spring;
@@ -35,7 +34,6 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
-use crate::entities::fruit::{spawn_fruit, Fruit};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -134,7 +132,7 @@ impl World {
         {
             let fraction_of_fulltime = i as f64 / flashlamps.len() as f64;
             let flashbulb_fire = 2.4 + (10.0 * fraction_of_fulltime);
-            spawn_flashlamp((x - 1) as f64, (y - 1) as f64, flashbulb_fire, &mut entities);
+            spawn_flashlamp((x - 1) as f64, (y - 1) as f64, flashbulb_fire, &mut entities, events);
         }
 
         for (x, y) in pixels(&assets.countdown, &Rgb([255, 0, 0])) { events.schedule("world", Duration::from_millis(600), SpawnBulb(x as f64, y as f64)); }
