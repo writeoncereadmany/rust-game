@@ -10,6 +10,7 @@ use entity::Id;
 use crate::app::assets::Assets;
 use crate::app::events::*;
 use crate::entities::bell::*;
+use crate::entities::bubble::*;
 use crate::entities::chest::*;
 use crate::entities::coin::*;
 use crate::entities::components::*;
@@ -34,6 +35,7 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
+use crate::entities::bubble::{spawn_bubble, BubbleHit};
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -105,6 +107,7 @@ impl World {
                             "Cherry" => spawn_fruit(*x as f64, *y as f64, &Fruit::CHERRY, &mut entities),
                             "Grapes" => spawn_fruit(*x as f64, *y as f64, &Fruit::GRAPES, &mut entities),
                             "Watermelon" => spawn_fruit(*x as f64, *y as f64, &Fruit::WATERMELON, &mut entities),
+                            "Bubble" => spawn_bubble(*x as f64, *y as f64, &mut entities),
 
 
                             _otherwise => {}
@@ -206,6 +209,7 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     flicker(&mut world.entities);
     map_collisions(&mut world.entities, &world.maps);
     item_collisions(&world.entities, events);
+    apply_translations(&mut world.entities);
 }
 
 fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>) {
@@ -219,9 +223,11 @@ fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>) {
         }
         (Translation(new_tx, new_ty), LastPush(tot_px, tot_py))
     });
+}
 
-    entities.apply(|(Position(x, y), LastPush(px, py))| {
-        Position(x + px, y + py)
+fn apply_translations(entities: &mut Entities) {
+    entities.apply(|(Position(x, y), LastPush(tx, ty))| {
+        Position(x + tx, y + ty)
     });
     entities.apply(|(Velocity(dx, dy), LastPush(px, py))|
         Velocity(
@@ -263,10 +269,16 @@ fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<Shape>, moving: &Shape,
     map_collisions.pop()
 }
 
-fn item_collisions(entities: &Entities, events: &mut Events) {
+fn item_collisions(entities: & Entities, events: &mut Events) {
     entities.for_each_pair(|(Hero, TranslatedMesh(hero_mesh), Translation(tx, ty)), (Pickup, Id(id), TranslatedMesh(mesh))| {
         if hero_mesh.intersects_moving(&mesh, &(*tx, *ty)) {
             events.fire(PickupCollected(*id));
+        }
+    });
+
+    entities.for_each_pair(|(Hero, TranslatedMesh(hero_mesh), Translation(tx, ty)), (Bubble, Id(id), TranslatedMesh(bubble_mesh))| {
+        if let Some(collision) = hero_mesh.collides(bubble_mesh, &(*tx, *ty)) {
+            events.fire(BubbleHit(collision.push, *id))
         }
     });
 

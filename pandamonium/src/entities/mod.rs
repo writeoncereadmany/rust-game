@@ -1,4 +1,5 @@
 pub mod bell;
+pub mod bubble;
 pub mod chest;
 pub mod coin;
 pub mod components;
@@ -27,6 +28,7 @@ use crate::entities::flashlamp::flashbulb_events;
 use crate::entities::hero::clamp_hero;
 use crate::entities::radial::radial_events;
 use engine::events::{Event, Events};
+use crate::entities::bubble::bubble_hit;
 
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
 {
@@ -44,6 +46,7 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
 
     event.apply(|Destroy(id)| entities.delete::<()>(id));
     event.apply(|pickup| { collect_pickup(pickup, entities, events) });
+    event.apply(|bubble| bubble_hit(bubble, events, entities));
 }
 
 pub fn spawn_events(event: &Event, entities: &mut Entities, events: &mut Events) {

@@ -84,7 +84,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
                 Score::Fruit(p) => {
                     self.score += (*p * self.multiplier);
                     self.fruit_collected += 1;
-                    if (self.fruit_collected == 5)
+                    if self.fruit_collected == 5
                     {
                         events.fire(IncreaseMultiplier);
                         events.fire(SpawnText(15.0, 10.0, "Fruit Salad!".to_string()))
@@ -95,7 +95,7 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
         });
 
         event.apply(|Fail| {
-            if (self.multiplier > 1) {
+            if self.multiplier > 1 {
                 self.multiplier = 1;
                 events.fire(Pause(0.5));
                 events.schedule("game", Duration::from_secs_f64(0.5), NewLevel(self.current_level.clone()));
