@@ -207,19 +207,20 @@ fn update<'a>(world: &mut World, dt: &Duration, events: &mut Events) {
     animation_cycle(&mut world.entities);
     age(dt, &mut world.entities);
     flicker(&mut world.entities);
-    map_collisions(&mut world.entities, &world.maps);
+    map_collisions(&mut world.entities, &world.maps, events);
     item_collisions(&world.entities, events);
     apply_translations(&mut world.entities);
 }
 
-fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>) {
-    let obstacles: Vec<Shape> = entities.collect().iter().map(|(Obstacle, TranslatedMesh(shape))| shape.clone()).collect();
-    entities.apply(|(Collidable, TranslatedMesh(shape), Translation(tx, ty))| {
+fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>, events: &mut Events) {
+    let obstacles: Vec<(u64, Shape)> = entities.collect().iter().map(|(Obstacle, Id(id), TranslatedMesh(shape))| (*id, shape.clone())).collect();
+    entities.apply(|(Collidable, Id(movable_id), TranslatedMesh(shape), Translation(tx, ty))| {
         let (mut new_tx, mut new_ty) = (tx, ty);
         let (mut tot_px, mut tot_py) = (0.0, 0.0);
-        while let Some(Collision { push: (px, py), .. }) = next_collision(maps, &obstacles, &shape, &(new_tx, new_ty)) {
+        while let Some((scenery_id, Collision { push: push@(px, py), .. })) = next_collision(maps, &obstacles, &shape, &(new_tx, new_ty)) {
             (new_tx, new_ty) = (new_tx + px, new_ty + py);
             (tot_px, tot_py) = (tot_px + px, tot_py + py);
+            events.fire(SceneryCollision { movable_id, scenery_id, push });
         }
         (Translation(new_tx, new_ty), LastPush(tot_px, tot_py))
     });
@@ -238,8 +239,8 @@ fn apply_translations(entities: &mut Entities) {
     entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))));
 }
 
-fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<Shape>, moving: &Shape, dv: &(f64, f64)) -> Option<Collision> {
-    let mut map_collisions: Vec<Collision> = maps.iter().map(
+fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<(u64, Shape)>, moving: &Shape, dv: &(f64, f64)) -> Option<(u64, Collision)> {
+    let mut map_collisions: Vec<(u64, Collision)> = maps.iter().map(
         |map| map.overlapping(moving, dv)
             .map(|(_, tile)| tile)
             .map(|tile| {
@@ -253,19 +254,19 @@ fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<Shape>, moving: &Shape,
                         return None;
                     }
                 }
-                maybe_collision
+                maybe_collision.map(|col| (0, col))
             })
             .flatten())
             .flatten()
             .collect();
 
     obstacles.iter()
-        .map(|obstacle| moving.collides(obstacle, dv))
+        .map(|(id, obstacle)| moving.collides(obstacle, dv).map(|col| (*id, col)))
         .flatten()
         .for_each(|collision| map_collisions.push(collision));
 
     // reverse sort so earliest collisions are at the end, so we can pop
-    map_collisions.sort_unstable_by(|c1, c2| c1.dt.total_cmp(&c2.dt).reverse());
+    map_collisions.sort_unstable_by(|(_, c1), (_, c2)| c1.dt.total_cmp(&c2.dt).reverse());
     map_collisions.pop()
 }
 

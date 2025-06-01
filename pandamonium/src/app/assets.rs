@@ -148,7 +148,7 @@ fn load_level<'a>(
 }
 
 fn get_string_property(tile_map: &Map, property: &str) -> Option<String> {
-    tile_map.properties.get(property).map(|pv| match (pv) {
+    tile_map.properties.get(property).map(|pv| match pv {
         PropertyValue::StringValue(val) => val.clone(),
         _ => panic!("Non-string value for {}", property)
     })

@@ -3,9 +3,6 @@ use entity::{entity, Entities};
 
 use super::components::*;
 use super::pickup::*;
-use engine::audio::instrument::BELL;
-use engine::audio::notes::*;
-use engine::audio::tempo::Tempo;
 use engine::shapes::shape::shape::Shape;
 
 pub enum Fruit {

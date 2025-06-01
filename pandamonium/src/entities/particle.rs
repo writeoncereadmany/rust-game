@@ -4,7 +4,6 @@ use engine::graphics::sprite::Sprite;
 use std::time::Duration;
 
 use super::components::*;
-use super::hero::PandaType;
 use crate::app::events::Destroy;
 use entity::{entity, Entities};
 

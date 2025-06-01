@@ -1,11 +1,11 @@
-use std::time::Duration;
-use std::f64::consts::PI;
+use crate::app::events::Destroy;
+use crate::entities::components::{Age, Period, Phase, Position};
 use component_derive::{Constant, Variable};
 use engine::events::{Event, Events};
 use engine::graphics::sprite::Sprite;
 use entity::{entity, Entities};
-use crate::app::events::Destroy;
-use crate::entities::components::{Age, AnimationCycle, Period, Phase, Position};
+use std::f64::consts::PI;
+use std::time::Duration;
 
 #[derive(Clone, Variable)]
 struct Radius(f64);
@@ -52,22 +52,22 @@ pub fn rotate(entities: &mut Entities) {
 }
 
 pub fn update_radius(Age(age): Age) -> Radius {
-    if (age < 0.8) {
+    if age < 0.8 {
         let through_phase = 1.0 - (age / 0.8);
         Radius(3.0 + (20.0 * through_phase))
-    } else if (age < 2.2) {
+    } else if age < 2.2 {
         Radius(3.0)
     } else {
-        let through_phase = 1.0 - ((age - 2.2) / 0.2);
+        let through_phase = 1.0 - (age - 2.2) / 0.2;
         Radius(3.0 * through_phase)
     }
 }
 
 pub fn update_period(Age(age): Age) -> Period {
-    if (age < 0.8) {
+    if age < 0.8 {
         Period(1.2)
-    } else if (age < 1.8) {
-        let through_phase = ((age - 0.8) / 1.0);
+    } else if age < 1.8 {
+        let through_phase = (age - 0.8) / 1.0;
         Period(1.2 - through_phase)
     } else {
         Period(1000.0)

@@ -57,7 +57,7 @@ pub fn flashbulb_events(entities: &mut Entities, event: &Event) {
         if lit { flashbulb_sprite(RED) } else { sprite }
     ));
 
-    event.apply(|LightFlashbulb(entity_id)| entities.apply_to(entity_id, |(FlashbulbColor(fb_color))|
+    event.apply(|LightFlashbulb(entity_id)| entities.apply_to(entity_id, |FlashbulbColor(fb_color)|
         (flashbulb_sprite(fb_color), FlashbulbLit(true))
     ));
 }

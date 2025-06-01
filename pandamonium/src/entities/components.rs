@@ -1,11 +1,17 @@
 use std::time::Duration;
 
-use component_derive::{Constant, Variable};
-use engine::events::Event;
+use component_derive::{Constant, Event, Variable};
 use engine::graphics::sprite::Sprite;
 use engine::shapes::shape::shape::Shape;
+use engine::events::EventTrait;
 use entity::*;
 
+#[derive(Event)]
+pub struct SceneryCollision {
+    pub movable_id: u64,
+    pub scenery_id: u64,
+    pub push: (f64, f64)
+}
 
 #[derive(Clone, Variable)]
 pub struct Gravity;

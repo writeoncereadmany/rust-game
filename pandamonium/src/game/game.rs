@@ -51,7 +51,7 @@ impl<'a> Game<'a> {
 }
 
 fn multiplier_sprite(multiplier: u32) -> Sprite {
-    match (multiplier) {
+    match multiplier {
         1 => Sprite::new(5, 4, 0.0, "Walls"),
         2 => Sprite::new(5, 5, 0.0, "Walls"),
         3 => Sprite::new(5, 6, 0.0, "Walls"),
@@ -80,9 +80,9 @@ impl<'a> GameLoop<'a, Renderer<'a>> for Game<'a> {
     fn event(&mut self, event: &Event, mut events: &mut Events) -> Result<(), String> {
         event.apply(|score| {
             match score {
-                Score::Points(p) => self.score += (*p * self.multiplier),
+                Score::Points(p) => self.score += *p * self.multiplier,
                 Score::Fruit(p) => {
-                    self.score += (*p * self.multiplier);
+                    self.score += *p * self.multiplier;
                     self.fruit_collected += 1;
                     if self.fruit_collected == 5
                     {
