@@ -36,6 +36,7 @@ use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE};
 use crate::entities::bubble::{spawn_bubble, BubbleHit};
+use crate::entities::crumbler::spawn_crumbler;
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum TileType {
@@ -108,6 +109,7 @@ impl World {
                             "Grapes" => spawn_fruit(*x as f64, *y as f64, &Fruit::GRAPES, &mut entities),
                             "Watermelon" => spawn_fruit(*x as f64, *y as f64, &Fruit::WATERMELON, &mut entities),
                             "Bubble" => spawn_bubble(*x as f64, *y as f64, &mut entities),
+                            "Crumbler" => spawn_crumbler(*x as f64, *y as f64, &mut entities),
 
 
                             _otherwise => {}

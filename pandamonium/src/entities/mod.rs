@@ -3,6 +3,7 @@ pub mod bubble;
 pub mod chest;
 pub mod coin;
 pub mod components;
+pub mod crumbler;
 pub mod flagpole;
 pub mod flashlamp;
 pub mod fruit;
@@ -24,11 +25,12 @@ use self::pickup::collect_pickup;
 use self::spring::spring_events;
 use crate::app::events::*;
 use crate::controllers::physics::*;
+use crate::entities::bubble::bubble_hit;
 use crate::entities::flashlamp::flashbulb_events;
 use crate::entities::hero::clamp_hero;
 use crate::entities::radial::radial_events;
 use engine::events::{Event, Events};
-use crate::entities::bubble::bubble_hit;
+use crate::entities::crumbler::crumbler_events;
 
 pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events)
 {
@@ -36,6 +38,7 @@ pub fn entity_events(event: &Event, entities: &mut Entities, events: &mut Events
     flashbulb_events(entities, event);
     chest_events(event, entities, events);
     lockbox_events(event, entities, events);
+    crumbler_events(event, entities, events);
     radial_events(event, entities, events);
     spawn_events(event, entities, events);
     spring_events(event, entities, events);
