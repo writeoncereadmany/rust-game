@@ -34,7 +34,6 @@ pub fn spawn_bulb(x: f64, y: f64, entities: &mut Entities, events: &mut Events) 
         .with(Sprite::new(4, 5, 2.0, "Sprites"))
         .with(Period(0.6))
         .with(Phase(0.0))
-        //        .with(Flicker((x as u32 ^ y as u32) & 1 == 1))
         .with(AnimationCycle(vec![
             (0.10, Sprite::new(4, 5, 2.0, "Sprites")),
             (0.20, Sprite::new(5, 5, 2.0, "Sprites")),
