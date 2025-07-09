@@ -138,6 +138,7 @@ fn handle_in_water(hero_id: u64, in_water: bool, entities: &mut Entities) {
 
 fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     do_move(entities, dt);
+    do_float(entities, dt);
     update_coyote_time(entities, dt);
     check_prejump(entities, dt, events);
     wall_stick(entities, dt);
@@ -203,6 +204,15 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
             }
         }
     })
+}
+
+fn do_float(entities: &mut Entities, dt: &Duration) {
+        entities.apply(|(IsInWater(in_water), Velocity(dx, dy))| if in_water {
+            Velocity(dx, dy + 200.0 * dt.as_secs_f64())
+        } else {
+            Velocity(dx, dy)
+        }
+        );
 }
 
 fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
