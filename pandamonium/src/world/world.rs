@@ -34,6 +34,7 @@ use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
 use TileType::{DECORATION, STONE, LEDGE, WATER};
+use crate::controllers::physics::translate;
 use crate::entities::bubble::{spawn_bubble, BubbleHit};
 use crate::entities::crumbler::spawn_crumbler;
 
@@ -238,7 +239,7 @@ fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>, events: &mut E
         let mut in_water = false;
         'outer: for map in maps {
             for (_, tile) in map.overlapping(&shape, &(tx, ty)) {
-                if tile.tile == WATER && shape.intersects_moving(&tile.shape, &(tx, ty)) {
+                if tile.tile == WATER && shape.intersects(&tile.shape) {
                     in_water = true;
                     break 'outer;
                 }

@@ -11,10 +11,10 @@ use engine::shapes::shape::shape::Shape;
 pub fn spawn_coin(x: f64, y: f64, entities: &mut Entities) {
     let phase = phase_offset(x, y);
     let animation_cycle = AnimationCycle(vec!(
-        (0.25, Sprite::new(0, 3, 0.5, "Sprites")),
-        (0.5, Sprite::new(1, 3, 0.5, "Sprites")),
-        (0.75, Sprite::new(2, 3, 0.5, "Sprites")),
-        (1.0, Sprite::new(3, 3, 0.5, "Sprites"))));
+        (0.25, Sprite::new(4, 6, 0.5, "Sprites")),
+        (0.5, Sprite::new(5, 6, 0.5, "Sprites")),
+        (0.75, Sprite::new(6, 6, 0.5, "Sprites")),
+        (1.0, Sprite::new(7, 6, 0.5, "Sprites"))));
     entities.spawn(entity()
         .with(Pickup)
         .with(Position(x, y))

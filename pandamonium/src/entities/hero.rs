@@ -35,6 +35,7 @@ const RED_PANDA_OFFSET: i32 = 4;
 const UNITS_PER_FRAME: f64 = 1.0;
 const RUN_CYCLE: [(i32, i32); 4] = [(1, 1), (2, 1), (3, 1), (2, 1)];
 const ASCENDING: (i32, i32) = (2, 0);
+const SWIMMING: (i32, i32) = (0, 2);
 const DESCENDING: (i32, i32) = (3, 0);
 const WALL_DRAGGING: (i32, i32) = (1, 0);
 const STANDING: (i32, i32) = (0, 1);
@@ -151,7 +152,9 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
 
 fn animate(entities: &mut Entities, _dt: &Duration) {
     entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(px, py), IsInWater(iw), panda_type)| {
-        let tile = if py == 0.0 {
+        let tile = if iw {
+                SWIMMING
+            } else if py == 0.0 {
             if dy > 0.0 {
                 ASCENDING
             } else if px != 0.0 {
@@ -167,16 +170,8 @@ fn animate(entities: &mut Entities, _dt: &Duration) {
         };
         let mut flip_x = facing == Sign::NEGATIVE;
         if tile == WALL_DRAGGING { flip_x = !flip_x }
-        let my_panda_type = if iw { invert(panda_type) } else { panda_type };
-        offset_sprite(tile, &my_panda_type, flip_x)
+        offset_sprite(tile, &panda_type, flip_x)
     });
-}
-
-fn invert(panda: PandaType) -> PandaType {
-    match panda {
-        GiantPanda => RedPanda,
-        RedPanda => GiantPanda
-    }
 }
 
 fn control(entities: &mut Entities, &ControllerState { x, jump_held, .. }: &ControllerState) {
