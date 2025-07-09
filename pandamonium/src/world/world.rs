@@ -25,7 +25,6 @@ use crate::entities::pickup::*;
 use crate::entities::radial::*;
 use crate::entities::spring::spawn_spring;
 use crate::music::countdown::countdown;
-use crate::world::world::TileType::LEDGE;
 use engine::events::*;
 use engine::game_loop::*;
 use engine::graphics::renderer::Renderer;
@@ -34,7 +33,7 @@ use engine::map::Map;
 use engine::shapes::shape::collision::Collision;
 use engine::shapes::shape::shape::{Shape, BLOCK};
 use engine::shapes::vec2d::{Vec2d, UNIT_X, UNIT_Y};
-use TileType::{DECORATION, STONE};
+use TileType::{DECORATION, STONE, LEDGE, WATER};
 use crate::entities::bubble::{spawn_bubble, BubbleHit};
 use crate::entities::crumbler::spawn_crumbler;
 
@@ -42,6 +41,7 @@ use crate::entities::crumbler::spawn_crumbler;
 pub enum TileType {
     STONE,
     LEDGE,
+    WATER,
     DECORATION,
 }
 
@@ -84,6 +84,13 @@ impl World {
                                     sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
                                     shape: BLOCK.translate(&(*x as f64, *y as f64)),
                                     tile: LEDGE,
+                                });
+                            }
+                            "Water" => {
+                                map.put(*x as i32, *y as i32, Tile {
+                                    sprite: Sprite::new(tile.x as i32, tile.y as i32, -1.0, &tile_ref.sheet),
+                                    shape: BLOCK.translate(&(*x as f64, *y as f64)),
+                                    tile: WATER,
                                 });
                             }
                             "Hero" => {
@@ -226,6 +233,16 @@ fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>, events: &mut E
         }
         (Translation(new_tx, new_ty), LastPush(tot_px, tot_py))
     });
+
+    entities.apply(|(Collidable, Id(movable_id), TranslatedContextMesh(shape), Translation(tx, ty)) | {
+        for map in maps {
+            for (_, tile) in map.overlapping(&shape, &(tx, ty)) {
+                if tile.tile == WATER && shape.intersects_moving(&tile.shape, &(tx, ty)) {
+                    events.fire(InWater(movable_id));
+                }
+            }
+        }
+    });
 }
 
 fn apply_translations(entities: &mut Entities) {
@@ -239,6 +256,7 @@ fn apply_translations(entities: &mut Entities) {
         )
     );
     entities.apply(|(Position(x, y), ReferenceMesh(mesh))| TranslatedMesh(mesh.translate(&(x, y))));
+    entities.apply(|(Position(x, y), ReferenceContextMesh(mesh))| TranslatedContextMesh(mesh.translate(&(x, y))));
 }
 
 fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<(u64, Shape)>, moving: &Shape, dv: &(f64, f64)) -> Option<(u64, Collision)> {
@@ -246,7 +264,7 @@ fn next_collision(maps: &Vec<Map<Tile>>, obstacles: &Vec<(u64, Shape)>, moving: 
         |map| map.overlapping(moving, dv)
             .map(|(_, tile)| tile)
             .map(|tile| {
-                if tile.tile == DECORATION {
+                if tile.tile == DECORATION || tile.tile == WATER {
                     return None;
                 }
                 let maybe_collision = moving.collides(&tile.shape, dv);

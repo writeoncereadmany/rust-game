@@ -9,6 +9,8 @@ use engine::events::*;
 use engine::graphics::sprite::Sprite;
 use engine::shapes::shape::shape::Shape;
 use entity::{entity, Entities};
+use crate::entities::hero::PandaType::{GiantPanda, RedPanda};
+use crate::entities::pickup::InWater;
 
 const ACCEL: f64 = 60.0;
 const REVERSE_ACCEL: f64 = 80.0;
@@ -55,6 +57,9 @@ pub enum PandaType {
 pub struct Hero;
 
 #[derive(Clone, Variable)]
+pub struct IsInWater(pub bool);
+
+#[derive(Clone, Variable)]
 pub struct MovingX(pub Sign);
 
 #[derive(Clone, Variable)]
@@ -83,6 +88,9 @@ pub fn spawn_hero(x: f64, y: f64, panda_type: PandaType, entities: &mut Entities
         .with(Position(x, y))
         .with(ReferenceMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0)))
         .with(TranslatedMesh(Shape::bbox(0.0, 0.0, 1.0, 1.0).translate(&(x, y))))
+        .with(ReferenceContextMesh(Shape::bbox(0.45, 0.45, 0.1, 0.1)))
+        .with(TranslatedContextMesh(Shape::bbox(0.45, 0.45, 0.1, 0.1).translate(&(x, y))))
+        .with(IsInWater(false))
         .with(offset_sprite(STANDING, &panda_type, false))
         .with(MovingX(Sign::ZERO))
         .with(Velocity(0.0, 0.0))
@@ -102,6 +110,7 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|dt| update_hero(entities, dt, events));
     event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, entities));
     event.apply(|&Interaction { hero_id, interaction_type, .. }| { handle_interaction(hero_id, interaction_type, entities) });
+    event.apply(|&InWater(hero_id)| { handle_inwater(hero_id, entities)});
 }
 
 pub fn clamp_hero(entities: &mut Entities, event: &Event, _events: &mut Events) {
@@ -112,7 +121,7 @@ pub fn clamp_to_screen(_dt: &Duration, entities: &mut Entities) {
     entities.apply(|(Hero, Position(dx, dy))| Position(dx.clamp(0.0, 27.0), dy));
 }
 
-pub fn check_fall(entities: &mut Entities, _dt: &Duration, events: &mut Events) {
+pub fn check_fail(entities: &mut Entities, _dt: &Duration, events: &mut Events) {
     entities.apply(|(Hero, Position(_, dy))| if dy < -2.0 { events.fire(Fail) });
 }
 
@@ -121,6 +130,11 @@ fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut 
         entities.apply_to(&hero_id, |(Hero, Velocity(dx, _dy))| { Velocity(dx, SPRING_BOUNCE_SPEED) });
     }
 }
+
+fn handle_inwater(hero_id: u64, entities: &mut Entities) {
+    entities.apply_to(&hero_id, |(Hero)| { IsInWater(true) });
+}
+
 
 fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     do_move(entities, dt);
@@ -131,11 +145,11 @@ fn update_hero(entities: &mut Entities, dt: &Duration, events: &mut Events) {
     clamp(entities, dt);
     facing(entities, dt);
     animate(entities, dt);
-    check_fall(entities, dt, events)
+    check_fail(entities, dt, events)
 }
 
 fn animate(entities: &mut Entities, _dt: &Duration) {
-    entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(px, py), panda_type)| {
+    entities.apply(|(Hero, Position(x, _y), Velocity(dx, dy), Facing(facing), LastPush(px, py), IsInWater(iw), panda_type)| {
         let tile = if py == 0.0 {
             if dy > 0.0 {
                 ASCENDING
@@ -152,8 +166,16 @@ fn animate(entities: &mut Entities, _dt: &Duration) {
         };
         let mut flip_x = facing == Sign::NEGATIVE;
         if tile == WALL_DRAGGING { flip_x = !flip_x }
-        offset_sprite(tile, &panda_type, flip_x)
+        let my_panda_type = if iw { invert(panda_type) } else { panda_type };
+        offset_sprite(tile, &my_panda_type, flip_x)
     });
+}
+
+fn invert(panda: PandaType) -> PandaType {
+    match panda {
+        GiantPanda => RedPanda,
+        RedPanda => GiantPanda
+    }
 }
 
 fn control(entities: &mut Entities, &ControllerState { x, jump_held, .. }: &ControllerState) {

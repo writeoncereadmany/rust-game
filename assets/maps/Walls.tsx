@@ -56,8 +56,10 @@
  <tile id="61" type="Ledge"/>
  <tile id="62" type="Ledge"/>
  <tile id="63" type="Ledge"/>
+ <tile id="64" type="Water"/>
  <tile id="65" type="Wall"/>
  <tile id="67" type="Wall"/>
+ <tile id="76" type="Water"/>
  <tile id="77" type="Wall"/>
  <tile id="78" type="Wall"/>
  <tile id="79" type="Wall"/>

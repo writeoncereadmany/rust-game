@@ -100,6 +100,20 @@ impl <A: Component, B: Component, C: Component, D: Component, E: Component, F: C
     }
 }
 
+impl <A: Component, B: Component, C: Component, D: Component, E: Component, F: Component, G: Component> Component for (A, B, C, D, E, F, G) {
+    fn get(entity: &Entity) -> Option<(A, B, C, D, E, F, G)> {
+        Some((
+            A::get(entity)?.clone(),
+            B::get(entity)?.clone(),
+            C::get(entity)?.clone(),
+            D::get(entity)?.clone(),
+            E::get(entity)?.clone(),
+            F::get(entity)?.clone(),
+            G::get(entity)?.clone())
+        )
+    }
+}
+
 impl <A: Variable, B: Variable> Variable for (A, B) {
     fn set(self, entity: &mut Entity) {
         let (a, b) = self;

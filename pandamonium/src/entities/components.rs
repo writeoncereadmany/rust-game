@@ -49,6 +49,12 @@ pub struct ReferenceMesh(pub Shape);
 pub struct TranslatedMesh(pub Shape);
 
 #[derive(Clone, Constant)]
+pub struct ReferenceContextMesh(pub Shape);
+
+#[derive(Clone, Variable)]
+pub struct TranslatedContextMesh(pub Shape);
+
+#[derive(Clone, Constant)]
 pub struct Obstacle;
 
 #[derive(Clone, Copy, Constant, PartialEq, Eq)]

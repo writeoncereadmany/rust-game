@@ -14,6 +14,9 @@ pub struct Pickup;
 #[derive(Event)]
 pub struct PickupCollected(pub u64);
 
+#[derive(Event)]
+pub struct InWater(pub u64);
+
 #[derive(Clone, Constant)]
 pub enum OnPickupEffect {
     Sparkles
