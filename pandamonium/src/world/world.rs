@@ -235,13 +235,16 @@ fn map_collisions(entities: &mut Entities, maps: &Vec<Map<Tile>>, events: &mut E
     });
 
     entities.apply(|(Collidable, Id(movable_id), TranslatedContextMesh(shape), Translation(tx, ty)) | {
-        for map in maps {
+        let mut in_water = false;
+        'outer: for map in maps {
             for (_, tile) in map.overlapping(&shape, &(tx, ty)) {
                 if tile.tile == WATER && shape.intersects_moving(&tile.shape, &(tx, ty)) {
-                    events.fire(InWater(movable_id));
+                    in_water = true;
+                    break 'outer;
                 }
             }
         }
+        events.fire(InWater(movable_id, in_water));
     });
 }
 

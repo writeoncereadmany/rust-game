@@ -110,7 +110,7 @@ pub fn hero_events(entities: &mut Entities, event: &Event, events: &mut Events) 
     event.apply(|dt| update_hero(entities, dt, events));
     event.apply(|&SpawnHero(x, y, panda_type)| spawn_hero(x, y, panda_type, entities));
     event.apply(|&Interaction { hero_id, interaction_type, .. }| { handle_interaction(hero_id, interaction_type, entities) });
-    event.apply(|&InWater(hero_id)| { handle_inwater(hero_id, entities)});
+    event.apply(|&InWater(hero_id, in_water)| { handle_in_water(hero_id, in_water, entities)});
 }
 
 pub fn clamp_hero(entities: &mut Entities, event: &Event, _events: &mut Events) {
@@ -131,8 +131,8 @@ fn handle_interaction(hero_id: u64, interaction_type: Interacts, entities: &mut 
     }
 }
 
-fn handle_inwater(hero_id: u64, entities: &mut Entities) {
-    entities.apply_to(&hero_id, |(Hero)| { IsInWater(true) });
+fn handle_in_water(hero_id: u64, in_water: bool, entities: &mut Entities) {
+    entities.apply_to(&hero_id, |(Hero)| { IsInWater(in_water) });
 }
 
 
