@@ -207,12 +207,11 @@ fn do_move(entities: &mut Entities, dt: &Duration) {
 }
 
 fn do_float(entities: &mut Entities, dt: &Duration) {
-        entities.apply(|(IsInWater(in_water), Velocity(dx, dy))| if in_water {
-            Velocity(dx, dy + 200.0 * dt.as_secs_f64())
-        } else {
-            Velocity(dx, dy)
-        }
-        );
+    entities.apply(|(IsInWater(in_water), Velocity(dx, dy))| if in_water {
+        Velocity(dx, dy + 200.0 * dt.as_secs_f64())
+    } else {
+        Velocity(dx, dy)
+    });
 }
 
 fn check_prejump(entities: &mut Entities, dt: &Duration, events: &mut Events) {
